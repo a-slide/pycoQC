@@ -9,26 +9,25 @@
 """
 
 # Standard library imports
-
+from sys import exit as sysexit
 
 # Third party imports
 try:
-    current= "Numpy 1.13.0"
+    current= "numpy 1.13.0"
     import numpy as np
-    current = "Matplotlib 2.0.2"
+    current = "matplotlib 2.0.2"
     import pylab as pl
-    current = "Pandas 0.20.2"
+    current = "pandas 0.20.2"
     import pandas as pd
-    current = "Seaborn 0.7.1"
+    current = "seaborn 0.7.1"
     import seaborn as sns
-    current = "Jupyter 4.2.0"
+    current = "jupyter 4.2.0"
     cfg = get_ipython()
     from IPython.core.display import display
     
 except (NameError, ImportError):
     print ("The third party package {}+ is required by picoQC. Please verify your dependencies".format(current))
     sysexit()
-
 
 ##~~~~~~~ MAIN CLASS ~~~~~~~#
 
@@ -67,7 +66,6 @@ class pycoQC():
             self.runid = runid_counts.index[0]
             self.total_reads = runid_counts.loc[self.runid]
             
-            
         else:
             self.runid = runid
             self.total_reads = runid_counts.loc[self.runid]
@@ -102,7 +100,9 @@ class pycoQC():
         * fmt
             String formatting code to use when adding annotations (see matplotlib documentation) [Default: "d"]
         * cbar
-            Whether to draw a colorbar scale on the right of the graph [Default: False]        
+            Whether to draw a colorbar scale on the right of the graph [Default: False]
+        => Return
+            A matplotlib.axes object for further user customisation (http://matplotlib.org/api/axes_api.html)
         """
         
         # Compute the count per channel
@@ -110,10 +110,10 @@ class pycoQC():
             s = self.df['channel'].value_counts(sort=False)
             title = "Reads per channels"
         if level == "bases":
-            s = n.df.groupby("channel").aggregate(np.sum)["sequence_length_template"]
+            s = self.df.groupby("channel").aggregate(np.sum)["sequence_length_template"]
             title = "Bases per channels"
         if level == "events":
-            s = n.df.groupby("channel").aggregate(np.sum)["num_events"]
+            s = self.df.groupby("channel").aggregate(np.sum)["num_events"]
             title = "Events per channels"
             
         # Fill the missing values
@@ -138,6 +138,8 @@ class pycoQC():
         
         for text in ax.texts:
             text.set_size(8)
+        
+        return ax
     
     def mean_qual_distribution (self, figsize=[30,7], color="orangered", alpha=0.5, normed=True, win_size=0.1, xmin=0, xmax=40, **kwargs):
         """
@@ -154,6 +156,8 @@ class pycoQC():
             Size of the bins in quality score ranging from 0 to 40 [Default 0.1]
         * xmin, xmax
             Lower and upper limits on x axis [Default 0, 40]
+        => Return
+            A matplotlib.axes object for further user customisation (http://matplotlib.org/api/axes_api.html)
         """
         # Plot an histogram of the mean quality score
         fig, ax = pl.subplots(figsize=figsize)
@@ -168,6 +172,8 @@ class pycoQC():
         else:
             t = ax.set_ylabel("Read count")
         t = ax.set_xlim (xmin, xmax)
+        
+        return ax
     
     def output_over_time (self, level="reads", figsize=[30,7], color="orangered", alpha=0.5, win_size=0.25, cumulative=False, **kwargs):
         """
@@ -184,14 +190,19 @@ class pycoQC():
             Size of the bins in hours [Default 0.25]
         * cumulative
             cumulative histogram [Default False]
+        => Return
+            A matplotlib.axes object for further user customisation (http://matplotlib.org/api/axes_api.html)
         """
-        df = n.df[["num_events", "sequence_length_template"]].copy()
-        df["end_time"] = (n.df["start_time"]+n.df["duration"])/3600
+        df = self.df[["num_events", "sequence_length_template"]].copy()
+        df["end_time"] = (self.df["start_time"]+self.df["duration"])/3600
 
         # Compute the mean, min and max for each win_size interval
         df2 = pd.DataFrame(columns=["reads", "bases", "events"])
         for t in np.arange(0, max(df["end_time"]), win_size):
-            sdf = df[(df["end_time"] >= t) & (df["end_time"] < t+win_size)]
+            if cumulative:
+                sdf = df[(df["end_time"] < t+win_size)]
+            else:
+                sdf = df[(df["end_time"] >= t) & (df["end_time"] < t+win_size)]
             df2.loc[t] =[len(sdf), sdf["sequence_length_template"].sum(), sdf["num_events"].sum()]
 
         # Plot the graph
@@ -201,9 +212,11 @@ class pycoQC():
         # Tweak the plot
         t = ax.set_title ("Total {} over time".format(level))
         t = ax.set_xlabel("Experiment time (h)")
-        t = ax.set_ylabel("Count {}".format(level))
+        t = ax.set_ylabel("{} count".format(level))
         t = ax.set_xlim (0, max(df2.index))
         t = ax.set_ylim (0, ax.get_ylim()[1])
+        
+        return ax
     
     def quality_over_time (self, figsize=[30,7], color="orangered", alpha=0.25, win_size=0.25, **kwargs):
         """
@@ -216,6 +229,8 @@ class pycoQC():
             Opacity of the area from 0 to 1 [Default: 0.25]
         * win_size
             Size of the bins in hours [Default 0.25]
+        => Return
+            A matplotlib.axes object for further user customisation (http://matplotlib.org/api/axes_api.html)
         """
         # Slice the main dataframe
         df = self.df[["mean_qscore_template"]].copy()
@@ -225,7 +240,7 @@ class pycoQC():
         df2 = pd.DataFrame(columns=["mean", "min", "max", "q1", "q3"])
         for t in np.arange(0, max(df["end_time"]), win_size):
             sdf = df["mean_qscore_template"][(df["end_time"] >= t) & (df["end_time"] < t+win_size)]
-            df2.loc[t] =[sdf.mean(), sdf.min(), sdf.max(), sdf.quantile(0.25), sdf.quantile(0.75)]
+            df2.loc[t] =[sdf.median(), sdf.min(), sdf.max(), sdf.quantile(0.25), sdf.quantile(0.75)]
 
         # Plot the graph
         fig, ax = pl.subplots(figsize=figsize)
@@ -234,14 +249,16 @@ class pycoQC():
         ax.plot(df2["mean"], color=color)
         
         # Tweak the plot
-        t = ax.set_title ("Mean read quality over time (Mean, Q1-Q3, Min-Max)")
+        t = ax.set_title ("Mean read quality over time (Median, Q1-Q3, Min-Max)")
         t = ax.set_xlabel("Experiment time (h)")
         t = ax.set_ylabel("Mean read PHRED quality")
         t = ax.set_xlim (0, max(df2.index))
         t = ax.set_ylim (0, ax.get_ylim()[1])
         
+        return ax
+        
     def reads_len_distribution (self, figsize=[30,7], color="orangered", alpha=0.5, win_size=1000, normed=False,
-                                xlog=False, ylog=False, xmin=0, xmax=None, ymin=0, ymax=None, **kwargs):
+                                xlog=False, ylog=False, xmin=1, xmax=None, ymin=1, ymax=None, **kwargs):
         """
         Plot the distribution of read length in base pairs
         * figsize
@@ -257,9 +274,11 @@ class pycoQC():
         * xlog, ylog
             Use log10 scale for x and y axis [Default True, True]
         * xmin, xmax
-            Lower and upper limits on x axis [Default 0, None]
+            Lower and upper limits on x axis [Default 1, None]
         * ymin, ymax
-            Lower and upper limits on y axis [Default 0, None]
+            Lower and upper limits on y axis [Default 1, None]
+        => Return
+            A matplotlib.axes object for further user customisation (http://matplotlib.org/api/axes_api.html)
         """
         if not xmax:
             xmax = max(self.df['sequence_length_template'])
@@ -291,3 +310,5 @@ class pycoQC():
             t = ax.set_ylim (ymin, ymax)
         else:
             t = ax.set_ylim (ymin, ax.get_ylim()[1])
+
+        return ax
