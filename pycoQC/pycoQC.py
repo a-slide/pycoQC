@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 
-"""
-* pycoQC
-* [GNU General Public License v2](http://www.gnu.org/licenses/gpl-2.0.html)
-* Adrien Leger - 2017
-* <aleg@ebi.ac.uk>
-* [Github](https://github.com/a-slide)
+"""       
+  ___              ___   ___ 
+ | _ \_  _ __ ___ / _ \ / __|
+ |  _/ || / _/ _ \ (_) | (__ 
+ |_|  \_, \__\___/\__\_\\___|
+      |__/      
+                                __   __     ___ 
+ /\  _| _. _ _   |   _ _  _ _    _) /  \ /|   / 
+/--\(_|| |(-| )  |__(-(_)(-|    /__ \__/  |  /  
+                      _/                        
 """
 
 # Standard library imports
@@ -13,26 +17,22 @@ from sys import exit as sysexit
 
 # Third party imports
 try:
-    current= "numpy 1.13.0"
     import numpy as np
-    current = "matplotlib 2.0.2"
     import pylab as pl
-    current = "pandas 0.20.2"
     import pandas as pd
-    current = "seaborn 0.7.1"
     import seaborn as sns
-    current = "jupyter 4.2.0"
-    cfg = get_ipython()
+    get_ipython()
     from IPython.core.display import display
     
-except (NameError, ImportError):
-    print ("The third party package {}+ is required by picoQC. Please verify your dependencies".format(current))
+except (NameError, ImportError) as E:
+    print (E)
+    print ("A third party package is missing. Please verify your dependencies")
     sysexit()
 
 ##~~~~~~~ MAIN CLASS ~~~~~~~#
-
 class pycoQC():
-    
+
+    #~~~~~~~FUNDAMENTAL METHODS~~~~~~~#    
     def __init__ (self, seq_summary_file, runid=None, verbose=False):
         """
         Parse Albacore sequencing_summary.txt file and cleanup the data
@@ -50,6 +50,10 @@ class pycoQC():
         self.seq_summary_file = seq_summary_file
         self.df = pd.read_csv(seq_summary_file, sep ="\t")
         self.df.dropna(inplace=True)
+        
+        # Verify the presence of the columns required for pycoQC
+        for colname in ['channel', 'start_time', 'duration', 'num_events','sequence_length_template', 'mean_qscore_template']:
+            assert colname in self.df.columns, "Column {} not found in the provided sequence_summary file".format(colname)
         
         # Find or verify runid
         runid_counts = self.df['run_id'].value_counts(sort=True)
@@ -79,7 +83,19 @@ class pycoQC():
         if self.verbose:
             print ("Dataframe head")
             display (self.df.head())
+    
+    def __str__(self):
+        """readable description of the object"""
+        msg = "{} instance\n".format(self.__class__.__name__)
+        msg+= "\tParameters list\n"
         
+        # list all values in object dict in alphabetical order
+        for k,v in OrderedDict(sorted(self.__dict__.items(), key=lambda t: t[0])).items():
+            if k != "df":
+                msg+="\t{}\t{}\n".format(k, v)
+        return (msg)
+
+    #~~~~~~~PUBLIC METHODS~~~~~~~#
     def channels_activity (self, level="reads", figsize=[24,12], cmap="OrRd", alpha=1, robust=True, annot=True, fmt="d", cbar=False,
         **kwargs):
         """
