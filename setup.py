@@ -20,7 +20,7 @@ setup(
     
     version='1.0.dev1',
     
-    description='A sample Python project',
+    description='Python 3 package for Jupyter Notebook, computing metrics and generating simple QC plots from Oxford Nanopore technologies (ONT) Albacore basecaller',
     
     long_description=open('README.rst', 'r').read(),
     
@@ -40,7 +40,8 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5', ],
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',],
        
     install_requires=[
         'numpy>=1.13.0',
@@ -51,7 +52,6 @@ setup(
     
     packages=["pycoQC"],
     package_dir={'pycoQC': 'pycoQC'},
-    package_data={'pycoQC': ['data/sequencing_summary.txt']},
-    include_package_data=True,
+    package_data={'pycoQC': ['data/sequencing_summary.txt', "test_pycoQC.ipynb"]},
 
 )
