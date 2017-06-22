@@ -17,7 +17,7 @@ from setuptools import setup
 
 setup(
     name='pycoQC',
-    version='1.0.dev1',
+    version='1.0.dev2',
     description='Python 3 package for Jupyter Notebook, computing metrics and generating simple QC plots from Oxford Nanopore technologies (ONT) Albacore basecaller',
     long_description=open('README.rst', 'r').read(),
     url='https://github.com/a-slide/pycoQC',
