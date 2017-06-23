@@ -97,6 +97,68 @@ class pycoQC():
         return (msg)
 
     #~~~~~~~PUBLIC METHODS~~~~~~~#
+    
+    def overview (self):
+        """
+        Generate a quick overview of the data (tables + plots)
+        """
+        df = pd.DataFrame(columns=["Count"])
+        df.loc["Reads", "Count"] = len(self.df)
+        df.loc["Bases", "Count"] = self.df["sequence_length_template"].sum()
+        df.loc["Events", "Count"] = self.df["num_events_template"].sum()
+        df.loc["Active Channels", "Count"] = self.df["channel"].nunique()
+        df.loc["Run Duration (h)", "Count"] = ((self.df["start_time"]+self.df["duration"]).max() - self.df["start_time"].min())/3600
+        display(df)
+
+        df = self.df[['mean_qscore_template', 'sequence_length_template']].describe(percentiles=[0.1,0.25,0.5, 0.75, 0.90])
+        df.rename(columns={'mean_qscore_template': 'Quality score distribution', 'sequence_length_template': 'Read length distribution'},
+            inplace=True)
+        display(df)
+
+        fig, (ax1, ax2) = pl.subplots(1, 2, figsize=(12, 6))
+        g1 = sns.violinplot(data=self.df['mean_qscore_template'], color="orangered", alpha=0.5, bw=.2, linewidth=1,
+            inner="quartile", ax=ax1)
+        t = ax1.set_title("Quality score distribution")
+        g2 = sns.violinplot(data=self.df['sequence_length_template'], color="orangered", alpha=0.5, bw=.2, cut=1, linewidth=1,
+            inner="quartile", ax=ax2)
+        t= ax2.set_title("Read length distribution")
+        
+    def trim_read_len (self, min_len=None, max_len=None):
+        """
+        Remove reads longer or shorter than the indicated limits from all downstream analysis
+        * min_len
+            Minimal length of the reads to retain
+        * max_len
+            Maximal length of the reads to retain
+        """
+        if min_len:
+            self.df = self.df[(self.df['sequence_length_template'] >= min_len)]
+            print ("{} short reads were removed".format(self.total_reads-len(self.df)))
+            self.total_reads = len(self.df)
+            
+        if max_len:
+            self.df = self.df[(self.df['sequence_length_template'] <= max_len)]
+            print ("{} long reads were removed".format(self.total_reads-len(self.df)))
+            self.total_reads = len(self.df)
+    
+    def trim_read_qual (self, min_qual=None, max_qual=None):
+        """
+        Remove reads under or above indicated limits from all downstream analysis
+        * min_len
+            Minimal quality of the reads to retain
+        * max_len
+            Maximal quality of the reads to retain
+        """
+        if min_qual:
+            self.df = self.df[(self.df['mean_qscore_template'] >= min_qual)]
+            print ("{} low quality reads were removed".format(self.total_reads-len(self.df)))
+            self.total_reads = len(self.df)
+            
+        if max_qual:
+            self.df = self.df[(self.df['mean_qscore_template'] <= max_qual)]
+            print ("{} high quality reads were removed".format(self.total_reads-len(self.df)))
+            self.total_reads = len(self.df)
+    
     def channels_activity (self, level="reads", figsize=[24,12], cmap="OrRd", alpha=1, robust=True, annot=True, fmt="d", cbar=False,
         **kwargs):
         """
@@ -158,40 +220,118 @@ class pycoQC():
         
         return ax
     
-    def mean_qual_distribution (self, figsize=[30,7], color="orangered", alpha=0.5, normed=True, win_size=0.1, xmin=0, xmax=40, **kwargs):
+    def mean_qual_distribution (self, figsize=[30,7], hist=True, kde=True, kde_color="black", hist_color="orangered", kde_alpha=0.5,
+        hist_alpha=0.5, win_size=0.1, xmin=None, xmax=None, ymin=None, ymax=None, **kwargs):
         """
-        Plot the distribution of the mean read PHRED qualities
         * figsize
-            Size of ploting area [Default [30,7]
-        * color
-            Color of the plot. Valid matplotlib color code [Default "orangered"]
-        * alpha
-            Opacity of the area from 0 to 1 [Default 1]
-        * normed
-            Normalised results. Frenquency rather than counts [Default True]
+            Size of ploting area [Default [30,7]]
+        * hist
+            If True plot an histogram of distribution [Default True]
+        * kde
+            If True plot a univariate kernel density estimate [Default True]
+        * kde_color / hist_color
+            Color map or color codes to use for the 3 plots [Default "black" "orangered"]
+        * kde_alpha / hist_alpha
+            Opacity of the area from 0 to 1 for the 3 plots [Default 0.5 0.5]
         * win_size
-            Size of the bins in quality score ranging from 0 to 40 [Default 0.1]
-        * xmin, xmax
-            Lower and upper limits on x axis [Default 0, 40]
+            Size of the bins in quality score ranging from 0 to 40 for the histogram [Default 0.1]
+        * xmin, xmax, ymin, ymax
+            Lower and upper limits on x/y axis [Default None]
         => Return
             A matplotlib.axes object for further user customisation (http://matplotlib.org/api/axes_api.html)
         """
-        # Plot an histogram of the mean quality score
-        fig, ax = pl.subplots(figsize=figsize)
-        ax = self.df['mean_qscore_template'].plot.hist(bins=np.arange(0,40,win_size), ax=ax, normed=normed, color=color, alpha=alpha,
-            histtype='stepfilled')
+                
+        # Extract length limits
+        if not xmax or xmax<=0 or xmax>40:
+            xmax = max(self.df['mean_qscore_template'])
+        if not xmin or xmin<0 or xmin>=40:
+            xmin = 0
+        if xmax-xmin < win_size:
+            win_size = xmax-xmin
         
-        # Tweak the plot
+        # Plot
+        fig, ax = pl.subplots(figsize=figsize)
+        # Plot the kde graph
+        if kde:
+            sns.kdeplot(self.df["mean_qscore_template"], ax=ax, color=kde_color, alpha=kde_alpha, shade=not hist, gridsize=500,
+                legend=False)
+        # Plot a frequency histogram 
+        if hist:
+            ax = self.df['mean_qscore_template'].plot.hist(
+                bins=np.arange(xmin, xmax, win_size), ax=ax, normed=True, color=hist_color, alpha=hist_alpha, histtype='stepfilled')
+        
+        # Tweak the plot       
         t = ax.set_title ("Mean quality distribution per read")
         t = ax.set_xlabel("Mean PHRED quality Score")
-        if normed:
-            t = ax.set_ylabel("Frequency")
-        else:
-            t = ax.set_ylabel("Read count")
-        t = ax.set_xlim (xmin, xmax)
+        t = ax.set_ylabel("Read Frequency")
+        
+        if not ymin:
+            ymin = 0
+        if not ymax:
+            ymax = ax.get_ylim()[1]
+        
+        t = ax.set_xlim([xmin, xmax])
+        t = ax.set_ylim([ymin, ymax])
         
         return ax
-    
+        
+    def reads_len_distribution (self, figsize=[30,7], hist=True, kde=True, kde_color="black", hist_color="orangered", kde_alpha=0.5,
+        hist_alpha=0.5, win_size=250, xmin=None, xmax=None, ymin=None, ymax=None, **kwargs):
+            
+        """
+        Plot the distribution of read length in base pairs
+        * figsize
+            Size of ploting area [Default [30,7]]
+        * hist
+            If True plot an histogram of distribution [Default True]
+        * kde
+            If True plot a univariate kernel density estimate [Default True]
+        * kde_color / hist_color
+            Color map or color codes to use for the 3 plots [Default "black" "orangered"]
+        * kde_alpha / hist_alpha
+            Opacity of the area from 0 to 1 for the 3 plots [Default 0.5 0.5]
+        * win_size
+            Size of the bins in base pairs for the histogram [Default 250]
+        * xmin, xmax, ymin, ymax
+            Lower and upper limits on x/y axis [Default None]
+        => Return
+            A matplotlib.axes object for further user customisation (http://matplotlib.org/api/axes_api.html)
+        """
+        # Extract length limits
+        if not xmax:
+            xmax = max(self.df['sequence_length_template'])
+        if not xmin:
+            xmin = 0
+        if xmax-xmin < win_size:
+            win_size = xmax-xmin
+        
+        # Plot
+        fig, ax = pl.subplots(figsize=figsize)
+        # Plot the kde graph
+            
+        if kde:
+            sns.kdeplot(self.df["sequence_length_template"], ax=ax, color=kde_color, alpha=kde_alpha, shade=not hist, gridsize=500,
+                legend=False)
+        # Plot a frequency histogram 
+        if hist:
+            ax = self.df['sequence_length_template'].plot.hist(
+                bins=np.arange(xmin, xmax, win_size), ax=ax, normed=True, color=hist_color, alpha=hist_alpha, histtype='stepfilled')
+        
+        # Tweak the plot       
+        t = ax.set_title ("Distribution of reads length")
+        t = ax.set_xlabel("Length in bp")
+        t = ax.set_ylabel("Read Frequency")
+                
+        if not ymin:
+            ymin = 0
+        if not ymax:
+            ymax = ax.get_ylim()[1]
+            
+        t = ax.set_xlim([xmin, xmax])
+        t = ax.set_ylim([ymin, ymax])
+        
+        return ax
+
     def output_over_time (self, level="reads", figsize=[30,7], color="orangered", alpha=0.5, win_size=0.25, cumulative=False, **kwargs):
         """
         Plot the output over the time of the experiment at read, base or event level
@@ -210,6 +350,7 @@ class pycoQC():
         => Return
             A matplotlib.axes object for further user customisation (http://matplotlib.org/api/axes_api.html)
         """
+        
         df = self.df[["num_events", "sequence_length_template"]].copy()
         df["end_time"] = (self.df["start_time"]+self.df["duration"])/3600
 
@@ -249,6 +390,7 @@ class pycoQC():
         => Return
             A matplotlib.axes object for further user customisation (http://matplotlib.org/api/axes_api.html)
         """
+        
         # Slice the main dataframe
         df = self.df[["mean_qscore_template"]].copy()
         df["end_time"] = (self.df["start_time"]+self.df["duration"])/3600
@@ -274,69 +416,12 @@ class pycoQC():
         
         return ax
         
-    def reads_len_distribution (self, figsize=[30,7], hist=True, kde=True, kde_color="black", hist_color="orangered", kde_alpha=0.5,
-        hist_alpha=0.5, win_size=500, xmin=None, xmax=None, ymin=None, ymax=None, **kwargs):
-            
-        """
-        Plot the distribution of read length in base pairs
-        * figsize
-            Size of ploting area [Default [30,7]]
-        * color
-            Color of the plot. Valid matplotlib color code [Default "orangered"]
-        * alpha
-            Opacity of the area from 0 to 1 [Default 0.5]
-        * hist
-            If True plot an histogram of distribution [Default True]
-        * kde
-            If True plot a univariate kernel density estimate [Default True]
-        * kde_color / hist_color
-            Color map or color codes to use for the 3 plots [Default "black" "orangered"]
-        * kde_alpha / hist_alpha
-            Opacity of the area from 0 to 1 for the 3 plots [Default 0.5 0.5]
-        * win_size
-            Size of the bins in base pairs for the histogram [Default 500]
-        * xmin, xmax, ymin, ymax
-            Lower and upper limits on x/y axis [Default None]
-        => Return
-            A matplotlib.axes object for further user customisation (http://matplotlib.org/api/axes_api.html)
-        """
-        # Extract length limits
-        if not xmax:
-            xmax = max(self.df['sequence_length_template'])
-        if not xmin:
-            xmin = 0
-        
-        # Plot
-        fig, ax = pl.subplots(figsize=figsize)
-        # Plot the kde graph
-            
-        if kde:
-            sns.kdeplot(self.df["sequence_length_template"], ax=ax, color=kde_color, alpha=kde_alpha, shade=not hist, gridsize=500, legend=False)
-        # Plot a frequency histogram 
-        if hist:
-            ax = self.df['sequence_length_template'].plot.hist(
-                bins=np.arange(xmin, xmax, win_size), ax=ax, normed=True, color=hist_color, alpha=hist_alpha, histtype='stepfilled')
-        
-        # Tweak the plot       
-        t = ax.set_title ("Distribution of reads length")
-        t = ax.set_xlabel("Length in bp")
-        t = ax.set_ylabel("Read Frequency")
-                
-        if not ymin:
-            ymin = 0
-        if not ymax:
-            ymax = ax.get_ylim()[1]
-            
-        t = ax.set_xlim([xmin, xmax])
-        t = ax.set_ylim([ymin, ymax])
-        
-        return ax
-        
     def reads_len_quality (self, figsize=12, kde=True, scatter=True, margin_plot=True, kde_cmap="copper", scatter_color="orangered",
         margin_plot_color="orangered", kde_alpha=1, scatter_alpha=0.01, margin_plot_alpha=0.5, kde_levels=10, kde_shade=False, xmin=None,
         xmax=None, ymin=None, ymax=None, **kwargs):
         """
         Draw a bivariate plot of read length vs mean read quality with marginal univariate plots.
+        The bivariate kde can takes time to calculate depending on the number of datapoints 
         * figsize
             Size of square ploting area [Default 12]
         * kde
@@ -362,7 +447,10 @@ class pycoQC():
         # Plot the graph
         g = sns.JointGrid("sequence_length_template", "mean_qscore_template", data=self.df, space=0.1, size=figsize)
         if kde:
-            g = g.plot_joint(sns.kdeplot, cmap=kde_cmap, alpha=kde_alpha, shade=kde_shade, shade_lowest=False, n_levels=kde_levels)
+            if kde_shade:
+                g = g.plot_joint(sns.kdeplot, cmap=kde_cmap, alpha=kde_alpha, shade=True, shade_lowest=False, n_levels=kde_levels,)
+            else:
+                g = g.plot_joint(sns.kdeplot, cmap=kde_cmap, alpha=kde_alpha, shade=False, shade_lowest=False, n_levels=kde_levels, linewidths=1)
         if scatter:
             g = g.plot_joint(pl.scatter, color=scatter_color, alpha=scatter_alpha)
         if margin_plot:
