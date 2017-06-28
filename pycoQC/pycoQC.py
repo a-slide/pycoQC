@@ -17,7 +17,10 @@ from sys import exit as sysexit
 from collections import OrderedDict
 
 # Local reports
-from pycoQC_fun import jprint as print
+try:
+    from pycoQC.pycoQC_fun import jprint as print
+except ImportError:
+    from pycoQC_fun import jprint as print
 
 # Third party imports
 try:
