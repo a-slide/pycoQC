@@ -16,6 +16,9 @@
 from sys import exit as sysexit
 from collections import OrderedDict
 
+# Local reports
+from pycoQC_fun import jprint as print
+
 # Third party imports
 try:
     import numpy as np
@@ -57,15 +60,15 @@ class pycoQC():
             assert colname in self.df.columns, "Column {} not found in the provided sequence_summary file".format(colname)
         
         # Find or verify runid
+        self.runid_counts = self.df['run_id'].value_counts(sort=True).to_frame(name="Counts")
         if verbose:
-            print ("Runid found in the datasets")
-            runid_counts = self.df['run_id'].value_counts(sort=True).to_frame(name="Counts")
-            display(runid_counts)
+            print ("Runid found in the datasets", bold=True)
+            display(self.runid_counts)
         
         # Select Runid if required
         if runid:
             if verbose:
-                print ("Selecting reads with Run_ID {}".format(runid))
+                print ("Selecting reads with Run_ID {}".format(runid), bold=True)
             self.df = self.df[(self.df["run_id"] == runid)]
         
         # Extract the runid data from the overall dataframe
@@ -92,7 +95,8 @@ class pycoQC():
     def overview (self):
         """
         Generate a quick overview of the data (tables + plots)
-        """
+        """        
+        print ("General counts", bold=True)
         df = pd.DataFrame(columns=["Count"])
         df.loc["Reads", "Count"] = len(self.df)
         df.loc["Bases", "Count"] = self.df["sequence_length_template"].sum()
@@ -100,12 +104,16 @@ class pycoQC():
         df.loc["Active Channels", "Count"] = self.df["channel"].nunique()
         df.loc["Run Duration (h)", "Count"] = ((self.df["start_time"]+self.df["duration"]).max() - self.df["start_time"].min())/3600
         display(df)
-
+        
+        print ("Read count per Run ID", bold=True)
+        display(self.runid_counts)
+        
+        print ("Distribution of quality scores and read lengths", bold=True)
         df = self.df[['mean_qscore_template', 'sequence_length_template']].describe(percentiles=[0.1,0.25,0.5, 0.75, 0.90])
         df.rename(columns={'mean_qscore_template': 'Quality score distribution', 'sequence_length_template': 'Read length distribution'},
             inplace=True)
         display(df)
-
+        
         fig, (ax1, ax2) = pl.subplots(1, 2, figsize=(12, 6))
         g1 = sns.violinplot(data=self.df['mean_qscore_template'], color="orangered", alpha=0.5, bw=.2, linewidth=1,
             inner="quartile", ax=ax1)
@@ -124,12 +132,12 @@ class pycoQC():
         """
         if min_len:
             self.df = self.df[(self.df['sequence_length_template'] >= min_len)]
-            print ("{} short reads were removed".format(self.total_reads-len(self.df)))
+            print ("{} short reads were removed".format(self.total_reads-len(self.df)), bold=True)
             self.total_reads = len(self.df)
             
         if max_len:
             self.df = self.df[(self.df['sequence_length_template'] <= max_len)]
-            print ("{} long reads were removed".format(self.total_reads-len(self.df)))
+            print ("{} long reads were removed".format(self.total_reads-len(self.df)), bold=True)
             self.total_reads = len(self.df)
     
     def trim_read_qual (self, min_qual=None, max_qual=None):
@@ -142,12 +150,12 @@ class pycoQC():
         """
         if min_qual:
             self.df = self.df[(self.df['mean_qscore_template'] >= min_qual)]
-            print ("{} low quality reads were removed".format(self.total_reads-len(self.df)))
+            print ("{} low quality reads were removed".format(self.total_reads-len(self.df)), bold=True)
             self.total_reads = len(self.df)
             
         if max_qual:
             self.df = self.df[(self.df['mean_qscore_template'] <= max_qual)]
-            print ("{} high quality reads were removed".format(self.total_reads-len(self.df)))
+            print ("{} high quality reads were removed".format(self.total_reads-len(self.df)), bold=True)
             self.total_reads = len(self.df)
     
     def channels_activity (self, level="reads", figsize=[24,12], cmap="OrRd", alpha=1, robust=True, annot=True, fmt="d", cbar=False,
@@ -408,7 +416,7 @@ class pycoQC():
         return ax
         
     def reads_len_quality (self, figsize=12, kde=True, scatter=True, margin_plot=True, kde_cmap="copper", scatter_color="orangered",
-        margin_plot_color="orangered", kde_alpha=1, scatter_alpha=0.01, margin_plot_alpha=0.5, kde_levels=10, kde_shade=False, xmin=None,
+        margin_plot_color="orangered", kde_alpha=1, scatter_alpha=0.01, margin_plot_alpha=0.5, sample=None, kde_levels=10, kde_shade=False, xmin=None,
         xmax=None, ymin=None, ymax=None, **kwargs):
         """
         Draw a bivariate plot of read length vs mean read quality with marginal univariate plots.
@@ -425,6 +433,8 @@ class pycoQC():
             Color map or color codes to use for the 3 plots [Default "copper", "orangered", "orangered"]
         * kde_alpha / scatter_alpha / margin_plot_alpha
             Opacity of the area from 0 to 1 for the 3 plots [Default 1, 0.01, 0.5]
+        * sample
+            If given, a n number of reads will be randomly selected instead of the entire dataframe
         * kde_levels
             Number of levels for the central density plot [Default 10]
         * kde_shade
@@ -436,7 +446,11 @@ class pycoQC():
         """
         
         # Plot the graph
-        g = sns.JointGrid("sequence_length_template", "mean_qscore_template", data=self.df, space=0.1, size=figsize)
+        if sample:
+            g = sns.JointGrid("sequence_length_template", "mean_qscore_template", data=self.df.sample(sample), space=0.1, size=figsize)
+        else:
+            g = sns.JointGrid("sequence_length_template", "mean_qscore_template", data=self.df, space=0.1, size=figsize)
+            
         if kde:
             if kde_shade:
                 g = g.plot_joint(sns.kdeplot, cmap=kde_cmap, alpha=kde_alpha, shade=True, shade_lowest=False, n_levels=kde_levels,)

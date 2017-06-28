@@ -1,4 +1,4 @@
 # -*- coding: utf-8 -*-
 
-__all__ = ["pycoQC"]
-__version__ = '1.0.dev1'
+__all__ = ["pycoQC", "pycoQC_fun"]
+__version__ = '1.0.dev3'
