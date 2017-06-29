@@ -60,6 +60,7 @@ class pycoQC():
         self.seq_summary_file = seq_summary_file
         self.df = pd.read_csv(seq_summary_file, sep ="\t")
         self.df.dropna(inplace=True)
+        if verbose: print("{} reads found in initial file".format(len(self.df)), bold=True)
         
         # Verify the presence of the columns required for pycoQC
         if verbose: print("Checking fields in dataframe", bold=True)
@@ -72,21 +73,25 @@ class pycoQC():
             l = len(self.df)
             self.df = self.df[(self.df['sequence_length_template'] > 0)]
             self.zero_len_reads = l-len(self.df)
-            if verbose: print ("\t{} zero length reads removed".format(self.zero_len_reads), bold=True)
+            if verbose: print ("\t{} reads discarded".format(self.zero_len_reads), bold=True)
 
         # Select Runid if required
         if runid:
             if verbose: print ("Selecting reads with Run_ID {}".format(runid), bold=True)
+            l = len(self.df)
             self.df = self.df[(self.df["run_id"] == runid)]
+            if verbose: print ("\t{} reads discarded".format(l-len(self.df)), bold=True)
         
         # Reads per runid
         if verbose: print("Counting reads per runid", bold=True)
         self.runid_counts = self.df['run_id'].value_counts(sort=True).to_frame(name="Counts")
             
         # Extract the runid data from the overall dataframe
+        if verbose: print("Final data cleanup", bold=True)
         self.df = self.df.reset_index(drop=True)
         self.df.set_index("read_id", inplace=True)
         self.total_reads = len(self.df)
+        if verbose: print("\t{} Total valid reads found".format(self.total_reads), bold=True)
         
     
     def __str__(self):
