@@ -56,40 +56,38 @@ class pycoQC():
         self.verbose=verbose
         
         # Import the summary file in a dataframe
+        if verbose: print("Importing data", bold=True)
         self.seq_summary_file = seq_summary_file
         self.df = pd.read_csv(seq_summary_file, sep ="\t")
         self.df.dropna(inplace=True)
         
         # Verify the presence of the columns required for pycoQC
+        if verbose: print("Checking fields in dataframe", bold=True)
         for colname in ['run_id', 'channel', 'start_time', 'duration', 'num_events','sequence_length_template', 'mean_qscore_template']:
             assert colname in self.df.columns, "Column {} not found in the provided sequence_summary file".format(colname)
         
-        # Find or verify runid
-        self.runid_counts = self.df['run_id'].value_counts(sort=True).to_frame(name="Counts")
-        if verbose:
-            print ("Runid found in the datasets", bold=True)
-            display(self.runid_counts)
-        
-        # Select Runid if required
-        if runid:
-            if verbose:
-                print ("Selecting reads with Run_ID {}".format(runid), bold=True)
-            self.df = self.df[(self.df["run_id"] == runid)]
-        
-        # Filter out zero length if required    
+        # Filter out zero length if required
         if filter_zero_len:
+            if verbose: print ("Filter out zero length reads", bold = True)
             l = len(self.df)
             self.df = self.df[(self.df['sequence_length_template'] > 0)]
-            if verbose:
-                print ("Filtered out {} zero length reads".format(l-len(self.df)), bold=True)
+            self.zero_len_reads = l-len(self.df)
+            if verbose: print ("\t{} zero length reads removed".format(self.zero_len_reads), bold=True)
+
+        # Select Runid if required
+        if runid:
+            if verbose: print ("Selecting reads with Run_ID {}".format(runid), bold=True)
+            self.df = self.df[(self.df["run_id"] == runid)]
+        
+        # Reads per runid
+        if verbose: print("Counting reads per runid", bold=True)
+        self.runid_counts = self.df['run_id'].value_counts(sort=True).to_frame(name="Counts")
             
         # Extract the runid data from the overall dataframe
         self.df = self.df.reset_index(drop=True)
         self.df.set_index("read_id", inplace=True)
         self.total_reads = len(self.df)
         
-        if self.verbose:
-            display (self.df.head())
     
     def __str__(self):
         """readable description of the object"""
