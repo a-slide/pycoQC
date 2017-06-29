@@ -130,10 +130,10 @@ class pycoQC():
         display(df)
         
         fig, (ax1, ax2) = pl.subplots(1, 2, figsize=(12, 6))
-        g1 = sns.violinplot(data=self.df['mean_qscore_template'], color="orangered", alpha=0.5, bw=.2, linewidth=1,
+        g1 = sns.violinplot(data=self.df['mean_qscore_template'].sample(50000), color="orangered", alpha=0.5, bw=.2, linewidth=1,
             inner="quartile", ax=ax1)
         t = ax1.set_title("Quality score distribution")
-        g2 = sns.violinplot(data=self.df['sequence_length_template'], color="orangered", alpha=0.5, bw=.2, cut=1, linewidth=1,
+        g2 = sns.violinplot(data=self.df['sequence_length_template'].sample(50000), color="orangered", alpha=0.5, bw=.2, cut=1, linewidth=1,
             inner="quartile", ax=ax2)
         t= ax2.set_title("Read length distribution")
     
