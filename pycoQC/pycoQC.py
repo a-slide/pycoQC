@@ -40,7 +40,7 @@ except (NameError, ImportError) as E:
 class pycoQC():
 
     #~~~~~~~FUNDAMENTAL METHODS~~~~~~~#    
-    def __init__ (self, seq_summary_file, runid=None, verbose=False):
+    def __init__ (self, seq_summary_file, runid=None, filter_zero_len=False, verbose=False):
         """
         Parse Albacore sequencing_summary.txt file and clean-up the data
         * seq_summary_file
@@ -48,6 +48,8 @@ class pycoQC():
         * runid
             If you want a specific runid to be analysed. By default it will analyse all the read in the file irrespective of their runid 
             [Default None]
+        * filter_zero_len
+            If True, zero length reads will be filtered out. [Default False]
         * verbose
             print additional informations. [Default False]
         """
@@ -74,6 +76,13 @@ class pycoQC():
                 print ("Selecting reads with Run_ID {}".format(runid), bold=True)
             self.df = self.df[(self.df["run_id"] == runid)]
         
+        # Filter out zero length if required    
+        if filter_zero_len:
+            l = len(self.df)
+            self.df = self.df[(self.df['sequence_length_template'] > 0)]
+            if verbose:
+                print ("Filtered out {} zero length reads".format(l-len(self.df)), bold=True)
+            
         # Extract the runid data from the overall dataframe
         self.df = self.df.reset_index(drop=True)
         self.df.set_index("read_id", inplace=True)
