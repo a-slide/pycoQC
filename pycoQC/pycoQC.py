@@ -137,6 +137,30 @@ class pycoQC():
             inner="quartile", ax=ax2)
         t= ax2.set_title("Read length distribution")
     
+    def reads_len_bins (self, bins=[-1,0,10,25,50,100,250,500,1000,2500,5000,10000,100000,1000000,10000000]):
+        """
+        Count the number of reads per interval of sequence length and return a dataframe
+        * bins
+            Limits of the intervals as a list 
+            [Default [-1,0,10,25,50,100,250,500,1000,2500,5000,10000,100000,1000000,10000000]]
+        """
+        df = self.df['sequence_length_template'].groupby(pd.cut(self.df['sequence_length_template'], bins))
+        df = df.count().to_frame(name="Count")
+        df.index.name="Sequence lenght ranges"
+        return df
+    
+    def reads_qual_bins (self, bins=[-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,40]):
+        """
+        Count the number of reads per interval of sequence quality and return a dataframe
+        * bins
+            Limits of the intervals as a list 
+            [Default [-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,40]]
+        """
+        df = self.df['mean_qscore_template'].groupby(pd.cut(self.df['mean_qscore_template'], bins))
+        df = df.count().to_frame(name="Count")
+        df.index.name="Sequence quality ranges"
+        return df    
+    
     def channels_activity (self, level="reads", figsize=[24,12], cmap="OrRd", alpha=1, robust=True, annot=True, fmt="d", cbar=False,
         **kwargs):
         """
