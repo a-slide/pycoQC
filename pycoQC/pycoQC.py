@@ -14,13 +14,15 @@
 
 # Standard library imports
 from sys import exit as sysexit
+from os import access, R_OK
 from collections import OrderedDict
+from pkg_resources import Requirement, resource_filename
 
 # Local reports
 try:
-    from pycoQC.pycoQC_fun import jprint as print
+    from pycoQC.pycoQC_fun import print, help, get_sample_file
 except ImportError:
-    from pycoQC_fun import jprint as print
+    from pycoQC_fun import print, help, get_sample_file
 
 # Third party imports
 try:
@@ -35,6 +37,10 @@ except (NameError, ImportError) as E:
     print (E)
     print ("A third party package is missing. Please verify your dependencies")
     sysexit()
+
+##~~~~~~~ SAMPLE FILE ~~~~~~~#
+
+sequencing_summary_file = get_sample_file("pycoQC",'pycoQC/data/sequencing_summary.txt')
 
 ##~~~~~~~ MAIN CLASS ~~~~~~~#
 class pycoQC():
@@ -60,12 +66,13 @@ class pycoQC():
         self.seq_summary_file = seq_summary_file
         self.df = pd.read_csv(seq_summary_file, sep ="\t")
         self.df.dropna(inplace=True)
-        if verbose: print("{} reads found in initial file".format(len(self.df)), bold=True)
+        if verbose: print("\t{} reads found in initial file".format(len(self.df)))
         
         # Verify the presence of the columns required for pycoQC
         if verbose: print("Checking fields in dataframe", bold=True)
         for colname in ['run_id', 'channel', 'start_time', 'duration', 'num_events','sequence_length_template', 'mean_qscore_template']:
             assert colname in self.df.columns, "Column {} not found in the provided sequence_summary file".format(colname)
+        if verbose: print("\tAll valid")
         
         # Filter out zero length if required
         if filter_zero_len:
@@ -73,25 +80,26 @@ class pycoQC():
             l = len(self.df)
             self.df = self.df[(self.df['sequence_length_template'] > 0)]
             self.zero_len_reads = l-len(self.df)
-            if verbose: print ("\t{} reads discarded".format(self.zero_len_reads), bold=True)
+            if verbose: print ("\t{} reads discarded".format(self.zero_len_reads))
 
         # Select Runid if required
         if runid:
             if verbose: print ("Selecting reads with Run_ID {}".format(runid), bold=True)
             l = len(self.df)
             self.df = self.df[(self.df["run_id"] == runid)]
-            if verbose: print ("\t{} reads discarded".format(l-len(self.df)), bold=True)
+            if verbose: print ("\t{} reads discarded".format(l-len(self.df)))
         
         # Reads per runid
         if verbose: print("Counting reads per runid", bold=True)
         self.runid_counts = self.df['run_id'].value_counts(sort=True).to_frame(name="Counts")
+        if verbose: print("\tFound {} runid".format(len(self.runid_counts)))
             
         # Extract the runid data from the overall dataframe
         if verbose: print("Final data cleanup", bold=True)
         self.df = self.df.reset_index(drop=True)
         self.df.set_index("read_id", inplace=True)
         self.total_reads = len(self.df)
-        if verbose: print("\t{} Total valid reads found".format(self.total_reads), bold=True)
+        if verbose: print("\t{} Total valid reads found".format(self.total_reads))
         
     
     def __str__(self):
@@ -137,24 +145,24 @@ class pycoQC():
             inner="quartile", ax=ax2)
         t= ax2.set_title("Read length distribution")
     
-    def reads_len_bins (self, bins=[-1,0,10,25,50,100,250,500,1000,2500,5000,10000,100000,1000000,10000000]):
+    def reads_len_bins (self, bins=[-1,0,25,50,100,500,1000,5000,10000,100000,10000000]):
         """
         Count the number of reads per interval of sequence length and return a dataframe
         * bins
             Limits of the intervals as a list 
-            [Default [-1,0,10,25,50,100,250,500,1000,2500,5000,10000,100000,1000000,10000000]]
+            [Default [-1,0,25,50,100,500,1000,5000,10000,100000,10000000]]
         """
         df = self.df['sequence_length_template'].groupby(pd.cut(self.df['sequence_length_template'], bins))
         df = df.count().to_frame(name="Count")
         df.index.name="Sequence lenght ranges"
         return df
     
-    def reads_qual_bins (self, bins=[-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,40]):
+    def reads_qual_bins (self, bins=[-1,0,2,4,6,8,10,12,14,16,18,20,40]):
         """
         Count the number of reads per interval of sequence quality and return a dataframe
         * bins
             Limits of the intervals as a list 
-            [Default [-1,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,40]]
+            [Default [-1,0,2,4,6,8,10,12,14,16,18,20,40]]
         """
         df = self.df['mean_qscore_template'].groupby(pd.cut(self.df['mean_qscore_template'], bins))
         df = df.count().to_frame(name="Count")
@@ -164,8 +172,7 @@ class pycoQC():
     def channels_activity (self, level="reads", figsize=[24,12], cmap="OrRd", alpha=1, robust=True, annot=True, fmt="d", cbar=False,
         **kwargs):
         """
-        Plot the activity of channels at read, base or event level. Based on Seaborn heatmap function. The layout does not represent the
-        physical layout of the flowcell, and   
+        Plot the activity of channels at read, base or event level. The layout does not represent the physical layout of the flowcell
         * level
             Aggregate channel output results by "reads", "bases" or "events". [Default "reads"]
         * figsize 
@@ -222,9 +229,10 @@ class pycoQC():
         
         return ax
     
-    def mean_qual_distribution (self, figsize=[30,7], hist=True, kde=True, kde_color="black", hist_color="orangered", kde_alpha=0.5,
+    def reads_qual_distribution (self, figsize=[30,7], hist=True, kde=True, kde_color="black", hist_color="orangered", kde_alpha=0.5,
         hist_alpha=0.5, win_size=0.1, sample=100000, min_qual=None, max_qual=None, min_freq=None, max_freq=None, **kwargs):
         """
+        Plot the distribution of mean read quality
         * figsize
             Size of ploting area [Default [30,7]]
         * hist
@@ -451,7 +459,6 @@ class pycoQC():
         min_len=None, max_len=None, min_qual=None, max_qual=None, **kwargs):
         """
         Draw a bivariate plot of read length vs mean read quality with marginal univariate plots.
-        The bivariate kde can takes time to calculate depending on the number of data points 
         * figsize
             Size of square ploting area [Default 12]
         * kde

@@ -12,12 +12,17 @@
                       _/                        
 """
 
-from IPython.core.display import display, HTML   
+# Standard library imports
+from IPython.core.display import display, HTML, Markdown
+from inspect import signature, isfunction
+from pkg_resources import Requirement, resource_filename
+from os import access, R_OK
 
-def jprint(*args, **kwargs):
+##~~~~~~~ FUNCTIONS ~~~~~~~#
+
+def print(*args, **kwargs):
     """
-    Format a string in HTML and print the output. Equivalent of print, but highly customizable
-    Many options can be passed to the function.
+    Format a string in HTML and print the output. Equivalent of print, but highly customizable. Many options can be passed to the function.
     * args
         One or several objects that can be cast in str
     ** kwargs
@@ -54,3 +59,37 @@ def jprint(*args, **kwargs):
     else: s = "<p>{}</p>".format(s)
 
     display(HTML(s))
+
+def help(function, full=False):
+    """
+    Print a nice looking help string based on the name of a declared function. By default print the function definition and description 
+    * full
+        If True, the help string will included a description of all arguments
+    """
+    if isfunction(function):
+        name = function.__name__.strip()
+        sig = str(signature(function)).strip()
+        display(HTML ("<b>{}</b> {}".format(name, sig)))
+        
+        for line in function.__doc__.split("\n"):
+            line = line.strip()
+            if not full and line.startswith("*"):
+                break
+            display(Markdown(line.strip()))
+    else:
+        jprint("{} is not a function".format(function))
+
+def get_sample_file (package, path):
+    """
+    Verify the existence and return a file from the package data
+    * package
+        Name of the package
+    * path
+        Relative path to the file in the package. Usually package_name/data/file_name 
+    """
+    sample_file = resource_filename(Requirement.parse(package), path)
+    if not access(sample_file, R_OK):
+        print ("Sample file {} from package {} cannot be read".format(path, package))
+        return
+    else:
+        return sample_file
