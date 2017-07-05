@@ -70,9 +70,33 @@ class pycoQC():
         
         # Verify the presence of the columns required for pycoQC
         if verbose: print("Checking fields in dataframe", bold=True)
-        for colname in ['run_id', 'channel', 'start_time', 'duration', 'num_events','sequence_length_template', 'mean_qscore_template']:
-            assert colname in self.df.columns, "Column {} not found in the provided sequence_summary file".format(colname)
-        if verbose: print("\tAll valid")
+        try:
+            for colname in ['run_id', 'channel', 'start_time', 'duration', 'num_events','sequence_length_template', 'mean_qscore_template']:
+                assert colname in self.df.columns
+            self.run_type = '1D'
+
+        except AssertionError:
+            print("Column {} not found in the provided sequence_summary file, "
+                  "trying 2D or 1D^2 column formats...".format(colname))
+
+            for colname in ['run_id', 'channel', 'start_time', 'sequence_length_2d', 'mean_qscore_2d']:
+                assert colname in self.df.columns, "Column {} not found in the provided sequence_summary file".format(colname)
+            
+            # interpolate and rename columns to make compatible with other code
+
+            # provide an estimate of duration, assuming 450 bases / second
+            self.df['duration'] = self.df['sequence_length_2d'] / 450
+
+            # provide an estimate of num events, assuming 1.8 events / base
+            self.df['num_events'] = self.df['sequence_length_2d'] * 1.8
+
+            # add renamed columns to match 1D expectations
+            self.df['sequence_length_template'] = self.df['sequence_length_2d']
+            self.df['mean_qscore_template'] = self.df['mean_qscore_2d']
+
+            self.run_type = '2D'
+
+        if verbose: print("\tAll valid for run type {}".format(self.run_type))
         
         # Filter out zero length if required
         if filter_zero_len:
