@@ -41,6 +41,8 @@ except (NameError, ImportError) as E:
 ##~~~~~~~ SAMPLE FILE ~~~~~~~#
 
 sequencing_summary_file = get_sample_file("pycoQC",'pycoQC/data/sequencing_summary.txt')
+sequencing_summary_file_1dsq = get_sample_file("pycoQC",'pycoQC/data/sequencing_1dsq_summary.txt')
+
 
 ##~~~~~~~ MAIN CLASS ~~~~~~~#
 class pycoQC():
@@ -147,7 +149,7 @@ class pycoQC():
         df = pd.DataFrame(columns=["Count"])
         df.loc["Reads", "Count"] = len(self.df)
         df.loc["Bases", "Count"] = self.df["sequence_length_template"].sum()
-        df.loc["Events", "Count"] = self.df["num_events_template"].sum()
+        df.loc["Events", "Count"] = self.df["num_events"].sum()
         df.loc["Active Channels", "Count"] = self.df["channel"].nunique()
         df.loc["Run Duration (h)", "Count"] = ((self.df["start_time"]+self.df["duration"]).max() - self.df["start_time"].min())/3600
         display(df)
