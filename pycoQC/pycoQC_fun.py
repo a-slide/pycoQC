@@ -14,13 +14,13 @@
 
 # Standard library imports
 from IPython.core.display import display, HTML, Markdown
-from inspect import signature, isfunction
 from pkg_resources import Requirement, resource_filename
-from os import access, R_OK
+from inspect import signature, isfunction
+import os
 
 ##~~~~~~~ FUNCTIONS ~~~~~~~#
 
-def print(*args, **kwargs):
+def jprint(*args, **kwargs):
     """
     Format a string in HTML and print the output. Equivalent of print, but highly customizable. Many options can be passed to the function.
     * args
@@ -60,7 +60,7 @@ def print(*args, **kwargs):
 
     display(HTML(s))
 
-def help(function, full=False):
+def jhelp(function, full=False):
     """
     Print a nice looking help string based on the name of a declared function. By default print the function definition and description 
     * full
@@ -87,9 +87,22 @@ def get_sample_file (package, path):
     * path
         Relative path to the file in the package. Usually package_name/data/file_name 
     """
-    sample_file = resource_filename(Requirement.parse(package), path)
-    if not access(sample_file, R_OK):
-        print ("Sample file {} from package {} cannot be read".format(path, package))
+    try:
+        # Try to exctract package with pkg_resources lib
+        fp = resource_filename(Requirement.parse("pycoQC"), path)
+        if not os.access(fp, os.R_OK):
+            raise IOError("Can not read {}".format(fp))
+        else:
+            return fp
+        
+        # Try local package instead
+        fp = path
+        if not os.access(fp, os.R_OK):
+            raise IOError("Can not read {}".format(fp))
+        else:
+            return fp
+                
+    except Exception as E:
+        jprint ("Can not find the package. Please retrieve it fron the github repository")
+        print(E)
         return
-    else:
-        return sample_file

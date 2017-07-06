@@ -42,6 +42,6 @@ setup(
         'notebook>=4.0.0',],
     packages=["pycoQC"],
     package_dir={'pycoQC': 'pycoQC'},
-    package_data={'pycoQC': ['data/sequencing_summary.txt', "test_pycoQC.ipynb"]},
+    package_data={'pycoQC': ['data/sequencing_summary.txt', 'data/sequencing_1dsq_summary.txt', "test_pycoQC.ipynb"]},
 
 )
