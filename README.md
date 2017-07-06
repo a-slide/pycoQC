@@ -572,6 +572,14 @@ g = p.channels_activity()
 
 ![png](extra/output_74_0.png)
 
+# Note to developers
+
+You are welcome to contribute by requesting additional functionalities, reporting bugs or by forking, and submitting a pull request.
+
+If you want to go all the way to the pull request, I would appreciate if you could do it to my development fork (https://github.com/a-slide/pycoQC), rather than directly on the master team repository (https://github.com/EnrightLab/pycoQC).
+
+Thank you
+
 # Authors and Contact
 
 Adrien Leger - 2017
@@ -580,3 +588,10 @@ Enright's group, EMBL EBI
 
 * <aleg@ebi.ac.uk>
 * [Github](https://github.com/a-slide)
+
+
+### Contributors
+
+Jon Sanders -2017
+
+* [Github](https://github.com/tanaes)
