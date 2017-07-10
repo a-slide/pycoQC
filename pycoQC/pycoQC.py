@@ -1,21 +1,8 @@
 # -*- coding: utf-8 -*-
 
-"""       
-  ___              ___   ___ 
- | _ \_  _ __ ___ / _ \ / __|
- |  _/ || / _/ _ \ (_) | (__ 
- |_|  \_, \__\___/\__\_\\___|
-      |__/      
-                                __   __     ___ 
- /\  _| _. _ _   |   _ _  _ _    _) /  \ /|   / 
-/--\(_|| |(-| )  |__(-(_)(-|    /__ \__/  |  /  
-                      _/                        
-"""
-
 # Standard library imports
 from sys import exit as sysexit
 from collections import OrderedDict, namedtuple
-from pkg_resources import Requirement, resource_filename
 
 # Local reports
 try:
