@@ -1,22 +1,10 @@
 # -*- coding: utf-8 -*-
 
-"""       
-  ___              ___   ___ 
- | _ \_  _ __ ___ / _ \ / __|
- |  _/ || / _/ _ \ (_) | (__ 
- |_|  \_, \__\___/\__\_\\___|
-      |__/      
-                                __   __     ___ 
- /\  _| _. _ _   |   _ _  _ _    _) /  \ /|   / 
-/--\(_|| |(-| )  |__(-(_)(-|    /__ \__/  |  /  
-                      _/                        
-"""
-
 # Standard library imports
-from IPython.core.display import display, HTML, Markdown
-from pkg_resources import Requirement, resource_filename
-from inspect import signature, isfunction
 import os
+
+# Third party imports
+from IPython.core.display import display, HTML, Markdown
 
 ##~~~~~~~ FUNCTIONS ~~~~~~~#
 
@@ -66,18 +54,25 @@ def jhelp(function, full=False):
     * full
         If True, the help string will included a description of all arguments
     """
-    if isfunction(function):
-        name = function.__name__.strip()
-        sig = str(signature(function)).strip()
-        display(HTML ("<b>{}</b> {}".format(name, sig)))
-        
-        for line in function.__doc__.split("\n"):
-            line = line.strip()
-            if not full and line.startswith("*"):
-                break
-            display(Markdown(line.strip()))
-    else:
-        jprint("{} is not a function".format(function))
+    try:
+        # For some reason signature is not aways importable. In these cases the build-in help in invoqued
+        from inspect import signature, isfunction, ismethod
+        if isfunction(function) or ismethod(function):
+            name = function.__name__.strip()
+            sig = str(signature(function)).strip()
+            display(HTML ("<b>{}</b> {}".format(name, sig)))
+            
+            if function.__doc__:
+                for line in function.__doc__.split("\n"):
+                    line = line.strip()
+                    if not full and line.startswith("*"):
+                        break
+                    display(Markdown(line.strip()))
+        else:
+            jprint("{} is not a function".format(function))
+
+    except Exception:
+        help(function)
 
 def get_sample_file (package, path):
     """
@@ -88,8 +83,9 @@ def get_sample_file (package, path):
         Relative path to the file in the package. Usually package_name/data/file_name 
     """
     try:
-        # Try to exctract package with pkg_resources lib
-        fp = resource_filename(Requirement.parse("pycoQC"), path)
+        # Try to extract package with pkg_resources lib
+        from pkg_resources import Requirement, resource_filename
+        fp = resource_filename(Requirement.parse(package), path)
         if not os.access(fp, os.R_OK):
             raise IOError("Can not read {}".format(fp))
         else:
@@ -103,6 +99,6 @@ def get_sample_file (package, path):
             return fp
                 
     except Exception as E:
-        jprint ("Can not find the package. Please retrieve it fron the github repository")
-        print(E)
+        jprint(E)
+        jprint ("Please retrieve it from the github repository")
         return

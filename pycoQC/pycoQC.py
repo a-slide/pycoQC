@@ -4,11 +4,15 @@
 from sys import exit as sysexit
 from collections import OrderedDict, namedtuple
 
-# Local reports
+# Local lib import
 try:
     from pycoQC.pycoQC_fun import jprint, jhelp, get_sample_file
-except ImportError:
-    from pycoQC_fun import jprint, jhelp, get_sample_file
+except (NameError, ImportError) as E:
+    try:
+        from pycoQC_fun import jprint, jhelp, get_sample_file
+    except (NameError, ImportError) as E:
+        print ("Can not import a local packages. Please verify source code directory")
+        sysexit()
 
 # Third party imports
 try:
@@ -16,14 +20,11 @@ try:
     import pylab as pl
     import pandas as pd
     import seaborn as sns
-    get_ipython()
     from IPython.core.display import display
-    
 except (NameError, ImportError) as E:
-    jprint (E)
-    jprint ("A third party package is missing. Please verify your dependencies")
+    print (E)
+    print ("A third party package is missing. Please verify your dependencies")
     sysexit()
-
 
 ##~~~~~~~ MAIN CLASS ~~~~~~~#
 class pycoQC():
@@ -32,7 +33,6 @@ class pycoQC():
     @ classmethod
     def example_file_1D (self):
         return get_sample_file("pycoQC","pycoQC/data/sequencing_summary.txt")
-    
     @ classmethod
     def example_file_1D2 (self):
         return get_sample_file("pycoQC","pycoQC/data/sequencing_1dsq_summary.txt")
