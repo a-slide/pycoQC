@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 # Standard library imports
-import os
+from os import access, R_OK
 
 # Third party imports
 from IPython.core.display import display, HTML, Markdown
+import pandas as pd
 
 ##~~~~~~~ FUNCTIONS ~~~~~~~#
 
@@ -50,7 +51,7 @@ def jprint(*args, **kwargs):
 
 def jhelp(function, full=False):
     """
-    Print a nice looking help string based on the name of a declared function. By default print the function definition and description 
+    Print a nice looking help string based on the name of a declared function. By default print the function definition and description
     * full
         If True, the help string will included a description of all arguments
     """
@@ -61,7 +62,7 @@ def jhelp(function, full=False):
             name = function.__name__.strip()
             sig = str(signature(function)).strip()
             display(HTML ("<b>{}</b> {}".format(name, sig)))
-            
+
             if function.__doc__:
                 for line in function.__doc__.split("\n"):
                     line = line.strip()
@@ -74,31 +75,47 @@ def jhelp(function, full=False):
     except Exception:
         help(function)
 
-def get_sample_file (package, path):
+def is_readable_file (fp, raise_exception=True, **kwargs):
     """
-    Verify the existence and return a file from the package data
-    * package
-        Name of the package
-    * path
-        Relative path to the file in the package. Usually package_name/data/file_name 
+    Verify the readability of a file or list of file
     """
-    try:
-        # Try to extract package with pkg_resources lib
-        from pkg_resources import Requirement, resource_filename
-        fp = resource_filename(Requirement.parse(package), path)
-        if not os.access(fp, os.R_OK):
-            raise IOError("Can not read {}".format(fp))
+    if not access(fp, R_OK):
+        if raise_exception:
+            raise IOError ("Cannot find/read file {}".format(fp))
         else:
-            return fp
-        
-        # Try local package instead
-        fp = path
-        if not os.access(fp, os.R_OK):
-            raise IOError("Can not read {}".format(fp))
-        else:
-            return fp
-                
-    except Exception as E:
-        jprint(E)
-        jprint ("Please retrieve it from the github repository")
-        return
+            return False
+    else:
+        return True
+
+def sequencing_summary_file_sample (infile, outfile=None, n_seq=10000, **kwargs):
+    """
+    Sample a number read lines in infile and write the output_over_time in output_file
+    If the file contains several runids the function will sample proportionally to the
+    * infile: STR
+    Path to a sequencing_summary input file
+    * outfile: STR (default None)
+        Path to a sequencing_summary output file. If not given, will return a dataframe instead
+    * n_seq: STR (default 10000)
+        Overall number of sequence lines to sample
+    """
+    df = pd.read_csv(infile, sep ="\t")
+    df.dropna (inplace=True)
+    total = len(df)
+    print ("{} sequences".format(total))
+
+    l = []
+    for runid, runid_df in df.groupby("run_id", sort=False):
+        n_to_sample = int (round (len (runid_df)/total*n_seq, 0))
+        if n_to_sample == 0:
+            n_to_sample=1
+        print ("{} = {} seq, to sample = {}".format (runid, len(runid_df), n_to_sample))
+        sdf = runid_df.sample(n_to_sample)
+        sdf.sort_values("start_time", inplace=True)
+        l.append(sdf)
+
+    df = pd.concat(l)
+    df.reset_index(inplace=True, drop=True)
+    if outfile:
+        df.to_csv(outfile, index=False, sep="\t")
+    else:
+        return df
