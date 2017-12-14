@@ -421,7 +421,6 @@ class pycoQC():
         color = "orangered",
         alpha=0.5,
         bandwith = None,
-        win_size = 250,
         sample = 100000,
         min_len = 0,
         max_len = None,
@@ -462,6 +461,9 @@ class pycoQC():
         if sample and len(df) > sample:
             df = df.sample(sample)
 
+        # Autocorect
+        if xlog and min_len <=0:
+            min_len = 1
         if not max_len:
             max_len = df["num_bases"].max()
         if not bandwith:
