@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/94531811.svg)](https://zenodo.org/badge/latestdoi/94531811)
+
 # pycoQC 1.1a1 package documentation
 
 ---
