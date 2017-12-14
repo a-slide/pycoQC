@@ -3,7 +3,7 @@
 # Standard library imports
 from os import path
 from sys import exit as sysexit
-from collections import OrderedDict, namedtuple
+from collections import OrderedDict, namedtuple, deque
 
 # Third party imports
 try:
@@ -343,38 +343,29 @@ class pycoQC():
 
         return (fig, ax)
 
-    ############################################################################ ADD mean, median, mode
     def reads_qual_distribution (self,
         figsize = [30,7],
-        hist = True,
-        kde = True,
-        kde_color = "black",
-        hist_color = "orangered",
-        kde_alpha = 0.5,
-        hist_alpha=0.5,
-        win_size = 0.1,
+        color = "orangered",
+        alpha=0.5,
+        bandwith = 0.1,
         sample = 100000,
-        min_qual = None,
+        min_qual = 0,
         max_qual = None,
-        min_freq = None,
+        min_freq = 0,
         max_freq = None,
         plot_style = "ggplot",
         **kwargs):
         """
-        Plot the distribution of mean read quality
+        Plot the univariate kernel density estimate of mean read quality
         * figsize: LIST [Default [30,7]]
             Size of ploting area
-        * hist: BOOL [Default True]
-            If True plot an histogram of distribution
-        * kde: BOOL [Default True]
-            If True plot a univariate kernel density estimate
-        * kde_color / hist_color: STR [Default "black" "orangered"]
-            Color map or color codes to use for the 3 plots
+        * color: STR [Default "orangered"]
+            Color of the plot. Valid matplotlib color code
             See https://matplotlib.org/examples/color/named_colors.html
-        * kde_alpha / hist_alpha: FLOAT [Default 0.5 0.5]
-            Opacity of the area from 0 to 1 for the 3 plots
-        * win_size: FLOAT [Default 0.1]
-            Size of the bins in quality score ranging from 0 to 40 for the histogram
+        * alpha: FLOAT [Default 0.5 0.5]
+            Opacity of the area from 0 to 1
+        * bandwith: FLOAT [Default 0.1]
+            Size of the quality score bandwith for the kernel density estimate
         * sample: INT [Default 100000]
             If given, a n number of reads will be randomly selected instead of the entire dataframe
         * min_qual, max_qual: INT or None [Default None]
@@ -389,88 +380,76 @@ class pycoQC():
 
         # Select reads
         df = self.df[["mean_qscore"]]
-        if min_qual:
-            df = df[(df["mean_qscore"] >= min_qual)]
-        else:
-            min_qual = 0
-        if max_qual:
-            df = df[(df["mean_qscore"] <= max_qual)]
-        else:
-            max_qual = max(df["mean_qscore"])
+        first_decile, median, last_decile = np.percentile(df["mean_qscore"], [10,50,90])
         if sample and len(df) > sample:
             df = df.sample(sample)
 
-        # Auto correct windows size if too long
-        if max_qual-min_qual < win_size:
-            win_size = max_qual-min_qual
-
         with pl.style.context(plot_style):
-            # Plot
             fig, ax = pl.subplots(figsize=figsize)
+
             # Plot the kde graph
-            if kde:
-                sns.kdeplot(df["mean_qscore"], ax=ax, color=kde_color, alpha=kde_alpha, shade=not hist, gridsize=500,
-                    legend=False)
-            # Plot a frequency histogram
-            if hist:
-                ax = df["mean_qscore"].plot.hist(
-                    bins=np.arange(min_qual, max_qual, win_size), ax=ax, normed=True, color=hist_color,
-                    alpha=hist_alpha, histtype="stepfilled")
+            sns.kdeplot(df["mean_qscore"], ax=ax, color=color, alpha=alpha, gridsize=250, legend=False,
+                bw=bandwith, cut=0, shade=True)
+
+            # Extract limits for lines
+            ymin, ymax = ax.get_ylim()
+            if min_freq:
+                ymin = min_freq
+            if max_freq:
+                ymax = max_freq
+
+            # Plot distribution stats
+            ax.vlines(x=first_decile, ymin=ymin, ymax=ymax, linewidth=1, color='0.25', linestyle=":",
+                label='10% = {}'.format(round(first_decile, 2)))
+            ax.vlines(x=median, ymin=ymin, ymax=ymax, linewidth=1, color='0.25',
+                label='median = {}'.format(round(median, 2)))
+            ax.vlines(x=last_decile, ymin=ymin, ymax=ymax, linewidth=1, color='0.25', linestyle="--",
+                label='90% = {}'.format(round(last_decile, 2)))
+            _ = ax.legend ()
 
             # Tweak the plot
             t = ax.set_title ("Mean quality distribution per read")
             t = ax.set_xlabel("Mean PHRED quality Score")
             t = ax.set_ylabel("Read Frequency")
-
-            if not min_freq:
-                min_freq = 0
-            if not max_freq:
-                max_freq = ax.get_ylim()[1]
-
             t = ax.set_xlim([min_qual, max_qual])
             t = ax.set_ylim([min_freq, max_freq])
 
         return (fig, ax)
 
-    ############################################################################ ADD mean, median, mode
-    ############################################################################ log scale ?? 
     def reads_len_distribution (self,
         figsize = [30,7],
-        hist = True,
-        kde = True,
-        kde_color = "black",
-        hist_color = "orangered",
-        kde_alpha = 0.5,
-        hist_alpha=0.5,
+        color = "orangered",
+        alpha=0.5,
+        bandwith = None,
         win_size = 250,
         sample = 100000,
-        min_len = None,
+        min_len = 0,
         max_len = None,
-        min_freq = None,
+        min_freq = 0,
         max_freq = None,
+        xlog = False,
+        ylog = False,
         plot_style = "ggplot",
         **kwargs):
         """
-        Plot the distribution of read length in base pairs
+        Plot the univariate kernel density estimate of read length in base pairs
         * figsize: LIST [Default [30,7]]
             Size of ploting area
-        * hist: BOOL [Default True]
-            If True plot an histogram of distribution
-        * kde: BOOL [Default True]
-            If True plot a univariate kernel density estimate
-        * kde_color / hist_color: STR [Default "black" "orangered"]
-            Color map or color codes to use for the 3 plots
+        * color: STR [Default "orangered"]
+            Color of the plot. Valid matplotlib color code
             See https://matplotlib.org/examples/color/named_colors.html
-        * kde_alpha / hist_alpha: FLOAT [Default 0.5 0.5]
-            Opacity of the area from 0 to 1 for the 3 plots
-        * win_size: INT [Default 250]
-            Size of the bins in base pairs for the histogram
+        * alpha: FLOAT [Default 0.5 0.5]
+            Opacity of the area from 0 to 1
+        * bandwith: FLOAT [Default 0.1]
+            Size of the quality score bandwith for the kernel density estimate
         * sample:INT [Default 100000]
             If given, a n number of reads will be randomly selected instead of the entire dataframe
         * min_len, max_len: INT or None [Default None]
             Minimal and maximal read length cut-offs for the plot
         * min_freq, max_freq: INT or None [Default None]
             Minimal and maximal read frequency cut-offs for the plot
+        * xlog, ylog: BOOL [Default False]
+            If True, the x or y axis will be scaled to log10
         * plot_style: STR [default "ggplot"]
             Matplotlib plotting style. See https://matplotlib.org/users/style_sheets.html
         => Return
@@ -479,63 +458,69 @@ class pycoQC():
 
         # Select reads
         df = self.df[["num_bases"]]
-        if min_len:
-            df = df[(df["num_bases"] >= min_len)]
-        else:
-            min_len = 0
-        if max_len:
-            df = df[(df["num_bases"] <= max_len)]
-        else:
-            max_len = max(df["num_bases"])
+        first_decile, median, last_decile = np.percentile(df["num_bases"], [10,50,90])
         if sample and len(df) > sample:
             df = df.sample(sample)
 
-        # Auto correct windows size if too long
-        if max_len-min_len < win_size:
-            win_size = max_len-min_len
+        if not max_len:
+            max_len = df["num_bases"].max()
+        if not bandwith:
+            bandwith = (max_len-min_len)//100
+            if bandwith >= 200: bandwith = 200
+            if bandwith <= 10: bandwith = 10
 
         with pl.style.context(plot_style):
-            # Plot
             fig, ax = pl.subplots(figsize=figsize)
             # Plot the kde graph
-            if kde:
-                sns.kdeplot(df["num_bases"], ax=ax, color=kde_color, alpha=kde_alpha, shade=not hist, gridsize=500,
-                    legend=False)
-            # Plot a frequency histogram
-            if hist:
-                ax = df["num_bases"].plot.hist(
-                    bins=np.arange(min_len, max_len, win_size), ax=ax, normed=True, color=hist_color,
-                    alpha=hist_alpha, histtype="stepfilled")
+            sns.kdeplot(df["num_bases"], ax=ax, color=color, alpha=alpha, gridsize=250, legend=False,
+                bw=bandwith, cut=0, shade=True, clip=(min_len, max_len))
+
+            # Extract limits for lines
+            ymin, ymax = ax.get_ylim()
+            if min_freq:
+                ymin = min_freq
+            if max_freq:
+                ymax = max_freq
+
+            # Plot distribution stats
+            ax.vlines(x=first_decile, ymin=ymin, ymax=ymax, linewidth=1, color='0.25', linestyle=":",
+                label='10% = {}'.format(round(first_decile, 2)))
+            ax.vlines(x=median, ymin=ymin, ymax=ymax, linewidth=1, color='0.25',
+                label='median = {}'.format(round(median, 2)))
+            ax.vlines(x=last_decile, ymin=ymin, ymax=ymax, linewidth=1, color='0.25', linestyle="--",
+                label='90% = {}'.format(round(last_decile, 2)))
+            _ = ax.legend ()
+
+            if xlog:
+                _ = ax.set_xscale ("log")
+            if ylog:
+                _ = ax.set_yscale ("log")
 
             # Tweak the plot
             t = ax.set_title ("Distribution of reads length")
-            t = ax.set_xlabel("Length in bp")
+            t = ax.set_xlabel("Mean read length")
             t = ax.set_ylabel("Read Frequency")
-
-            if not min_freq:
-                min_freq = 0
-            if not max_freq:
-                max_freq = ax.get_ylim()[1]
-
             t = ax.set_xlim([min_len, max_len])
             t = ax.set_ylim([min_freq, max_freq])
 
         return (fig, ax)
 
-    ############################################################################ ADD cummulative + 1/4 1/2 ...
     def output_over_time (self,
-        level="reads",
-        runid_lines=True,
-        figsize=[30,7],
-        color="orangered",
-        alpha=0.5,
-        win_size=0.25,
+        level = "reads",
+        figsize = [30,7],
+        runid_lines = True,
+        color = "orangered",
+        alpha = 0.5,
+        bin_size = 240,
+        bin_smothing = 3,
+        cumulative = False,
+        sample=100000,
         plot_style = "ggplot",
         **kwargs):
         """
         Plot the output over the time of the experiment at read, base or event level
         * level: STR [Default "reads"]
-            Aggregate channel output results by "reads", "bases" or "events"
+            Aggregate output results by "reads", "bases" or "events"
         * runid_lines: BOOL [Default True]
             If True a vertical line will be plotted at the start position of each runid in the dataset
         * figsize: LIST [Default [30,7]]
@@ -545,47 +530,69 @@ class pycoQC():
             See https://matplotlib.org/examples/color/named_colors.html
         * alpha: FLOAT [Default 0.5]
             Opacity of the area from 0 to 1
-        * win_size: FLOAT [Default 0.25]
-            Size of the bins in hours
+        * bin_size: FLOAT [Default 240]
+            Size of the bins in seconds
+        * bin_smothing: INT [Default 3]
+            Size in bins of the smoothing applied to the collected count
+        * cumulative: BOOL [Default False]
+            If True,plot a cumulative ditribution instead
+        * sample: INT [Default 100000]
+            If given, a n number of reads will be randomly selected instead of the entire dataframe
         * plot_style: STR [default "ggplot"]
             Matplotlib plotting style. See https://matplotlib.org/users/style_sheets.html
         => Return
             A fig + axes tuple for further user customisation (http://matplotlib.org/api/axes_api.html)
         """
-        # Select columns depending on the selected level
-        if level == "reads":
-            df = self.df[["start_time", "num_bases"]].copy()
-        if level == "bases":
-            df = self.df[["start_time", "num_bases"]].copy()
+
+        # Slice the main dataframe and sample if needed
         if level == "events":
             if not "num_events" in self.df:
                 jprint ("events number information not available in the source file")
                 return (None, None)
-            df = self.df[["start_time", "num_events"]].copy()
+            else:
+                df = self.df[["start_time", "num_events"]].copy()
+                df.rename(columns={"num_events":"count"}, inplace=True)
+        elif level == "bases":
+            df = self.df[["start_time", "num_bases"]].copy()
+            df.rename(columns={"num_bases":"count"}, inplace=True)
+        elif level == "reads":
+            df = self.df[["start_time"]].copy()
+            df["count"]=1
+        if sample and len(df) > sample:
+            df = df.sample(sample)
 
-        # Transform seconds in hours and in time interval
-        df["start_time"] = df["start_time"]/3600
-        bins = np.arange(0, max(df["start_time"])+win_size, win_size)
-        df["start_time"] = pd.cut(df["start_time"], bins)
+        # Discretize start time, group by discrete start time and count the number of reads/bases/events
+        bin_number = int(self.df["start_time"].max()//bin_size)+1
+        bin_counts = np.zeros (bin_number, dtype=np.int)
+        df["start_time"] = df["start_time"]//bin_size
+        df["start_time"]= df["start_time"].astype(int)
+        for bin_start, bin_df in df.groupby("start_time"):
+            bin_counts[bin_start] = bin_df["count"].sum()
 
-        # Compute the count of sum depending on the selected level
-        s = pd.Series(name="count")
-        for index, sdf in df.groupby("start_time"):
-            if level == "reads":
-                s.loc[index.left] = len(sdf)
-            if level == "bases":
-                s.loc[index.left] = sdf["num_bases"].sum()
-            if level == "events":
-                s.loc[index.left] = sdf["num_events"].sum()
+        # Convert results to Series
+        lab = [i*bin_size/3600 for i in range (bin_number)]
+        s = pd.Series(data=bin_counts, index=lab, name="count")
 
-        # Convert the resulting series in Dataframe
-        df2 = s.to_frame()
-        df2 = df2.apply(pd.to_numeric)
+        # Transform to a cumulative distribution
+        if cumulative:
+            cumsum=0
+            for i, val in s.items():
+                cumsum += val
+                s[i] = cumsum
+
+        # Smooth using a moving mean
+        if bin_smothing:
+            queue = deque([], maxlen=bin_smothing)
+            for i, val in s.items():
+                queue.append(val)
+                s[i] = np.mean(queue)
 
         with pl.style.context(plot_style):
             # Plot the graph
             fig, ax = pl.subplots(figsize=figsize)
-            ax.fill_between(df2.index, df2["count"], color=color, alpha=alpha)
+            ax.fill_between(s.index, s, color=color, alpha=alpha)
+
+            # Add lines per runid
             ymin, ymax = ax.get_ylim()
             if runid_lines:
                 for runid, start in self.runid_start.items():
@@ -596,8 +603,8 @@ class pycoQC():
             t = ax.set_title ("Total {} over time".format(level))
             t = ax.set_xlabel("Experiment time (h)")
             t = ax.set_ylabel("{} count".format(level))
-            t = ax.set_xlim (0, max(df2.index))
-            t = ax.set_ylim (0, ax.get_ylim()[1])
+            t = ax.set_xlim (0, s.index.max())
+            t = ax.set_ylim (0, None)
 
         return (fig, ax)
 
