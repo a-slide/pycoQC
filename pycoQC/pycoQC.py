@@ -748,7 +748,7 @@ class pycoQC():
 
         with pl.style.context(plot_style):
             # Plot the graph
-            g = sns.JointGrid("num_bases", "mean_qscore", data=df, space=0.1, size=figsize)
+            g = sns.JointGrid("num_bases", "mean_qscore", data=df, space=0.1, height=figsize)
 
             if kde:
                 if kde_shade:
