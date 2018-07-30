@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Define self package variable
-__version__ = '1.1a1'
+__version__ = '1.1a2'
 __all__ = ["pycoQC", "pycoQC_fun"]
 __description__="""
 PycoQC is a Python 3 package for Jupyter Notebook, computing metrics and generating simple QC plots
