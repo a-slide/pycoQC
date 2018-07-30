@@ -44,7 +44,7 @@ setup_dict = {
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',],
-    "install_requires": ['numpy>=1.13.0', 'pandas>=0.20.0', 'matplotlib>=2.0.0', 'seaborn>= 0.7.0', 'notebook>=4.0.0'],
+    "install_requires": ['numpy>=1.13.0', 'pandas>=0.20.0', 'matplotlib>=2.0.0', 'seaborn>= 0.9.0', 'notebook>=4.0.0'],
     "packages": [__name__],
     "package_dir": {__name__: __name__},
     "package_data": {__name__: ['data/*.txt']},
