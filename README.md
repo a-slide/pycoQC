@@ -1,6 +1,6 @@
 [![DOI](https://zenodo.org/badge/94531811.svg)](https://zenodo.org/badge/latestdoi/94531811)
 
-# pycoQC 1.1a1 package documentation
+# pycoQC-1 package documentation
 
 ---
 
@@ -55,18 +55,18 @@ Ideally, before installation, create a clean python3 virtual environment to depl
 
 Install the package with pip3. All the required dependencies will be automatically installed.
 
-`pip3 install git+https://github.com/a-slide/pycoQC.git`
+`pip3 install git+https://github.com/a-slide/pycoQC.git#v1`
 
 To update the package:
 
-`pip3 install git+https://github.com/a-slide/pycoQC.git --upgrade`
+`pip3 install git+https://github.com/a-slide/pycoQC.git#v1 --upgrade`
 ​    
 
 ## Option 2: Clone the repository and install locally in develop mode
 
 With this option, the package will be locally installed in “editable” or “develop” mode. This allows the package to be both installed and editable in project form. This is the recommended option if you wish to participate to the development of the package. As for the option before, the required dependencies will be automatically installed.
 
-`git clone https://github.com/a-slide/pycoQC.git`
+`git clone https://github.com/a-slide/pycoQC.git#v1`
 
 `cd pycoQC`
 
@@ -108,7 +108,7 @@ If it does not autolaunch your web browser, open manually the following URL http
 
 From Jupyter home page you can navigate to the directory you want to work in. Then, create a new Python3 Notebook.
 
-In the notebook, import matplotlib and use the jupyter magic command to enable direct plotting in the current Notebook. 
+In the notebook, import matplotlib and use the jupyter magic command to enable direct plotting in the current Notebook.
 
 Using the svg format as a backend for matplotlib will generate beautiful vector plots, but is CPU/memory hungry, particularly for the 2D scatter plot
 
@@ -141,7 +141,7 @@ The instantiated object can be subsequently called with various methods that wil
 
 Each function has specific options that are comprehensively detailed in the test notebook provided with the package or in directly on Github: [Test_notebook](https://github.com/a-slide/pycoQC/blob/master/pycoQC/test_pycoQC.ipynb)
 
-Most of the plotting functions return a matplotlib fig, ax tuple. This allows users to further customize the plotting areas thanks to the numerous set methods associated with the object (for instance Axes.set_axis_off, Axes.set_xlim, Axes.set_xscale...). 
+Most of the plotting functions return a matplotlib fig, ax tuple. This allows users to further customize the plotting areas thanks to the numerous set methods associated with the object (for instance Axes.set_axis_off, Axes.set_xlim, Axes.set_xscale...).
 Extensive information is available in the Matplotlib API documentation: http://matplotlib.org/api/axes_api.html.
 
 All the plotting functions can take a [matplotlib "style"](https://matplotlib.org/users/style_sheets.html) option. To list all available styles in your environment, use:
@@ -178,7 +178,7 @@ Count the number of reads per interval of sequence quality and return a datafram
 
 Limits of the intervals as a list
 
- Or alternatively one can also use the jupyter magic "?" 
+ Or alternatively one can also use the jupyter magic "?"
 
 ```python
 ?pycoQC.reads_qual_bins
@@ -283,7 +283,7 @@ p = pycoQC("/home/aleg/Programming/Python3/pycoQC/pycoQC/data/sequencing_summary
 
 <p>&emsp;50000 Total valid reads found</p>
 
-### Initialization with read filtering 
+### Initialization with read filtering
 
 Some reads are not "basecallable" and consequently have a length of zero. These reads can be filtered out with the option *filter_zero_len*.
 
