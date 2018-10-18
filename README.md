@@ -66,7 +66,7 @@ To update the package:
 
 With this option, the package will be locally installed in “editable” or “develop” mode. This allows the package to be both installed and editable in project form. This is the recommended option if you wish to participate to the development of the package. As for the option before, the required dependencies will be automatically installed.
 
-`git clone https://github.com/a-slide/pycoQC.git#v1`
+`git clone https://github.com/a-slide/pycoQC.git --branch v1`
 
 `cd pycoQC`
 
@@ -82,7 +82,7 @@ This option is also suitable if you are interested in further developing the pac
 
 Clone the repository locally
 
-`git clone https://github.com/a-slide/pycoQC.git`
+`git clone https://github.com/a-slide/pycoQC.git --branch v1`
 ​    
 * Add the package directory (./pycoQC/pycoQC) to you python3 PATH (depending on you OS and whether you want it to be permanent ot not)
 
