@@ -16,12 +16,13 @@ import plotly.offline as py
 py.init_notebook_mode (connected=False)
 
 # Local lib import
-from pycoQC.pycoQC_fun import jprint, jhelp, is_readable_file
+from pycoQC.common import jprint, jhelp, is_readable_file
 
 ##~~~~~~~ MAIN CLASS ~~~~~~~#
 class pycoQC ():
 
-    ##~~~~~~~ SAMPLE FILES ~~~~~~~#
+    #~~~~~~~ SAMPLE FILES ~~~~~~~#
+
     @ classmethod
     def example_data_files (self):
         """
@@ -47,6 +48,7 @@ class pycoQC ():
         return df
 
     #~~~~~~~FUNDAMENTAL METHODS~~~~~~~#
+
     def __init__ (self,
         seq_summary_file,
         run_type = None,
@@ -160,7 +162,9 @@ class pycoQC ():
         return (msg)
 
     #~~~~~~~SUMMARY METHOD AND HELPER~~~~~~~#
-    def summary (self, run_id_split=True):
+
+    def summary (self,
+        run_id_split=True):
         """
         Print table reports countaining information about the run per runid found in the summary file.
         """
@@ -196,7 +200,14 @@ class pycoQC ():
 
     #~~~~~~~1D DISTRIBUTION METHODS AND HELPER~~~~~~~#
 
-    def reads_len_1D (self, color="lightsteelblue", width=1400, height=500, nbins=200, smooth_sigma=2, sample=100000):
+    def reads_len_1D (self,
+        color="lightsteelblue",
+        width=1400,
+        height=500,
+        nbins=200,
+        smooth_sigma=2,
+        sample=100000,
+        iplot=True):
         """
         Plot a distribution of read length (log scale)
         * color: Color of the area (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -242,10 +253,18 @@ class pycoQC ():
         )
 
         fig = go.Figure (data=data, layout=layout)
-        py.iplot (fig, show_link=False)
+        if iplot:
+            py.iplot (fig, show_link=False)
         return fig
 
-    def reads_qual_1D (self, color="salmon", width=1400, height=500, nbins=200, smooth_sigma=2, sample=100000):
+    def reads_qual_1D (self,
+        color="salmon",
+        width=1400,
+        height=500,
+        nbins=200,
+        smooth_sigma=2,
+        sample=100000,
+        iplot=True):
         """
         Plot a distribution of quality scores
         * color: Color of the area (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -287,11 +306,12 @@ class pycoQC ():
             width = width,
             height = height,
             title = "Distribution of Read Quality Scores",
-            xaxis = {"title":"Read Quality Scores", "zeroline":False, "showline":True, "rangemode":'nonnegative'},
-            yaxis = {"title":"Read Density", "zeroline":False, "showline":True, "rangemode":'nonnegative'})
+            xaxis = {"title":"Read Quality Scores", "zeroline":False, "showline":True},
+            yaxis = {"title":"Read Density", "zeroline":False, "showline":True})
 
         fig = go.Figure(data=data, layout=layout)
-        py.iplot (fig, show_link=False)
+        if iplot:
+            py.iplot (fig, show_link=False)
         return fig
 
     def __reads_1D_data (self, df, field_name="num_bases", xscale="linear", nbins=200, smooth_sigma=2):
@@ -347,7 +367,8 @@ class pycoQC ():
         len_nbins = None,
         qual_nbins = None,
         smooth_sigma = 2,
-        sample = 100000):
+        sample = 100000,
+        iplot=True):
         """
         Plot a 2D distribution of quality scores vs length of the reads
         * colorscale: a valid plotly color scale https://plot.ly/python/colorscales/ (Not recommanded to change)
@@ -391,8 +412,8 @@ class pycoQC ():
             yaxis = {"title":"Read Quality Scores", "showgrid":True, "zeroline":False, "showline":True,})
 
         fig = go.Figure (data=data, layout=layout)
-        py.iplot (fig, show_link=False)
-
+        if iplot:
+            py.iplot (fig, show_link=False)
         return fig
 
     def __reads_distr_2D_data (self, df, len_nbins, qual_nbins, smooth_sigma=1.5):
@@ -426,11 +447,17 @@ class pycoQC ():
 
     #~~~~~~~OUTPUT_OVER_TIME METHODS AND HELPER~~~~~~~#
 
-    def output_over_time (self, cumulative_color="rgb(204,226,255)", interval_color="rgb(102,168,255)", width=1400, height=500, sample=100000):
+    def output_over_time (self,
+        cumulative_color="rgb(204,226,255)",
+        interval_color="rgb(102,168,255)",
+        width=1400,
+        height=500,
+        sample=100000,
+        iplot=True):
         """
         Plot a yield over time
         * cumulative_color: Color of cumulative yield area (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
-        * cumulative_color: Color of interval yield line (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
+        * interval_color: Color of interval yield line (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
         * width: With of the ploting area in pixel
         * height: height of the ploting area in pixel
         * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
@@ -469,8 +496,8 @@ class pycoQC ():
             xaxis={"title":"Experiment time (h)", "zeroline":False, "showline":True})
 
         fig = go.Figure(data=data, layout=layout)
-        py.iplot (fig, show_link=False)
-
+        if iplot:
+            py.iplot (fig, show_link=False)
         return fig
 
     def __output_over_time_data (self, df, level="reads"):
@@ -531,7 +558,8 @@ class pycoQC ():
         smooth_sigma=1,
         width=1400,
         height=500,
-        sample=100000):
+        sample=100000,
+        iplot=True):
         """
         Plot a mean quality over time
         * median_color: Color of median line color (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -573,8 +601,8 @@ class pycoQC ():
             xaxis={"title":"Experiment time (h)", "zeroline":False, "showline":True, "rangemode":'nonnegative'})
 
         fig = go.Figure(data=data, layout=layout)
-        py.iplot (fig, show_link=False)
-
+        if iplot:
+            py.iplot (fig, show_link=False)
         return fig
 
     def __qual_over_time_data (self, df, smooth_sigma=1.5):
@@ -626,7 +654,8 @@ class pycoQC ():
         colors = ["#f8bc9c", "#f6e9a1", "#f5f8f2", "#92d9f5", "#4f97ba"],
         width = 700,
         height = 600,
-        sample = 100000):
+        sample = 100000,
+        iplot=True):
         """
         Plot a mean quality over time
         * min_percent_barcode: minimal percentage od total reads for a barcode to be reported
@@ -663,8 +692,8 @@ class pycoQC ():
             title = "Percentage of reads per barcode")
 
         fig = go.Figure (data=data, layout=layout)
-        py.iplot (fig, show_link=False)
-
+        if iplot:
+            py.iplot (fig, show_link=False)
         return fig
 
     def __barcode_counts_data (self, df, min_percent_barcode=0.1):
@@ -685,83 +714,82 @@ class pycoQC ():
 
         return data_dict
 
-####################################################### UPDATE BORDER ##############################################################
-    # def channels_activity (self,
-    #     level = "reads",
-    #     figsize = [24,12],
-    #     cmap = "OrRd",
-    #     alpha = 1,
-    #     robust = True,
-    #     annot = True,
-    #     fmt = "d",
-    #     cbar = False,
-    #     plot_style = "seaborn-white",
-    #     **kwargs):
-    #     """
-    #     Plot the activity of channels at read, base or event level. The layout does not represent the physical layout
-    #     of the flowcell based on seaborn heatmap funtion
-    #     * level: STR [Default "reads"]
-    #         Aggregate channel output results by "reads", "bases" or "events".
-    #     * figsize: LIST [Default [24,12]]
-    #         Size of ploting area
-    #     * cmap: STR [Default "OrRd"]
-    #         Matplotlib colormap code to color the space (https://matplotlib.org/users/colormaps.html)
-    #     * alpha [Default 1]
-    #         Opacity of the area from 0 to 1
-    #     * robust: BOOL [Default True]
-    #         if True the colormap range is computed with robust quantiles instead of the extreme values
-    #     * annot: BOOL [Default True]
-    #         If True, write the data value in each cell.
-    #     * fmt
-    #         String formatting code to use when adding annotations (see matplotlib documentation) [Default "d"]
-    #     * cbar
-    #         Whether to draw a colorbar scale on the right of the graph [Default False]
-    #     * plot_style: STR [default 'seaborn-white']
-    #         Matplotlib plotting style. See https://matplotlib.org/users/style_sheets.html
-    #     => Return
-    #         A fig + axes tuple for further user customisation (http://matplotlib.org/api/axes_api.html)
-    #     """
-    #     # Compute the count per channel
-    #     if level == "reads":
-    #         s = self.df["channel"].value_counts(sort=False)
-    #         title = "Reads per channels"
-    #     if level == "bases":
-    #         s = self.df.groupby("channel").aggregate(np.sum)["num_bases"]
-    #         title = "Bases per channels"
-    #     if level == "events":
-    #         if not "num_events" in self.df:
-    #             jprint ("events number information not available in the source file")
-    #             return (None, None)
-    #         s = self.df.groupby("channel").aggregate(np.sum)["num_events"]
-    #         title = "Events per channels"
-    #
-    #     # Fill the missing values
-    #     for i in range(1, 513):
-    #         if i not in s.index:
-    #             s.loc[i] = 0
-    #
-    #     # Sort by index value
-    #     s.sort_index(inplace=True)
-    #
-    #     # Reshape the series to a 2D frame similar to the Nanopore flowcell grid
-    #     a = s.values.reshape(16,32)
-    #
-    #     with pl.style.context(plot_style):
-    #         # Plot a heatmap
-    #         fig, ax = pl.subplots(figsize=figsize)
-    #         ax = sns.heatmap(a, ax=ax, annot=annot, fmt=fmt, linewidths=2, cbar=cbar, cmap=cmap,
-    #             alpha=alpha, robust=robust)
-    #
-    #         # Tweak the plot
-    #         t = ax.set_title (title)
-    #         t = ax.set_xticklabels("")
-    #         t = ax.set_yticklabels("")
-    #
-    #         for text in ax.texts:
-    #             text.set_size(8)
-    #
-    #     return (fig, ax)
-    #
+    #~~~~~~~BARCODE_COUNT METHODS AND HELPER~~~~~~~#
+
+    def channels_activity (self,
+        colorscale = [[0.0,'rgba(255,255,255,0)'], [0.01,'rgb(255,255,200)'], [0.25,'rgb(255,200,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(0,0,0)']],
+        n_channels=512,
+        smooth_sigma=1,
+        width=2000,
+        height=600,
+        sample=100000,
+        iplot=True):
+        """
+        Plot a yield over time
+        * width: With of the ploting area in pixel
+        * height: height of the ploting area in pixel
+        * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
+        """
+
+        # Downsample if needed
+        all_df = self.all_df.sample(sample) if sample and len (self.all_df)>sample else self.all_df
+        pass_df = self.pass_df.sample(sample) if sample and len (self.pass_df)>sample else self.pass_df
+
+        # Prepare empty plots
+        data = [
+            go.Heatmap(xgap=0.5, colorscale=colorscale, hoverinfo="x+y+z"),
+        ]
+
+        updatemenus = [
+            dict (type="buttons", active=0, x=-0.06, y=0, xanchor='right', yanchor='bottom', buttons = [
+                dict (label='All Reads', method='restyle', args=self.__channels_activity_data (all_df, level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma)),
+                dict (label='Pass Reads', method='restyle', args=self.__channels_activity_data (pass_df, level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma)),
+                dict (label='All Bases', method='restyle', args=self.__channels_activity_data (all_df, level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma)),
+                dict (label='Pass Bases', method='restyle', args=self.__channels_activity_data (pass_df, level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma)),
+            ])]
+
+        layout = go.Layout (
+            width=width,
+            height=height,
+            updatemenus=updatemenus,
+            title="Output per channel over experiment time",
+            xaxis={"title":"Channel id", "zeroline":False, "showline":False, "nticks":20, "showgrid":False},
+            yaxis={"title":"Experiment time (h)", "zeroline":False, "showline":False, "hoverformat":".2f", "fixedrange":True})
+
+        fig = go.Figure(data=data, layout=layout)
+        if iplot:
+            py.iplot (fig, show_link=False)
+        return fig
+
+    def __channels_activity_data (self, df, level="bases", n_channels=512, smooth_sigma=2):
+        # Bin data in categories
+        t = (df["start_time"]/3600).values
+        t_min = t.min()
+        t_max = t.max()
+        bins = np.linspace (t_min, t_max, int((t_max-t_min)*5))
+        t = np.digitize (t, bins=bins, right=True)
+
+        # Count values per categories
+        z = np.ones((len(bins), n_channels), dtype=np.int)
+        if level == "bases":
+            for t_idx, channel, n_bases in zip(t, df["channel"], df["num_bases"]):
+                z[t_idx][channel-1]+=n_bases
+        elif level == "reads":
+            for t_idx, channel in zip(t, df["channel"]):
+                z[t_idx][channel-1]+=1
+
+        # Time series smoothing
+        if smooth_sigma:
+            z = gaussian_filter1d (z.astype(np.float32), sigma=smooth_sigma, axis=0)
+
+        # Define x and y axis
+        x = ["c {}".format(i) for i in range(1, n_channels+1)]
+        y = bins[1:]
+
+        # Make data dict
+        data_dict = dict (x=[x], y=[y], z=[z])
+
+        return [data_dict]
 
     #~~~~~~~PRIVATE METHODS~~~~~~~#
     def _check_columns (self, df, colnames, raise_error_if_missing=True):
