@@ -66,11 +66,19 @@ With this option, the package will be locally installed in “editable” or “
 
 `pip3 install -e ./`
 
-# Usage
+# Jupyter Notebook Usage
 
 The package is meant to be used in a jupyter notebook 4.0.0 +
 
-## Notebook setup
+## Interactive demo notebook
+
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/a-slide/pycoQC/dev?filepath=tests%2FpycoQC_usage.ipynb)
+
+## Static demo notebook
+
+[]()
+
+## Running your own notebook locally
 
 Launch the notebook in a shell terminal
 
@@ -79,10 +87,6 @@ Launch the notebook in a shell terminal
 If it does not autolaunch your web browser, open manually the following URL http://localhost:8888/tree
 
 From Jupyter home page you can navigate to the directory you want to work in. Then, create a new Python3 Notebook.
-
-## Usage Notebook
-
-The usage is detailed in the [usage jupyter notebook](https://nbviewer.jupyter.org/github/a-slide/pycoQC/blob/master/tests/pycoQC_usage.ipynb?flush_cache=true)
 
 # Note to power-users and developers
 
