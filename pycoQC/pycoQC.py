@@ -55,7 +55,7 @@ class pycoQC ():
             if verbose: jprint("\t1D Run type")
             self.run_type = "1D"
             required_colnames = ["read_id", "run_id", "channel", "start_time", "sequence_length_template", "mean_qscore_template"]
-            optional_colnames = ["num_events", "calibration_strand_genome_template", "barcode_arrangement"]
+            optional_colnames = ["calibration_strand_genome_template", "barcode_arrangement"]
             rename_colmanes = {
                 "sequence_length_template":"num_bases",
                 "mean_qscore_template":"mean_qscore",
@@ -65,7 +65,7 @@ class pycoQC ():
             if verbose: jprint("\t1D2 Run type")
             self.run_type = "1D2"
             required_colnames = ["read_id", "run_id", "channel", "start_time", "sequence_length_2d", "mean_qscore_2d"]
-            optional_colnames = ["num_events", "calibration_strand_genome_template", "barcode_arrangement"]
+            optional_colnames = ["calibration_strand_genome_template", "barcode_arrangement"]
             rename_colmanes = {
                 "sequence_length_2d":"num_bases",
                 "mean_qscore_2d":"mean_qscore",
