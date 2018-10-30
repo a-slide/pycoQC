@@ -13,10 +13,9 @@ from scipy.ndimage import gaussian_filter, gaussian_filter1d
 from IPython.core.display import display
 import plotly.graph_objs as go
 import plotly.offline as py
-py.init_notebook_mode (connected=False)
 
 # Local lib import
-from pycoQC.common import jprint, jhelp, is_readable_file
+from pycoQC.common import jprint, is_readable_file
 
 ##~~~~~~~ MAIN CLASS ~~~~~~~#
 class pycoQC ():
@@ -27,6 +26,7 @@ class pycoQC ():
         run_type = None,
         runid_list = [],
         min_pass_qual = 7,
+        iplot=True,
         verbose=False):
         """
         Parse Albacore sequencing_summary.txt file and clean-up the data
@@ -40,19 +40,28 @@ class pycoQC ():
             all the runids in the file and uses the runid order as defined in the file.
         * min_pass_qual INT [Default 7]
             Pass reads are defined throughout the package based on this threshold
+        * iplot
+            if False the ploting function do not plot the results but only return the a plotly.Figure object.
+            This is mainly intended to non-interative ploting
         """
 
         # Check that file is readable and import the summary file in a dataframe
-        is_readable_file(seq_summary_file, raise_exception=True)
-        if verbose: jprint("Importing data", bold=True)
+        #is_readable_file(seq_summary_file, raise_exception=True)
+        if verbose:
+            jprint("Importing data", bold=True)
+
         df = pd.read_csv(seq_summary_file, sep ="\t")
-        if verbose: jprint("\t{} reads found in initial file".format(len(df)))
+        if verbose:
+            jprint("\t{} reads found in initial file".format(len(df)))
         assert len(df) > 0, "No valid read found in input file"
 
         # Define specific parameters depending on the run_type
-        if verbose: jprint("Verify and rearrange fields", bold=True)
+        if verbose:
+            jprint("Verify and rearrange fields", bold=True)
+
         if run_type == "1D" or (not run_type and "sequence_length_template" in df):
-            if verbose: jprint("\t1D Run type")
+            if verbose:
+                jprint("\t1D Run type")
             self.run_type = "1D"
             required_colnames = ["read_id", "run_id", "channel", "start_time", "sequence_length_template", "mean_qscore_template"]
             optional_colnames = ["calibration_strand_genome_template", "barcode_arrangement"]
@@ -62,7 +71,8 @@ class pycoQC ():
                 "calibration_strand_genome_template":"calibration",
                 "barcode_arrangement":"barcode"}
         elif run_type == "1D2" or (not run_type and "sequence_length_2d" in df):
-            if verbose: jprint("\t1D2 Run type")
+            if verbose:
+                jprint("\t1D2 Run type")
             self.run_type = "1D2"
             required_colnames = ["read_id", "run_id", "channel", "start_time", "sequence_length_2d", "mean_qscore_2d"]
             optional_colnames = ["calibration_strand_genome_template", "barcode_arrangement"]
@@ -132,7 +142,8 @@ class pycoQC ():
 
         self.all_df = df
         self.pass_df = df[df["mean_qscore"]>=min_pass_qual]
-        self.min_pass_qual = min_pass_qual
+        self._min_pass_qual = min_pass_qual
+        self._iplot = iplot
 
     def __str__(self):
         """
@@ -151,8 +162,7 @@ class pycoQC ():
 
     def summary (self,
         width = 1400,
-        height = None,
-        iplot=True):
+        height = None):
         """
         Plot an interactive summary table
         * width: With of the ploting area in pixel
@@ -173,7 +183,7 @@ class pycoQC ():
         layout = go.Layout (updatemenus = updatemenus, width = width, height = height)
 
         fig = go.Figure (data=data, layout=layout)
-        if iplot:
+        if self._iplot:
             py.iplot (fig, show_link=False)
         return fig
 
@@ -222,8 +232,7 @@ class pycoQC ():
         height=500,
         nbins=200,
         smooth_sigma=2,
-        sample=100000,
-        iplot=True):
+        sample=100000):
         """
         Plot a distribution of read length (log scale)
         * color: Color of the area (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -269,7 +278,7 @@ class pycoQC ():
         )
 
         fig = go.Figure (data=data, layout=layout)
-        if iplot:
+        if self._iplot:
             py.iplot (fig, show_link=False)
         return fig
 
@@ -279,8 +288,7 @@ class pycoQC ():
         height=500,
         nbins=200,
         smooth_sigma=2,
-        sample=100000,
-        iplot=True):
+        sample=100000):
         """
         Plot a distribution of quality scores
         * color: Color of the area (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -326,7 +334,7 @@ class pycoQC ():
             yaxis = {"title":"Read Density", "zeroline":False, "showline":True, "fixedrange":True})
 
         fig = go.Figure(data=data, layout=layout)
-        if iplot:
+        if self._iplot:
             py.iplot (fig, show_link=False)
         return fig
 
@@ -383,8 +391,7 @@ class pycoQC ():
         len_nbins = None,
         qual_nbins = None,
         smooth_sigma = 2,
-        sample = 100000,
-        iplot=True):
+        sample = 100000):
         """
         Plot a 2D distribution of quality scores vs length of the reads
         * colorscale: a valid plotly color scale https://plot.ly/python/colorscales/ (Not recommanded to change)
@@ -428,7 +435,7 @@ class pycoQC ():
             yaxis = {"title":"Read Quality Scores", "showgrid":True, "zeroline":False, "showline":True,})
 
         fig = go.Figure (data=data, layout=layout)
-        if iplot:
+        if self._iplot:
             py.iplot (fig, show_link=False)
         return fig
 
@@ -468,8 +475,7 @@ class pycoQC ():
         interval_color="rgb(102,168,255)",
         width=1400,
         height=500,
-        sample=100000,
-        iplot=True):
+        sample=100000):
         """
         Plot a yield over time
         * cumulative_color: Color of cumulative yield area (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -512,7 +518,7 @@ class pycoQC ():
             xaxis={"title":"Experiment time (h)", "zeroline":False, "showline":True})
 
         fig = go.Figure(data=data, layout=layout)
-        if iplot:
+        if self._iplot:
             py.iplot (fig, show_link=False)
         return fig
 
@@ -574,8 +580,7 @@ class pycoQC ():
         smooth_sigma=1,
         width=1400,
         height=500,
-        sample=100000,
-        iplot=True):
+        sample=100000):
         """
         Plot a mean quality over time
         * median_color: Color of median line color (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -617,7 +622,7 @@ class pycoQC ():
             xaxis={"title":"Experiment time (h)", "zeroline":False, "showline":True, "rangemode":'nonnegative'})
 
         fig = go.Figure(data=data, layout=layout)
-        if iplot:
+        if self._iplot:
             py.iplot (fig, show_link=False)
         return fig
 
@@ -670,8 +675,7 @@ class pycoQC ():
         colors = ["#f8bc9c", "#f6e9a1", "#f5f8f2", "#92d9f5", "#4f97ba"],
         width = 700,
         height = 600,
-        sample = 100000,
-        iplot=True):
+        sample = 100000):
         """
         Plot a mean quality over time
         * min_percent_barcode: minimal percentage od total reads for a barcode to be reported
@@ -708,7 +712,7 @@ class pycoQC ():
             title = "Percentage of reads per barcode")
 
         fig = go.Figure (data=data, layout=layout)
-        if iplot:
+        if self._iplot:
             py.iplot (fig, show_link=False)
         return fig
 
@@ -738,8 +742,7 @@ class pycoQC ():
         smooth_sigma=1,
         width=2000,
         height=600,
-        sample=100000,
-        iplot=True):
+        sample=100000):
         """
         Plot a yield over time
         * width: With of the ploting area in pixel
@@ -773,7 +776,7 @@ class pycoQC ():
             yaxis={"title":"Experiment time (h)", "zeroline":False, "showline":False, "hoverformat":".2f", "fixedrange":True})
 
         fig = go.Figure(data=data, layout=layout)
-        if iplot:
+        if self._iplot:
             py.iplot (fig, show_link=False)
         return fig
 
