@@ -49,32 +49,6 @@ def jprint(*args, **kwargs):
 
     display(HTML(s))
 
-def jhelp(function, full=False):
-    """
-    Print a nice looking help string based on the name of a declared function. By default print the function definition and description
-    * full
-        If True, the help string will included a description of all arguments
-    """
-    try:
-        # For some reason signature is not aways importable. In these cases the build-in help in invoqued
-        from inspect import signature, isfunction, ismethod
-        if isfunction(function) or ismethod(function):
-            name = function.__name__.strip()
-            sig = str(signature(function)).strip()
-            display(HTML ("<b>{}</b> {}".format(name, sig)))
-
-            if function.__doc__:
-                for line in function.__doc__.split("\n"):
-                    line = line.strip()
-                    if not full and line.startswith("*"):
-                        break
-                    display(Markdown(line.strip()))
-        else:
-            jprint("{} is not a function".format(function))
-
-    except Exception:
-        help(function)
-
 def is_readable_file (fp, raise_exception=True, **kwargs):
     """
     Verify the readability of a file or list of file
