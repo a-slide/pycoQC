@@ -80,9 +80,9 @@ An online live usage notebook served by MyBinder is available to familiarize wit
 
 [![mybinder](./pictures/launch-mybinder-red.svg)](https://mybinder.org/v2/gh/a-slide/pycoQC/dev?filepath=tests%2FpycoQC_usage.ipynb)
 
-A static version of the same notebook is also available if you experience any issue with the live version :
+A static html version of the same notebook is also available if you experience any issue with the live version:
 
-[![nbviewer](./pictures/launch-nbviewer-blue.svg)](https://nbviewer.jupyter.org/github/a-slide/pycoQC/blob/dev/tests/pycoQC_usage.ipynb?flush_cache=true)
+[![html](./pictures/static-html-blue.svg)](http://htmlpreview.github.io/?https://github.com/a-slide/pycoQC/blob/dev/tests/pycoQC_usage.html)
 
 ## Running your own notebook locally or remotely
 
