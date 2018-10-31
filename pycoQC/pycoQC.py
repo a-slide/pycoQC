@@ -239,7 +239,7 @@ class pycoQC ():
         * width: With of the ploting area in pixel
         * height: height of the ploting area in pixel
         * nbins: Number of bins to devide the x axis in
-        * smooth_win: Size of the windows to smooth the curve (odd number higher than 3)
+        * smooth_sigma: standard deviation for Gaussian kernel
         * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
         """
         # Downsample if needed
@@ -294,9 +294,9 @@ class pycoQC ():
         * color: Color of the area (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
         * width: With of the ploting area in pixel
         * height: height of the ploting area in pixel
-        * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
         * nbins: Number of bins to devide the x axis in
         * smooth_sigma: standard deviation for Gaussian kernel
+        * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
         """
         # Downsample if needed
         all_df = self.all_df.sample(sample) if sample and len(self.all_df)>sample else self.all_df
