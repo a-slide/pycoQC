@@ -25,7 +25,10 @@ In addition it will try to get the following optional fields if they are availab
 
 # Gallery
 
-<iframe width="900" height="800" frameborder="0" scrolling="no" src="//plot.ly/~aleg/0.embed"></iframe>
+<div>
+    <a href="https://plot.ly/~aleg/0/?share_key=UrlzmwI9rh2I5YVTRO8WMN" target="_blank" title="plot from API" style="display: block; text-align: center;"><img src="https://plot.ly/~aleg/0.png?share_key=UrlzmwI9rh2I5YVTRO8WMN" alt="plot from API" style="max-width: 100%;width: 1400px;"  width="1400" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
+    <script data-plotly="aleg:0" sharekey-plotly="UrlzmwI9rh2I5YVTRO8WMN" src="https://plot.ly/embed.js" async></script>
+</div>
 
 # Installation
 
