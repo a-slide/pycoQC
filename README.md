@@ -25,7 +25,7 @@ In addition it will try to get the following optional fields if they are availab
 
 # Gallery
 
-Example plots
+<iframe width="900" height="800" frameborder="0" scrolling="no" src="//plot.ly/~aleg/0.embed"></iframe>
 
 # Installation
 
