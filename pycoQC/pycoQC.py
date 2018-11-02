@@ -785,7 +785,7 @@ class pycoQC ():
         t = (df["start_time"]/3600).values
         t_min = t.min()
         t_max = t.max()
-        bins = np.linspace (t_min, t_max, int((t_max-t_min)*5))
+        bins = np.linspace (t_min, t_max, int((t_max-t_min)*3))
         t = np.digitize (t, bins=bins, right=True)
 
         # Count values per categories
