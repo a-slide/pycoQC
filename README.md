@@ -21,7 +21,7 @@ In addition it will try to get the following optional fields if they are availab
 
 # Gallery
 
-*Click on picture to see online interactive version.* 
+*Click on picture to see online interactive version.*
 
 [![reads_len_1D_example](./pictures/reads_len_1D_example.png)](https://plot.ly/~aleg/2/distribution-of-read-length/)
 
@@ -47,15 +47,15 @@ For example you can use virtualenvwrapper (see http://www.simononsoftware.com/vi
 
 pycoQC relies on a few robustly maintained third party libraries (numpy, scipy, plotly, pandas). The correct versions of the packages are installed together with the software when using pip.
 
-## Option 1: Direct installation with pip from github (recommended)
+## Option 1: Direct installation with pip from pipy (recommended)
 
 Install the package with pip3. Python dependencies are automatically installed.
 
-`pip3 install git+https://github.com/a-slide/pycoQC.git`
+`pip3 install pycoQC`
 
 To update the package:
 
-`pip3 install git+https://github.com/a-slide/pycoQC.git --upgrade`
+`pip3 install pycoQC --upgrade`
 
 
 ## Option 2: Clone the repository and install locally in develop mode
@@ -100,7 +100,6 @@ From Jupyter home page you can navigate to the directory you want to work in. Th
 # Shell standalone interface
 
 TODO
-
 
 # Note to power-users and developers
 
