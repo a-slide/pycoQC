@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Define self package variable
-__version__ = '2.0.a1'
+__version__ = '2.0a1'
 __all__ = ["pycoQC", "common"]
 __description__="""
 PycoQC is a Python 3 package for Jupyter Notebook, computing metrics and generating simple QC plots
@@ -39,16 +39,12 @@ setup_dict = {
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',],
+        'Programming Language :: Python :: 3'],
     "install_requires": [
-        'numpy>=1.13.0',
-        'scipy>=1.1.0',
-        'plotly>=3.3.0',
-        'pandas>=0.20.0'],
+        'numpy>=1.13',
+        'scipy>=1.1',
+        'plotly>=3.3',
+        'pandas>=0.23'],
     "packages": [__name__],
     "package_dir": {__name__: __name__},
     "package_data": {__name__: ['data/*.txt']},
