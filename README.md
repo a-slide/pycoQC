@@ -70,7 +70,7 @@ With this option, the package will be locally installed in “editable” or “
 
 `pip3 install -e ./`
 
-# Usage in Jupyter Notebook
+# Jupyter Notebook Usage
 
 ## Demo notebook
 
@@ -84,9 +84,7 @@ A static html version of the same notebook is also available if you experience a
 
 ## Running your own notebook locally or remotely
 
-If you want to run pycoQC interactively in Jupyter you need to install Jupyter manually.
-
-If you installed pycoQC in a virtual environment, be carefull to install jupyter notebook in the same virtual environment.
+If you want to run pycoQC interactively in Jupyter you need to install Jupyter manually. If you installed pycoQC in a virtual environment then install Jupyter in the same virtual environment.
 
 `pip3 install notebook`
 
@@ -94,21 +92,19 @@ Launch the notebook in a shell terminal
 
 `jupyter notebook`
 
-If it does not autolaunch your web browser, open manually the following URL http://localhost:8888/tree
+If it does not autolaunch, open manually the following URL in you favorite web browser http://localhost:8888/tree
 
 From Jupyter home page you can navigate to the directory you want to work in. Then, create a new Python3 Notebook.
 
 
 # Shell standalone interface
 
-pycoQC 2 now has the ability to generate an HTML report containing all the plots.
-
 TODO
 
 
 # Note to power-users and developers
 
-Please be aware that pycoQC is an experimental package that is still under development. It was tested under Linux Ubuntu 16.04 and in an HPC environment running under Red Hat Enterprise 7.1.
+Please be aware that pycoQC is a research package that is still under development. It was tested under Linux Ubuntu 16.04 and in an HPC environment running under Red Hat Enterprise 7.1.
 
 You are welcome to contribute by requesting additional functionalities, reporting bugs or by forking and submitting pull requests
 
