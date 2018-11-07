@@ -20,6 +20,9 @@ logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
 logLevel_dict = {3:logging.DEBUG, 2:logging.INFO, 1:logging.WARNING}
 
+# Set seed for deterministic random sampling
+np.random.RandomState(seed=42)
+
 ##~~~~~~~ MAIN CLASS ~~~~~~~#
 class pycoQC ():
 
