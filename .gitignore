@@ -101,5 +101,4 @@ ENV/
 .mypy_cache/
 
 # data
-/tests/extra_data
-/tests/pycoQC_dev.ipynb
+/tests/
