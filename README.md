@@ -76,11 +76,11 @@ With this option, the package will be locally installed in “editable” or “
 
 An online live usage notebook served by MyBinder is available to familiarize with the package API:
 
-[![mybinder](./pictures/launch-mybinder-red.svg)](https://mybinder.org/v2/gh/a-slide/pycoQC/dev?filepath=tests%2FpycoQC_usage.ipynb) (Can take a few minutes)
+[![mybinder](./pictures/launch-mybinder-red.svg)](https://hub.mybinder.org/user/a-slide-pycoqc-atiyr4x0/notebooks/docs/pycoQC_usage.ipynb) (Can take a few minutes)
 
 A static html version of the same notebook is also available if you experience any issue with the live version:
 
-[![html](./pictures/static-html-blue.svg)](http://htmlpreview.github.io/?https://github.com/a-slide/pycoQC/blob/dev/tests/pycoQC_usage.html)
+[![html](./pictures/static-html-blue.svg)](https://a-slide.github.io/pycoQC/pycoQC_usage.html)
 
 ## Running your own notebook locally or remotely
 
