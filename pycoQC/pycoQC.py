@@ -169,19 +169,20 @@ class pycoQC ():
         """
         readable description of the object
         """
-        msg = "{} instance\n".format(self.__class__.__name__)
-        msg+= "\tParameters list\n"
+        msg = "[{}]\n".format(self.__class__.__name__)
+        msg += "\tTotal reads: {:,}\n".format(len(self.all_df))
+        msg += "\tPass reads: {:,}\n".format(len(self.pass_df))
+        msg += "\tMinimal Pass Quality: {}\n".format(self._min_pass_qual)
+        msg += "\tRun Duration: {} h\n".format(round((self.all_df["start_time"].ptp())/3600, 2))
+        msg += "\tTotal Bases: {:,}\n".format(self.all_df["num_bases"].sum())
+        msg += "\tBarcode found: {}\n".format("barcode" in self.all_df)
 
-        # list all values in object dict in alphabetical order
-        for k,v in OrderedDict(sorted(self.__dict__.items(), key=lambda t: t[0])).items():
-            if not k in ["all_df", "pass_df"]:
-                msg+="\t{}\t{}\n".format(k, v)
         return msg
 
     #~~~~~~~SUMMARY METHOD AND HELPER~~~~~~~#
 
     def summary (self,
-        width = 1400,
+        width = 1500,
         height = None):
         """
         Plot an interactive summary table
@@ -244,12 +245,12 @@ class pycoQC ():
     #~~~~~~~1D DISTRIBUTION METHODS AND HELPER~~~~~~~#
 
     def reads_len_1D (self,
-        color="lightsteelblue",
-        width=1400,
-        height=500,
-        nbins=200,
-        smooth_sigma=2,
-        sample=100000):
+        color = "lightsteelblue",
+        width = 1500,
+        height = 500,
+        nbins = 200,
+        smooth_sigma = 2,
+        sample = 100000):
         """
         Plot a distribution of read length (log scale)
         * color: Color of the area (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -289,20 +290,20 @@ class pycoQC ():
             updatemenus=updatemenus,
             width=width,
             height=height,
-            title = "Distribution of Read Length",
-            xaxis = {"title":"Read Length", "type":"log", "zeroline":False, "showline":True},
-            yaxis = {"title":"Read Density", "zeroline":False, "showline":True, "fixedrange":True},
+            title = "Distribution of read length",
+            xaxis = {"title":"Read length", "type":"log", "zeroline":False, "showline":True},
+            yaxis = {"title":"Read density", "zeroline":False, "showline":True, "fixedrange":True},
         )
 
         return go.Figure (data=data, layout=layout)
 
     def reads_qual_1D (self,
-        color="salmon",
-        width=1400,
-        height=500,
-        nbins=200,
-        smooth_sigma=2,
-        sample=100000):
+        color = "salmon",
+        width = 1500,
+        height = 500,
+        nbins = 200,
+        smooth_sigma = 2,
+        sample = 100000):
         """
         Plot a distribution of quality scores
         * color: Color of the area (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -343,9 +344,9 @@ class pycoQC ():
             updatemenus = updatemenus,
             width = width,
             height = height,
-            title = "Distribution of Read Quality Scores",
-            xaxis = {"title":"Read Quality Scores", "zeroline":False, "showline":True},
-            yaxis = {"title":"Read Density", "zeroline":False, "showline":True, "fixedrange":True})
+            title = "Distribution of read quality scores",
+            xaxis = {"title":"Read quality scores", "zeroline":False, "showline":True},
+            yaxis = {"title":"Read density", "zeroline":False, "showline":True, "fixedrange":True})
 
         return go.Figure (data=data, layout=layout)
 
@@ -396,7 +397,7 @@ class pycoQC ():
 
     def reads_len_qual_2D (self,
         colorscale = [[0.0,'rgba(255,255,255,0)'], [0.1,'rgba(255,150,0,0)'], [0.25,'rgb(255,100,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(70,0,0)']],
-        width = 1400,
+        width = 1500,
         height = 600,
         len_nbins = None,
         qual_nbins = None,
@@ -441,8 +442,8 @@ class pycoQC ():
             width = width,
             height = height,
             title = "Mean read quality per sequence length",
-            xaxis = {"title":"Estimated Read Length", "showgrid":True, "zeroline":False, "showline":True, "type":"log"},
-            yaxis = {"title":"Read Quality Scores", "showgrid":True, "zeroline":False, "showline":True,})
+            xaxis = {"title":"Estimated read length", "showgrid":True, "zeroline":False, "showline":True, "type":"log"},
+            yaxis = {"title":"Read quality scores", "showgrid":True, "zeroline":False, "showline":True,})
 
         return go.Figure (data=data, layout=layout)
 
@@ -477,11 +478,11 @@ class pycoQC ():
     #~~~~~~~OUTPUT_OVER_TIME METHODS AND HELPER~~~~~~~#
 
     def output_over_time (self,
-        cumulative_color="rgb(204,226,255)",
-        interval_color="rgb(102,168,255)",
-        width=1400,
-        height=500,
-        sample=100000):
+        cumulative_color = "rgb(204,226,255)",
+        interval_color = "rgb(102,168,255)",
+        width = 1500,
+        height = 500,
+        sample = 100000):
         """
         Plot a yield over time
         * cumulative_color: Color of cumulative yield area (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -520,7 +521,7 @@ class pycoQC ():
             updatemenus=updatemenus,
             legend={"x":-0.05, "y":1,"xanchor":'right',"yanchor":'top'},
             title="Output over experiment time",
-            yaxis={"title":"Cummulative Count", "zeroline":False, "showline":True, "fixedrange":True},
+            yaxis={"title":"Count", "zeroline":False, "showline":True, "fixedrange":True},
             xaxis={"title":"Experiment time (h)", "zeroline":False, "showline":True})
 
         return go.Figure (data=data, layout=layout)
@@ -577,13 +578,13 @@ class pycoQC ():
     #~~~~~~~QUAL_OVER_TIME METHODS AND HELPER~~~~~~~#
 
     def qual_over_time (self,
-        median_color="rgb(102,168,255)",
-        quartile_color="rgb(153,197,255)",
-        extreme_color="rgba(153,197,255, 0.5)",
-        smooth_sigma=1,
-        width=1400,
-        height=500,
-        sample=100000):
+        median_color = "rgb(102,168,255)",
+        quartile_color = "rgb(153,197,255)",
+        extreme_color = "rgba(153,197,255, 0.5)",
+        smooth_sigma = 1,
+        width = 1500,
+        height = 500,
+        sample = 100000):
         """
         Plot a mean quality over time
         * median_color: Color of median line color (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -620,8 +621,8 @@ class pycoQC ():
             height=height,
             updatemenus=updatemenus,
             legend={"x":-0.07, "y":1,"xanchor":'right',"yanchor":'top'},
-            title="Mean Read Quality Over Experiment Time",
-            yaxis={"title":"Mean Quality", "zeroline":False, "showline":True, "rangemode":'nonnegative', "fixedrange":True},
+            title="Mean read quality over experiment time",
+            yaxis={"title":"Mean quality", "zeroline":False, "showline":True, "rangemode":'nonnegative', "fixedrange":True},
             xaxis={"title":"Experiment time (h)", "zeroline":False, "showline":True, "rangemode":'nonnegative'})
 
         return go.Figure (data=data, layout=layout)
@@ -673,7 +674,7 @@ class pycoQC ():
     def barcode_counts (self,
         min_percent_barcode = 0.1,
         colors = ["#f8bc9c", "#f6e9a1", "#f5f8f2", "#92d9f5", "#4f97ba"],
-        width = 700,
+        width = 800,
         height = 600,
         sample = 100000):
         """
@@ -736,13 +737,16 @@ class pycoQC ():
 
     def channels_activity (self,
         colorscale = [[0.0,'rgba(255,255,255,0)'], [0.01,'rgb(255,255,200)'], [0.25,'rgb(255,200,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(0,0,0)']],
-        n_channels=512,
-        smooth_sigma=1,
-        width=2000,
-        height=600,
-        sample=100000):
+        n_channels = 512,
+        smooth_sigma = 1,
+        width = 1500,
+        height = 800,
+        sample = 100000):
         """
         Plot a yield over time
+        * colorscale: a valid plotly color scale https://plot.ly/python/colorscales/ (Not recommanded to change)
+        * n_channels: Overall number of expected channels (512 for Minion, 3000 for Promethion)
+        * smooth_sigma: sigma parameter for the Gaussian filter line smoothing
         * width: With of the ploting area in pixel
         * height: height of the ploting area in pixel
         * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
