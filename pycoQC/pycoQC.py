@@ -143,12 +143,12 @@ class pycoQC ():
         # Modify start time per run ids to order them following the runid_list
         logger.info ("\tReorder runids")
         increment_time = 0
-        self.runid_start = OrderedDict()
+        runid_start = OrderedDict()
         for runid in runid_list:
             logger.debug ("\tProcessing reads with Run_ID {} / time offset: {}".format(runid, increment_time))
             max_val = df['start_time'][df["run_id"] == runid].max()
             df.loc[df["run_id"] == runid, 'start_time'] += increment_time
-            self.runid_start[runid] = increment_time
+            runid_start[runid] = increment_time
             increment_time += max_val+1
         df = df.sort_values ("start_time")
 
