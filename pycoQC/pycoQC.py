@@ -92,14 +92,12 @@ class pycoQC ():
                 "calibration_strand_genome_template":"calibration",
                 "barcode_arrangement":"barcode"}
         else:
-        # Verify that the required and optional columns in the dataframe
-        main_col = self._check_columns (df=df, colnames=required_colnames, raise_error_if_missing=True)
-        opt_col = self._check_columns (df=df, colnames=optional_colnames, raise_error_if_missing=False)
             raise pycoQCError ("Invalid run_type. Must be either 1D or 1D2")
 
-        # Drop unused fields, simplify field names and drop lines containing NA values
-        df = df[main_col+opt_col]
+        # Verify that the required and optional columns, Drop unused fields and standardise field names.
+        col = self._check_columns (df=df, required_colnames=required_colnames, optional_colnames=optional_colnames)
         logger.debug ("\tColumns found: {}".format(col))
+        df = df[col]
         df = df.rename(columns=rename_colmanes)
 
         # Drop lines containing NA values
@@ -806,12 +804,15 @@ class pycoQC ():
         return [data_dict]
 
     #~~~~~~~PRIVATE METHODS~~~~~~~#
-    def _check_columns (self, df, colnames, raise_error_if_missing=True):
+    def _check_columns (self, df, required_colnames, optional_colnames):
         col_found = []
         # Verify the presence of the columns required for pycoQC
-        for col in colnames:
+        for col in required_colnames:
             if col in df:
                 col_found.append(col)
-            elif raise_error_if_missing:
-                raise ValueError("Column {} not found in the provided sequence_summary file".format(col))
+            else:
+                raise pycoQCError("Column {} not found in the provided sequence_summary file".format(col))
+        for col in optional_colnames:
+            if col in df:
+                col_found.append(col)
         return col_found
