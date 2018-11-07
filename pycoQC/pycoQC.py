@@ -10,7 +10,7 @@ import pandas as pd
 from scipy import signal
 from scipy.ndimage import gaussian_filter, gaussian_filter1d
 
-from IPython.core.display import display
+#from IPython.core.display import display
 import plotly.graph_objs as go
 import plotly.offline as py
 

@@ -44,7 +44,8 @@ setup_dict = {
         'numpy>=1.13',
         'scipy>=1.1',
         'plotly>=3.3',
-        'pandas>=0.23'],
+        'pandas>=0.23',
+        'IPython'],
     "packages": [__name__],
     "package_dir": {__name__: __name__},
     "entry_points": {
