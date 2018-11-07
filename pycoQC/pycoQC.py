@@ -32,7 +32,6 @@ class pycoQC ():
         run_type = None,
         runid_list = [],
         min_pass_qual = 7,
-        iplot=True,
         verbose_level = 1):
         """
         Parse Albacore sequencing_summary.txt file and clean-up the data
@@ -47,9 +46,6 @@ class pycoQC ():
             all the runids in the file and uses the runid order as defined in the file.
         * min_pass_qual INT [Default 7]
             Pass reads are defined throughout the package based on this threshold
-        * iplot
-            if False the ploting function do not plot the results but only return the a plotly.Figure object.
-            This is mainly intended to non-interative ploting
         * verbose_level INT [Default 1]
             From 3 (Chatty) to 1 (Nothing)
         """
@@ -167,7 +163,7 @@ class pycoQC ():
         self.all_df = df
         self.pass_df = df[df["mean_qscore"]>=min_pass_qual]
         self._min_pass_qual = min_pass_qual
-        self._iplot = iplot
+
 
     def __str__(self):
         """
@@ -206,10 +202,7 @@ class pycoQC ():
             height = 270+(30*self.all_df["run_id"].nunique())
         layout = go.Layout (updatemenus = updatemenus, width = width, height = height)
 
-        fig = go.Figure (data=data, layout=layout)
-        if self._iplot:
-            py.iplot (fig, show_link=False)
-        return fig
+        return go.Figure (data=data, layout=layout)
 
     def __summary_data (self, df):
         """
@@ -301,10 +294,7 @@ class pycoQC ():
             yaxis = {"title":"Read Density", "zeroline":False, "showline":True, "fixedrange":True},
         )
 
-        fig = go.Figure (data=data, layout=layout)
-        if self._iplot:
-            py.iplot (fig, show_link=False)
-        return fig
+        return go.Figure (data=data, layout=layout)
 
     def reads_qual_1D (self,
         color="salmon",
@@ -357,16 +347,12 @@ class pycoQC ():
             xaxis = {"title":"Read Quality Scores", "zeroline":False, "showline":True},
             yaxis = {"title":"Read Density", "zeroline":False, "showline":True, "fixedrange":True})
 
-        fig = go.Figure(data=data, layout=layout)
-        if self._iplot:
-            py.iplot (fig, show_link=False)
-        return fig
+        return go.Figure (data=data, layout=layout)
 
     def __reads_1D_data (self, df, field_name="num_bases", xscale="linear", nbins=200, smooth_sigma=2):
         """
         Private function preparing data for reads_len_1D and reads_qual_1D
         """
-
         #Extract data field from df
         data = df[field_name].values
 
@@ -458,16 +444,12 @@ class pycoQC ():
             xaxis = {"title":"Estimated Read Length", "showgrid":True, "zeroline":False, "showline":True, "type":"log"},
             yaxis = {"title":"Read Quality Scores", "showgrid":True, "zeroline":False, "showline":True,})
 
-        fig = go.Figure (data=data, layout=layout)
-        if self._iplot:
-            py.iplot (fig, show_link=False)
-        return fig
+        return go.Figure (data=data, layout=layout)
 
     def __reads_distr_2D_data (self, df, len_nbins, qual_nbins, smooth_sigma=1.5):
         """
         Private function preparing data for reads_len_qual_2D
         """
-
         len_data = df["num_bases"]
         qual_data = df["mean_qscore"]
 
@@ -541,10 +523,7 @@ class pycoQC ():
             yaxis={"title":"Cummulative Count", "zeroline":False, "showline":True, "fixedrange":True},
             xaxis={"title":"Experiment time (h)", "zeroline":False, "showline":True})
 
-        fig = go.Figure(data=data, layout=layout)
-        if self._iplot:
-            py.iplot (fig, show_link=False)
-        return fig
+        return go.Figure (data=data, layout=layout)
 
     def __output_over_time_data (self, df, level="reads"):
         """
@@ -645,10 +624,7 @@ class pycoQC ():
             yaxis={"title":"Mean Quality", "zeroline":False, "showline":True, "rangemode":'nonnegative', "fixedrange":True},
             xaxis={"title":"Experiment time (h)", "zeroline":False, "showline":True, "rangemode":'nonnegative'})
 
-        fig = go.Figure(data=data, layout=layout)
-        if self._iplot:
-            py.iplot (fig, show_link=False)
-        return fig
+        return go.Figure (data=data, layout=layout)
 
     def __qual_over_time_data (self, df, smooth_sigma=1.5):
         """
@@ -736,10 +712,7 @@ class pycoQC ():
             height = height,
             title = "Percentage of reads per barcode")
 
-        fig = go.Figure (data=data, layout=layout)
-        if self._iplot:
-            py.iplot (fig, show_link=False)
-        return fig
+        return go.Figure (data=data, layout=layout)
 
     def __barcode_counts_data (self, df, min_percent_barcode=0.1):
         """
@@ -800,10 +773,7 @@ class pycoQC ():
             xaxis={"title":"Channel id", "zeroline":False, "showline":False, "nticks":20, "showgrid":False},
             yaxis={"title":"Experiment time (h)", "zeroline":False, "showline":False, "hoverformat":".2f", "fixedrange":True})
 
-        fig = go.Figure(data=data, layout=layout)
-        if self._iplot:
-            py.iplot (fig, show_link=False)
-        return fig
+        return go.Figure (data=data, layout=layout)
 
     def __channels_activity_data (self, df, level="bases", n_channels=512, smooth_sigma=2):
         # Bin data in categories
