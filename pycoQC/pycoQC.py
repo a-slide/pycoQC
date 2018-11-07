@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 # Standard library imports
-from os import path
 from collections import OrderedDict, defaultdict
 from glob import glob
 import logging
@@ -9,10 +8,7 @@ import logging
 # Third party imports
 import numpy as np
 import pandas as pd
-from scipy import signal
 from scipy.ndimage import gaussian_filter, gaussian_filter1d
-
-from IPython.core.display import display
 import plotly.graph_objs as go
 import plotly.offline as py
 
