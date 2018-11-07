@@ -13,7 +13,12 @@ import plotly.graph_objs as go
 import plotly.offline as py
 
 # Local lib import
-from pycoQC.common import jprint, is_readable_file
+from pycoQC.common import jprint, pycoQCError, pycoQCWarning
+
+# Logger setup
+logging.basicConfig(level=logging.INFO, format='%(message)s')
+logger = logging.getLogger(__name__)
+logLevel_dict = {3:logging.DEBUG, 2:logging.INFO, 1:logging.WARNING}
 
 ##~~~~~~~ MAIN CLASS ~~~~~~~#
 class pycoQC ():
@@ -25,7 +30,7 @@ class pycoQC ():
         runid_list = [],
         min_pass_qual = 7,
         iplot=True,
-        verbose=False):
+        verbose_level = 1):
         """
         Parse Albacore sequencing_summary.txt file and clean-up the data
         * seq_summary_file: STR
@@ -42,7 +47,11 @@ class pycoQC ():
         * iplot
             if False the ploting function do not plot the results but only return the a plotly.Figure object.
             This is mainly intended to non-interative ploting
+        * verbose_level INT [Default 1]
+            From 3 (Chatty) to 1 (Nothing)
         """
+        # Set logging level
+        logger.setLevel (logLevel_dict.get (verbose_level, logging.INFO))
 
         # Check that file is readable and import the summary file in a dataframe
         logger.info ("Import raw data from sequencing summary files")
@@ -62,12 +71,9 @@ class pycoQC ():
         logger.debug ("\t{:,} reads found in initial file".format(len(df)))
 
         # Define specific parameters depending on the run_type
-        if verbose:
-            jprint("Verify and rearrange fields", bold=True)
-
+        logger.info ("Verify fields and discard unused columns")
         if run_type == "1D" or (not run_type and "sequence_length_template" in df):
-            if verbose:
-                jprint("\t1D Run type")
+            logger.info ("\t1D Run type")
             self.run_type = "1D"
             required_colnames = ["read_id", "run_id", "channel", "start_time", "sequence_length_template", "mean_qscore_template"]
             optional_colnames = ["calibration_strand_genome_template", "barcode_arrangement"]
@@ -77,8 +83,7 @@ class pycoQC ():
                 "calibration_strand_genome_template":"calibration",
                 "barcode_arrangement":"barcode"}
         elif run_type == "1D2" or (not run_type and "sequence_length_2d" in df):
-            if verbose:
-                jprint("\t1D2 Run type")
+            logger.info ("\t1D2 Run type")
             self.run_type = "1D2"
             required_colnames = ["read_id", "run_id", "channel", "start_time", "sequence_length_2d", "mean_qscore_2d"]
             optional_colnames = ["calibration_strand_genome_template", "barcode_arrangement"]
@@ -88,47 +93,58 @@ class pycoQC ():
                 "calibration_strand_genome_template":"calibration",
                 "barcode_arrangement":"barcode"}
         else:
-            raise ValueError ("Invalid run_type 1D or 1D2")
-
         # Verify that the required and optional columns in the dataframe
         main_col = self._check_columns (df=df, colnames=required_colnames, raise_error_if_missing=True)
         opt_col = self._check_columns (df=df, colnames=optional_colnames, raise_error_if_missing=False)
+            raise pycoQCError ("Invalid run_type. Must be either 1D or 1D2")
 
         # Drop unused fields, simplify field names and drop lines containing NA values
         df = df[main_col+opt_col]
+        logger.debug ("\tColumns found: {}".format(col))
         df = df.rename(columns=rename_colmanes)
+
+        # Drop lines containing NA values
+        logger.info ("Drop lines containing NA values")
+        l = len(df)
         df = df.dropna()
+        logger.debug ("\t{:,} reads discarded".format(l-len(df)))
 
         # Filter out calibration strands read if the "calibration_strand_genome_template" field is available
         if "calibration" in df:
-            if verbose: jprint ("Filter out reads corresponding to the calibration strand", bold=True)
+            logger.info ("Filter out calibration strand reads")
             l = len(df)
             df = df[(df["calibration"].isin(["filtered_out", "no_match"]))]
-            if verbose: jprint ("\t{} reads discarded".format(l-len(df)))
-            assert len(df) > 0, "No valid read left after calibration strand filtering"
+            logger.debug ("\t{:,} reads discarded".format(l-len(df)))
+            if len(df) == 0:
+                raise pycoQCError("No valid read left after calibration strand filtering")
 
         # Filter out zero length reads
         if (df["num_bases"]==0).any():
-            if verbose: jprint ("Filter out zero length reads", bold=True)
+            logger.info ("Filter out zero length reads")
             l = len(df)
             df = df[(df["num_bases"] > 0)]
-            if verbose: jprint ("\t{} reads discarded".format(l-len(df)))
-            assert len(df) > 0, "No valid read left after zero_len filtering"
+            logger.debug ("\t{} reads discarded".format(l-len(df)))
+            if len(df) == 0:
+                raise pycoQCError("No valid read left after zero_len filtering")
 
-        # select runid passed by user
+        # Filter and reorder based on runid_list list if passed by user
         if runid_list:
-            if verbose: jprint ("Verify run_ids passed by user", bold=True)
+            logger.info ("Select run_ids passed by user")
             df = df[(df["run_id"].isin(runid_list))]
-            assert len(df) > 0, "No valid read left after runid filtering"
-        # Else sort the runids by output per time assuming that the througput decreases over time
+            if len(df) == 0:
+                raise pycoQCError("No valid read left after run ID filtering")
+
+        # Else sort the runids by output per time assuming that the throughput  decreases over time
         else:
-            if verbose: jprint ("Order run_ids by decreasing througput", bold=True)
+            logger.info ("Sort run IDs by decreasing throughput")
             d = {}
             for run_id, sdf in df.groupby("run_id"):
                 d[run_id] = len(sdf)/sdf["start_time"].ptp()
             runid_list = [i for i, j in sorted (d.items(), key=lambda t: t[1], reverse=True)]
+            logger.debug ("\tRun-id order {}".format(runid_list))
 
         # Modify start time per run ids to order them following the runid_list
+        logger.info ("\tReorder runids")
         increment_time = 0
         self.runid_start = OrderedDict()
         for runid in runid_list:
@@ -137,15 +153,14 @@ class pycoQC ():
             df.loc[df["run_id"] == runid, 'start_time'] += increment_time
             self.runid_start[runid] = increment_time
             increment_time += max_val+1
-
-        # Final cleanup
-        if verbose: jprint ("Reindex and sort", bold=True)
         df = df.sort_values ("start_time")
+
+        # Reindex final df
+        logger.info ("Reindex dataframe by read_ids")
         df = df.reset_index (drop=True)
         df = df.set_index ("read_id")
-        self.total_reads = len (df)
-        if verbose: jprint ("\t{} Total valid reads found".format(self.total_reads))
 
+        # Save self var
         self.all_df = df
         self.pass_df = df[df["mean_qscore"]>=min_pass_qual]
         self._min_pass_qual = min_pass_qual
@@ -691,7 +706,8 @@ class pycoQC ():
         * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
         """
         # Verify that barcode information are available
-        assert "barcode" in self.all_df, "No barcode information available"
+        if not "barcode" in self.all_df:
+            raise pycoQCError ("No barcode information available")
 
         # Downsample if needed
         all_df = self.all_df.sample(sample) if sample and len(self.all_df)>sample else self.all_df
