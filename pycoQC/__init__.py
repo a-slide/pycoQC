@@ -47,4 +47,7 @@ setup_dict = {
         'pandas>=0.23'],
     "packages": [__name__],
     "package_dir": {__name__: __name__},
+    "entry_points": {
+        'console_scripts': ['pycoQC=pycoQC.cli:main'],
+    }
     }
