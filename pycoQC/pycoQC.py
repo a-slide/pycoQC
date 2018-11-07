@@ -145,7 +145,7 @@ class pycoQC ():
         increment_time = 0
         self.runid_start = OrderedDict()
         for runid in runid_list:
-            if verbose: jprint ("\tProcessing reads with Run_ID {} / time offset: {}".format(runid, increment_time))
+            logger.debug ("\tProcessing reads with Run_ID {} / time offset: {}".format(runid, increment_time))
             max_val = df['start_time'][df["run_id"] == runid].max()
             df.loc[df["run_id"] == runid, 'start_time'] += increment_time
             self.runid_start[runid] = increment_time
@@ -162,6 +162,8 @@ class pycoQC ():
         self.pass_df = df[df["mean_qscore"]>=min_pass_qual]
         self._min_pass_qual = min_pass_qual
 
+        # Detailed report for debug level only
+        logger.debug (str(self))
 
     def __str__(self):
         """
