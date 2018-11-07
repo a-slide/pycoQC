@@ -2,10 +2,20 @@
 
 # Standard library imports
 from os import access, R_OK
+from warnings import warn
 
 # Third party imports
-from IPython.core.display import display, HTML, Markdown
+from IPython.core.display import display, HTML
 import pandas as pd
+
+#~~~~~~~~~~~~~~CUSTOM EXCEPTION AND WARN CLASSES~~~~~~~~~~~~~~#
+class pycoQCError (Exception):
+    """ Basic exception class for pycoQC package """
+    pass
+
+class pycoQCWarning (Warning):
+    """ Basic Warning class for pycoQC package """
+    pass
 
 ##~~~~~~~ FUNCTIONS ~~~~~~~#
 
