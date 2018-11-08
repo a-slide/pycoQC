@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Define self package variable
-__version__ = '2.0a4'
+__version__ = '2.0a5'
 __all__ = ["pycoQC", "common"]
 __description__="""
 PycoQC-2 is a Pure Python 3 package for Jupyter Notebook, computing metrics and
