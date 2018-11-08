@@ -25,7 +25,7 @@ In addition it will try to get the following optional fields if they are availab
 
 [![reads_len_1D_example](./pictures/reads_len_1D_example.png)](https://plot.ly/~aleg/2/distribution-of-read-length/)
 
-[![](./pictures/summary.png)](https://plot.ly/~aleg/8/)
+[![summary](./pictures/summary.png)](https://plot.ly/~aleg/16/)
 
 [![reads_qual_len_2D_example](./pictures/reads_qual_len_2D_example.png)](https://plot.ly/~aleg/3/mean-read-quality-per-sequence-length/)
 
