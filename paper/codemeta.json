@@ -1,0 +1,17 @@
+{
+  "@context": "https://raw.githubusercontent.com/codemeta/codemeta/master/codemeta.jsonld",
+  "@type": "Code",
+  "author": [
+
+  ],
+  "identifier": "https://doi.org/10.5281/zenodo.1116396",
+  "codeRepository": "https://github.com/a-slide/pycoQC",
+  "datePublished": "2018-11-08",
+  "dateModified": "2018-11-08",
+  "dateCreated": "2018-11-08",
+  "description": "pycoQC is a python package that generates interactive plots from ONT sequencing data basecalled with Albacore (or equivalent)",
+  "keywords": "plots, interactive, metrics, nanopore, sequencing, python3",
+  "license": "MIT",
+  "title": "pycoQC",
+  "version": "v2.0"
+}
