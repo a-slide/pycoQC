@@ -162,7 +162,8 @@ class pycoQC ():
 
     def summary (self,
         width = 1400,
-        height = None):
+        height = None,
+        plot_title="Run summary"):
         """
         Plot an interactive summary table
         * width: With of the ploting area in pixel
@@ -180,7 +181,7 @@ class pycoQC ():
         # Autodefine height depending on the numbers of run_ids
         if not height:
             height = 270+(30*self.all_df["run_id"].nunique())
-        layout = go.Layout (updatemenus = updatemenus, width = width, height = height)
+        layout = go.Layout (updatemenus = updatemenus, width = width, height = height, title=plot_title)
 
         fig = go.Figure (data=data, layout=layout)
         if self._iplot:
@@ -232,7 +233,8 @@ class pycoQC ():
         height=500,
         nbins=200,
         smooth_sigma=2,
-        sample=100000):
+        sample=100000,
+        plot_title="Distribution of Read Length"):
         """
         Plot a distribution of read length (log scale)
         * color: Color of the area (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -272,7 +274,7 @@ class pycoQC ():
             updatemenus=updatemenus,
             width=width,
             height=height,
-            title = "Distribution of Read Length",
+            title = plot_title,
             xaxis = {"title":"Read Length", "type":"log", "zeroline":False, "showline":True},
             yaxis = {"title":"Read Density", "zeroline":False, "showline":True, "fixedrange":True},
         )
@@ -288,7 +290,8 @@ class pycoQC ():
         height=500,
         nbins=200,
         smooth_sigma=2,
-        sample=100000):
+        sample=100000,
+        plot_title="Distribution of Read Quality Scores"):
         """
         Plot a distribution of quality scores
         * color: Color of the area (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -329,7 +332,7 @@ class pycoQC ():
             updatemenus = updatemenus,
             width = width,
             height = height,
-            title = "Distribution of Read Quality Scores",
+            title = plot_title,
             xaxis = {"title":"Read Quality Scores", "zeroline":False, "showline":True},
             yaxis = {"title":"Read Density", "zeroline":False, "showline":True, "fixedrange":True})
 
@@ -391,7 +394,8 @@ class pycoQC ():
         len_nbins = None,
         qual_nbins = None,
         smooth_sigma = 2,
-        sample = 100000):
+        sample = 100000,
+        plot_title="Mean read quality per sequence length"):
         """
         Plot a 2D distribution of quality scores vs length of the reads
         * colorscale: a valid plotly color scale https://plot.ly/python/colorscales/ (Not recommanded to change)
@@ -406,7 +410,7 @@ class pycoQC ():
         all_df = self.all_df.sample(sample) if sample and len(self.all_df)>sample else self.all_df
         pass_df = self.pass_df.sample(sample) if sample and len(self.pass_df)>sample else self.pass_df
 
-        # Define extra ploting options
+        # Define extra plotting options
         if len_nbins==None: len_nbins = width//7
         if qual_nbins==None: qual_nbins = height//7
 
@@ -430,7 +434,7 @@ class pycoQC ():
             updatemenus = updatemenus,
             width = width,
             height = height,
-            title = "Mean read quality per sequence length",
+            title = plot_title,
             xaxis = {"title":"Estimated Read Length", "showgrid":True, "zeroline":False, "showline":True, "type":"log"},
             yaxis = {"title":"Read Quality Scores", "showgrid":True, "zeroline":False, "showline":True,})
 
@@ -475,7 +479,8 @@ class pycoQC ():
         interval_color="rgb(102,168,255)",
         width=1400,
         height=500,
-        sample=100000):
+        sample=100000,
+        plot_title="Output over experiment time"):
         """
         Plot a yield over time
         * cumulative_color: Color of cumulative yield area (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -513,7 +518,7 @@ class pycoQC ():
             height=height,
             updatemenus=updatemenus,
             legend={"x":-0.05, "y":1,"xanchor":'right',"yanchor":'top'},
-            title="Output over experiment time",
+            title=plot_title,
             yaxis={"title":"Cummulative Count", "zeroline":False, "showline":True, "fixedrange":True},
             xaxis={"title":"Experiment time (h)", "zeroline":False, "showline":True})
 
@@ -580,7 +585,8 @@ class pycoQC ():
         smooth_sigma=1,
         width=1400,
         height=500,
-        sample=100000):
+        sample=100000,
+        plot_title="Mean Read Quality Over Experiment Time"):
         """
         Plot a mean quality over time
         * median_color: Color of median line color (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -617,7 +623,7 @@ class pycoQC ():
             height=height,
             updatemenus=updatemenus,
             legend={"x":-0.07, "y":1,"xanchor":'right',"yanchor":'top'},
-            title="Mean Read Quality Over Experiment Time",
+            title=plot_title,
             yaxis={"title":"Mean Quality", "zeroline":False, "showline":True, "rangemode":'nonnegative', "fixedrange":True},
             xaxis={"title":"Experiment time (h)", "zeroline":False, "showline":True, "rangemode":'nonnegative'})
 
@@ -675,7 +681,8 @@ class pycoQC ():
         colors = ["#f8bc9c", "#f6e9a1", "#f5f8f2", "#92d9f5", "#4f97ba"],
         width = 700,
         height = 600,
-        sample = 100000):
+        sample = 100000,
+        plot_title="Percentage of reads per barcode"):
         """
         Plot a mean quality over time
         * min_percent_barcode: minimal percentage od total reads for a barcode to be reported
@@ -709,7 +716,7 @@ class pycoQC ():
             updatemenus = updatemenus,
             width = width,
             height = height,
-            title = "Percentage of reads per barcode")
+            title = plot_title)
 
         fig = go.Figure (data=data, layout=layout)
         if self._iplot:
@@ -742,7 +749,8 @@ class pycoQC ():
         smooth_sigma=1,
         width=2000,
         height=600,
-        sample=100000):
+        sample=100000,
+        plot_title="Output per channel over experiment time"):
         """
         Plot a yield over time
         * width: With of the ploting area in pixel
@@ -771,7 +779,7 @@ class pycoQC ():
             width=width,
             height=height,
             updatemenus=updatemenus,
-            title="Output per channel over experiment time",
+            title=plot_title,
             xaxis={"title":"Channel id", "zeroline":False, "showline":False, "nticks":20, "showgrid":False},
             yaxis={"title":"Experiment time (h)", "zeroline":False, "showline":False, "hoverformat":".2f", "fixedrange":True})
 

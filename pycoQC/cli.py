@@ -3,11 +3,12 @@ import argparse
 import sys
 from pkg_resources import get_distribution
 import plotly
-from plotly.offline import plot
-from jinja2 import Environment, PackageLoader, select_autoescape
+from plotly.offline import plot, get_plotlyjs
+from jinja2 import Environment, PackageLoader, select_autoescape, Template
 import json
 import os.path
 import logging
+import datetime
 
 __version__ = get_distribution('pycoQC').version
 
@@ -31,7 +32,7 @@ def main(args=None):
     parser.add_argument("--config", "-c", help="path to a configuration file. If not provided, looks for it in ~/.pycoQC and ~/.config/pycoQC/config. If it's still not found, falls back to default paramaters.", default=None)
     group.add_argument("--default_config", help="print default configuration file", action='store_true')
     parser.add_argument("--loglevel", help="log level.", choices=['warning', 'info', 'debug'], default="warning")
-    parser.add_argument("--template", help="Jinja2 html template", default=None)
+    parser.add_argument("--template_file", help="Jinja2 html template", default=None)
     parser.add_argument('--version', '-v', action='version', version='v'+__version__)
 
     args = parser.parse_args()
@@ -49,16 +50,16 @@ def main(args=None):
     logger.debug(config)
 
 
-    generate_report(summary_file=args.file, outfile=args.outfile, qual=args.min_pass_qual, config=config, template=args.template)
+    generate_report(summary_file=args.file, outfile=args.outfile, qual=args.min_pass_qual, config=config, template_file=args.template_file)
 
-def generate_report(summary_file, outfile, qual=7, config=None, template=None):
+def generate_report(summary_file, outfile, qual=7, config=None, template_file=None):
     """ Runs pycoQC and generates the HTML report"""
-
     if not os.path.isfile(summary_file):
         raise Exception("Summary file not found")
 
     p = pycoQC.pycoQC(summary_file, verbose=False, min_pass_qual=10, iplot=False)
     plots = list()
+    titles = list()
 
     # Loop over configuration file and run the pycoQC functions defined
     for k,v in config.items():
@@ -67,18 +68,22 @@ def generate_report(summary_file, outfile, qual=7, config=None, template=None):
         else:
             logger.info("Running method %s"%k)
             method = getattr(p, k)
-            plots.append(plot(method(**v), output_type='div'))
+            titles.append(v["plot_title"])
+            v["plot_title"]=""
+            plots.append(plot(method(**v), output_type='div', include_plotlyjs=False, image_width='', image_height='', show_link=False, auto_open=False))
 
-    if template is None:
+    if template_file is None:
         env = Environment(
         loader=PackageLoader('pycoQC', 'templates'),
         autoescape=False
         )
         template = env.get_template('temp.html')
-    elif not os.path.isfile(template):
+    elif os.path.isfile(template_file):
+        with open(template_file) as file_:
+            template = Template(file_.read())
+    else:
         raise Exception("Template file not found")
-
-    rendering = template.render(plots=plots)
+    rendering = template.render(plots=plots, titles=titles, plotlyjs=get_plotlyjs(), date=datetime.datetime.now().strftime("%d/%m/%y"))
     with open(outfile, "w") as f:
         f.write(rendering)
 
@@ -111,55 +116,62 @@ def parse_config_file(config_file):
 
 def default_config():
     config = {
-            'summary': dict(width=1400, height=None),
+            'summary': dict(plot_title="Summary", width=1400, height=None),
             'reads_len_1D': dict(
+                plot_title='Distribution of read length',
                 color='lightsteelblue', 
-                width=1400, 
-                height=500, 
+                width=None, 
+                height=None, 
                 nbins=200, 
                 smooth_sigma=2, 
                 sample=100000),
             'reads_qual_1D': dict(
+                plot_title='Distribution of read quality',
                 color='salmon', 
-                width=1400, 
-                height=500, 
+                width=None, 
+                height=None, 
                 nbins=200, 
                 smooth_sigma=2, 
                 sample=100000),
             'reads_len_qual_2D': dict(
+                plot_title='Mean read quality per sequence length',
                 colorscale=[[0.0, 'rgba(255,255,255,0)'], [0.1, 'rgba(255,150,0,0)'], [0.25, 'rgb(255,100,0)'], [0.5, 'rgb(200,0,0)'], [0.75, 'rgb(120,0,0)'], [1.0, 'rgb(70,0,0)']], 
-                width=1400, 
-                height=600, 
-                len_nbins=None, 
-                qual_nbins=None, 
+                width=None, 
+                height=None, 
+                len_nbins=200, 
+                qual_nbins=100, 
                 smooth_sigma=2, 
                 sample=100000),
             'output_over_time': dict(
+                plot_title='Output over experiment time',
                 cumulative_color="rgb(204,226,255)", 
                 interval_color="rgb(102,168,255)", 
-                width=1400, 
-                height=500,
+                width=None, 
+                height=None,
                 sample=100000),
             'qual_over_time': dict(
+                plot_title='Mean read quality over time',
                 median_color="rgb(102,168,255)",
                 quartile_color="rgb(153,197,255)",
                 extreme_color="rgba(153,197,255, 0.5)",
                 smooth_sigma=1,
-                width=1400,
-                height=500,
+                width=None,
+                height=None,
                 sample=100000),
             'barcode_counts ': dict(
+                plot_title='Number of reads per barcode',
                 min_percent_barcode = 0.1,
                 colors = ["#f8bc9c", "#f6e9a1", "#f5f8f2", "#92d9f5", "#4f97ba"],
-                width = 700,
-                height = 600,
+                width = None,
+                height = None,
                 sample = 100000),
             'channels_activity': dict(
+                plot_title='Channel activity over time',
                 colorscale = [[0.0,'rgba(255,255,255,0)'], [0.01,'rgb(255,255,200)'], [0.25,'rgb(255,200,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(0,0,0)']],
                 n_channels=512,
                 smooth_sigma=1,
-                width=2000,
-                height=600,
+                width=None,
+                height=None,
                 sample=100000),
             }
     return(config)
