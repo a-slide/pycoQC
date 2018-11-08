@@ -43,7 +43,7 @@ setup_dict = {
     "install_requires": [
         'numpy>=1.13',
         'scipy>=1.1',
-        'plotly>=3.3',
+        'plotly>=3.4',
         'pandas>=0.23',
         'IPython'],
     "packages": [__name__],
