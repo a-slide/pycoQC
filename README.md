@@ -3,6 +3,7 @@
 [![DOI](https://zenodo.org/badge/94531811.svg)](https://zenodo.org/badge/latestdoi/94531811)
 [![GitHub license](https://img.shields.io/github/license/a-slide/pycoQC.svg)](https://github.com/a-slide/pycoQC/blob/master/LICENSE)
 [![Language](./pictures/language-Python3-brightgreen.svg)](https://www.python.org/)
+[![PyPI version](https://badge.fury.io/py/pycoQC.svg)](https://badge.fury.io/py/pycoQC)
 
 ---
 
