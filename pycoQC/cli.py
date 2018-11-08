@@ -28,10 +28,10 @@ def main(args=None):
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--file", "-f", type=str, help="path to the summary file.")
     parser.add_argument("--outfile", "-o", help="path to the output html file", default="pycoQC.html")
-    parser.add_argument("--min_pass_qual", "-q", help="Minimum quality to consider a read as 'pass'", default=7)
-    parser.add_argument("--config", "-c", help="path to a configuration file. If not provided, looks for it in ~/.pycoQC and ~/.config/pycoQC/config. If it's still not found, falls back to default paramaters.", default=None)
+    parser.add_argument("--min_pass_qual", "-q", help="minimum quality to consider a read as 'pass'", default=7, type=int)
+    parser.add_argument("--config", "-c", help="path to a JSON configuration file. If not provided, looks for it in ~/.pycoQC and ~/.config/pycoQC/config. If it's still not found, falls back to default paramaters. The first level keys are the names of the plots to be included. The second level keys are the parameters to pass to each plotting function", default=None)
     group.add_argument("--default_config", help="print default configuration file", action='store_true')
-    parser.add_argument("--loglevel", help="log level.", choices=['warning', 'info', 'debug'], default="warning")
+    parser.add_argument("--loglevel", choices=['warning', 'info', 'debug'], default="warning")
     parser.add_argument("--template_file", help="Jinja2 html template", default=None)
     parser.add_argument('--version', '-v', action='version', version='v'+__version__)
 
@@ -57,7 +57,7 @@ def generate_report(summary_file, outfile, qual=7, config=None, template_file=No
     if not os.path.isfile(summary_file):
         raise Exception("Summary file not found")
 
-    p = pycoQC.pycoQC(summary_file, verbose=False, min_pass_qual=10, iplot=False)
+    p = pycoQC.pycoQC(summary_file, verbose=False, min_pass_qual=qual, iplot=False)
     plots = list()
     titles = list()
 
@@ -73,11 +73,12 @@ def generate_report(summary_file, outfile, qual=7, config=None, template_file=No
             plots.append(plot(method(**v), output_type='div', include_plotlyjs=False, image_width='', image_height='', show_link=False, auto_open=False))
 
     if template_file is None:
+        logger.info("Using default template")
         env = Environment(
         loader=PackageLoader('pycoQC', 'templates'),
         autoescape=False
         )
-        template = env.get_template('temp.html')
+        template = env.get_template('spectre.html.j2')
     elif os.path.isfile(template_file):
         with open(template_file) as file_:
             template = Template(file_.read())
