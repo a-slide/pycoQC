@@ -88,7 +88,7 @@ def main(args=None):
         exit()
 
     # Print the names of valid pycoQC plotting functions
-    if args.plot_methods:
+    if args.list_plots:
         print ("Available pycoQC methods")
         for i in plot_methods:
             print ("* {}".format(i))
