@@ -13,12 +13,11 @@ import plotly.graph_objs as go
 import plotly.offline as py
 
 # Local lib import
-from pycoQC.common import jprint, pycoQCError, pycoQCWarning
+from pycoQC.common import pycoQCError, pycoQCWarning
 
 # Logger setup
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
-logLevel_dict = {3:logging.DEBUG, 2:logging.INFO, 1:logging.WARNING}
 
 # Set seed for deterministic random sampling
 np.random.RandomState(seed=42)
@@ -45,11 +44,12 @@ class pycoQC ():
             temporal plots, if the sequencing_summary file contain several sucessive runs. By default pycoQC analyses
             all the runids in the file and uses the runid order as defined in the file.
         * min_pass_qual INT [Default 7]
-            Pass reads are defined throughout the package based on this threshold
+            Minimum quality to consider a read as 'pass'
         * verbose_level INT [Default 1]
-            From 3 (Chatty) to 1 (Nothing)
+            Level of verbosity, from 3 (Chatty) to 1 (Nothing)
         """
         # Set logging level
+        logLevel_dict = {3:logging.DEBUG, 2:logging.INFO, 1:logging.WARNING}
         logger.setLevel (logLevel_dict.get (verbose_level, logging.INFO))
 
         # Check that file is readable and import the summary file in a dataframe
@@ -175,33 +175,43 @@ class pycoQC ():
         msg += "\tMinimal Pass Quality: {}\n".format(self._min_pass_qual)
         msg += "\tRun Duration: {} h\n".format(round((self.all_df["start_time"].ptp())/3600, 2))
         msg += "\tTotal Bases: {:,}\n".format(self.all_df["num_bases"].sum())
-        msg += "\tBarcode found: {}\n".format("barcode" in self.all_df)
+        msg += "\tBarcode found: {}\n".format(self.has_barcodes)
 
         return msg
 
-    #~~~~~~~SUMMARY METHOD AND HELPER~~~~~~~#
+    #~~~~~~~PROPERTY METHODS~~~~~~~#
+    @property
+    def has_barcodes (self):
+        return "barcode" in self.all_df
 
+    #~~~~~~~SUMMARY METHOD AND HELPER~~~~~~~#
     def summary (self,
-        width = 1500,
-        height = None):
+        width = None,
+        height = None,
+        plot_title="Run summary"):
         """
         Plot an interactive summary table
         * width: With of the ploting area in pixel
         * height: height of the ploting area in pixel
         """
-        # Prepare empty plot
-        data = [go.Table (columnwidth = [60, 20])]
+        # Prepare all data
+        dd1 = self.__summary_data (df=self.all_df)
+        dd2 = self.__summary_data (df=self.pass_df)
 
+        # Plot initial data
+        data = [go.Table(header = dd1["header"][0], cells = dd1["cells"][0], columnwidth = [60, 20])]
+
+        # Create update buttons
         updatemenus = [
             dict (type="buttons", active=0, x=-0.05, y=1, xanchor='right', yanchor='top', buttons = [
-                dict (label='All Reads', method='restyle', args=[self.__summary_data (df=self.all_df)]),
-                dict (label='Pass Reads', method='restyle', args=[self.__summary_data (df=self.pass_df)]),
-            ])]
+                dict (label='All Reads', method='restyle', args=[dd1]),
+                dict (label='Pass Reads', method='restyle', args=[dd2])])]
 
         # Autodefine height depending on the numbers of run_ids
         if not height:
-            height = 270+(30*self.all_df["run_id"].nunique())
-        layout = go.Layout (updatemenus = updatemenus, width = width, height = height)
+            height = 300+(30*self.all_df["run_id"].nunique())
+        # tweak plot layout
+        layout = go.Layout (updatemenus=updatemenus, width=width, height=height, title=plot_title)
 
         return go.Figure (data=data, layout=layout)
 
@@ -224,8 +234,7 @@ class pycoQC ():
 
         data_dict = dict (
             header = [{"values":header, "fill":{"color":"lightgrey"}, "align":"center", "font":{"color":'black', "size":12}, "height":40}],
-            cells  = [{"values":cells, "fill":{"color":["lightgrey", "white"]}, "align":"center", "font":{"color":'black', "size":12}, "height":30}],
-        )
+            cells  = [{"values":cells, "fill":{"color":["lightgrey", "white"]}, "align":"center", "font":{"color":'black', "size":12}, "height":30}])
 
         return data_dict
 
@@ -245,12 +254,13 @@ class pycoQC ():
     #~~~~~~~1D DISTRIBUTION METHODS AND HELPER~~~~~~~#
 
     def reads_len_1D (self,
-        color = "lightsteelblue",
-        width = 1500,
-        height = 500,
-        nbins = 200,
-        smooth_sigma = 2,
-        sample = 100000):
+        color="lightsteelblue",
+        width=None,
+        height=500,
+        nbins=200,
+        smooth_sigma=2,
+        sample=100000,
+        plot_title="Distribution of read length"):
         """
         Plot a distribution of read length (log scale)
         * color: Color of the area (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -264,46 +274,47 @@ class pycoQC ():
         all_df = self.all_df.sample(sample) if sample and len(self.all_df)>sample else self.all_df
         pass_df = self.pass_df.sample(sample) if sample and len(self.pass_df)>sample else self.pass_df
 
-        # Prepare empty plot
-        data = [
-            go.Scatter (fill='tozeroy', fillcolor=color, mode='none', showlegend=True),
-            go.Scatter (mode="lines+text", hoverinfo="skip", textposition='top center', line= {'color':'gray','width':1,'dash': 'dot'}),
-            go.Scatter (mode="lines+text", hoverinfo="skip", textposition='top center', line= {'color':'gray','width':1,'dash': 'dot'}),
-            go.Scatter (mode="lines+text", hoverinfo="skip", textposition='top center', line= {'color':'gray','width':1,'dash': 'dot'}),
-            go.Scatter (mode="lines+text", hoverinfo="skip", textposition='top center', line= {'color':'gray','width':1,'dash': 'dot'}),
-            go.Scatter (mode="lines+text", hoverinfo="skip", textposition='top center', line= {'color':'gray','width':1,'dash': 'dot'}),
-            ]
+        # Prepare all data
+        dd1, ld1 = self.__reads_1D_data (all_df, field_name="num_bases", xscale="log", nbins=nbins, smooth_sigma=smooth_sigma)
+        dd2, ld2 = self.__reads_1D_data (pass_df, field_name="num_bases", xscale="log", nbins=nbins, smooth_sigma=smooth_sigma)
 
+        # Plot initial data
+        line_style = {'color':'gray','width':1,'dash': 'dot'}
+        data = [
+            go.Scatter (x=dd1["x"][0], y=dd1["y"][0], name=dd1["name"][0], fill='tozeroy', fillcolor=color, mode='none', showlegend=True),
+            go.Scatter (x=dd1["x"][1], y=dd1["y"][1], name=dd1["name"][1], text=dd1["text"][1], mode="lines+text", hoverinfo="skip", textposition='top center', line= line_style),
+            go.Scatter (x=dd1["x"][2], y=dd1["y"][2], name=dd1["name"][2], text=dd1["text"][2], mode="lines+text", hoverinfo="skip", textposition='top center', line= line_style),
+            go.Scatter (x=dd1["x"][3], y=dd1["y"][3], name=dd1["name"][3], text=dd1["text"][3], mode="lines+text", hoverinfo="skip", textposition='top center', line= line_style),
+            go.Scatter (x=dd1["x"][4], y=dd1["y"][4], name=dd1["name"][4], text=dd1["text"][4], mode="lines+text", hoverinfo="skip", textposition='top center', line= line_style),
+            go.Scatter (x=dd1["x"][5], y=dd1["y"][5], name=dd1["name"][5], text=dd1["text"][5], mode="lines+text", hoverinfo="skip", textposition='top center', line= line_style)]
+
+        # Create update buttons
         updatemenus = [
             dict (type="buttons", active=0, x=-0.2, y=0, xanchor='left', yanchor='bottom', buttons = [
-                dict (
-                    label='All Reads', method='update',
-                    args=self.__reads_1D_data (all_df, field_name="num_bases", xscale="log", nbins=nbins, smooth_sigma=smooth_sigma)),
-                dict (
-                    label='Pass Reads', method='update',
-                    args=self.__reads_1D_data (pass_df, field_name="num_bases", xscale="log", nbins=nbins, smooth_sigma=smooth_sigma)),
-            ])]
+                dict (label='All Reads', method='update', args=[dd1, ld1]),
+                dict (label='Pass Reads', method='update', args=[dd2, ld2])])]
 
+        # tweak plot layout
         layout = go.Layout (
             hovermode="closest",
             legend={"x":-0.2, "y":1,"xanchor":'left',"yanchor":'top'},
             updatemenus=updatemenus,
             width=width,
             height=height,
-            title = "Distribution of read length",
+            title = plot_title,
             xaxis = {"title":"Read length", "type":"log", "zeroline":False, "showline":True},
-            yaxis = {"title":"Read density", "zeroline":False, "showline":True, "fixedrange":True},
-        )
+            yaxis = {"title":"Read density", "zeroline":False, "showline":True, "fixedrange":True, "range":ld1["yaxis.range"]})
 
         return go.Figure (data=data, layout=layout)
 
     def reads_qual_1D (self,
-        color = "salmon",
-        width = 1500,
-        height = 500,
-        nbins = 200,
-        smooth_sigma = 2,
-        sample = 100000):
+        color="salmon",
+        width=None,
+        height=500,
+        nbins=200,
+        smooth_sigma=2,
+        sample=100000,
+        plot_title="Distribution of read quality scores"):
         """
         Plot a distribution of quality scores
         * color: Color of the area (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -317,36 +328,36 @@ class pycoQC ():
         all_df = self.all_df.sample(sample) if sample and len(self.all_df)>sample else self.all_df
         pass_df = self.pass_df.sample(sample) if sample and len(self.pass_df)>sample else self.pass_df
 
-        # Prepare empty plot
-        data = [
-            go.Scatter (fill='tozeroy', fillcolor=color, mode='none'),
-            go.Scatter (mode="lines+text", hoverinfo="skip", textposition='top center', line= {'color':'gray','width':1,'dash': 'dot'}),
-            go.Scatter (mode="lines+text", hoverinfo="skip", textposition='top center', line= {'color':'gray','width':1,'dash': 'dot'}),
-            go.Scatter (mode="lines+text", hoverinfo="skip", textposition='top center', line= {'color':'gray','width':1,'dash': 'dot'}),
-            go.Scatter (mode="lines+text", hoverinfo="skip", textposition='top center', line= {'color':'gray','width':1,'dash': 'dot'}),
-            go.Scatter (mode="lines+text", hoverinfo="skip", textposition='top center', line= {'color':'gray','width':1,'dash': 'dot'}),
-            ]
+        # Prepare all data
+        dd1, ld1 = self.__reads_1D_data (all_df, field_name="mean_qscore", nbins=nbins, smooth_sigma=smooth_sigma)
+        dd2, ld2 = self.__reads_1D_data (pass_df, field_name="mean_qscore", nbins=nbins, smooth_sigma=smooth_sigma)
 
-        # Define button and associated data
+        # Plot initial data
+        line_style = {'color':'gray','width':1,'dash': 'dot'}
+        data = [
+            go.Scatter (x=dd1["x"][0], y=dd1["y"][0], name=dd1["name"][0], fill='tozeroy', fillcolor=color, mode='none', showlegend=True),
+            go.Scatter (x=dd1["x"][1], y=dd1["y"][1], name=dd1["name"][1], text=dd1["text"][1], mode="lines+text", hoverinfo="skip", textposition='top center', line= line_style),
+            go.Scatter (x=dd1["x"][2], y=dd1["y"][2], name=dd1["name"][2], text=dd1["text"][2], mode="lines+text", hoverinfo="skip", textposition='top center', line= line_style),
+            go.Scatter (x=dd1["x"][3], y=dd1["y"][3], name=dd1["name"][3], text=dd1["text"][3], mode="lines+text", hoverinfo="skip", textposition='top center', line= line_style),
+            go.Scatter (x=dd1["x"][4], y=dd1["y"][4], name=dd1["name"][4], text=dd1["text"][4], mode="lines+text", hoverinfo="skip", textposition='top center', line= line_style),
+            go.Scatter (x=dd1["x"][5], y=dd1["y"][5], name=dd1["name"][5], text=dd1["text"][5], mode="lines+text", hoverinfo="skip", textposition='top center', line= line_style)]
+
+        # Create update buttons
         updatemenus = [
             dict (type="buttons", active=0, x=-0.2, y=0, xanchor='left', yanchor='bottom', buttons = [
-                dict (
-                    label='All Reads', method='update',
-                    args=self.__reads_1D_data (all_df, field_name="mean_qscore", nbins=nbins, smooth_sigma=smooth_sigma)),
-                dict (
-                    label='Pass Reads', method='update',
-                    args=self.__reads_1D_data (pass_df, field_name="mean_qscore", nbins=nbins, smooth_sigma=smooth_sigma)),
-            ])]
+                dict (label='All Reads', method='update', args=[dd1, ld1]),
+                dict (label='Pass Reads', method='update', args=[dd2, ld2])])]
 
+        # tweak plot layout
         layout = go.Layout (
             hovermode = "closest",
             legend = {"x":-0.2, "y":1,"xanchor":'left',"yanchor":'top'},
             updatemenus = updatemenus,
             width = width,
             height = height,
-            title = "Distribution of read quality scores",
+            title = plot_title,
             xaxis = {"title":"Read quality scores", "zeroline":False, "showline":True},
-            yaxis = {"title":"Read density", "zeroline":False, "showline":True, "fixedrange":True})
+            yaxis = {"title":"Read density", "zeroline":False, "showline":True, "fixedrange":True, "range":ld1["yaxis.range"]})
 
         return go.Figure (data=data, layout=layout)
 
@@ -380,12 +391,12 @@ class pycoQC ():
             x = [count_x, [stat[0],stat[0]], [stat[1],stat[1]], [stat[2],stat[2]], [stat[3],stat[3]], [stat[4],stat[4]]],
             y = [count_y, [0,y_max], [0,y_max], [0,y_max], [0,y_max], [0,y_max]],
             name = ["Density", "10%", "25%", "Median", "75%", "90%"],
-            text = [None,
-                [None, "10%<br>{}".format(stat[0])],
-                [None, "25%<br>{}".format(stat[1])],
-                [None, "Median<br>{}".format(stat[2])],
-                [None, "75%<br>{}".format(stat[3])],
-                [None, "90%<br>{}".format(stat[4])]],
+            text = ["",
+                ["", "10%<br>{}".format(stat[0])],
+                ["", "25%<br>{}".format(stat[1])],
+                ["", "Median<br>{}".format(stat[2])],
+                ["", "75%<br>{}".format(stat[3])],
+                ["", "90%<br>{}".format(stat[4])]],
         )
 
         # Make layout dict = Off set for labels on top
@@ -397,12 +408,13 @@ class pycoQC ():
 
     def reads_len_qual_2D (self,
         colorscale = [[0.0,'rgba(255,255,255,0)'], [0.1,'rgba(255,150,0,0)'], [0.25,'rgb(255,100,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(70,0,0)']],
-        width = 1500,
+        width = None,
         height = 600,
-        len_nbins = None,
-        qual_nbins = None,
+        len_nbins = 200,
+        qual_nbins = 75,
         smooth_sigma = 2,
-        sample = 100000):
+        sample = 100000,
+        plot_title="Mean read quality per sequence length"):
         """
         Plot a 2D distribution of quality scores vs length of the reads
         * colorscale: a valid plotly color scale https://plot.ly/python/colorscales/ (Not recommanded to change)
@@ -417,37 +429,37 @@ class pycoQC ():
         all_df = self.all_df.sample(sample) if sample and len(self.all_df)>sample else self.all_df
         pass_df = self.pass_df.sample(sample) if sample and len(self.pass_df)>sample else self.pass_df
 
-        # Define extra ploting options
-        if len_nbins==None: len_nbins = width//7
-        if qual_nbins==None: qual_nbins = height//7
+        # Prepare all data
+        dd1 = self.__reads_2D_data (all_df, len_nbins=len_nbins, qual_nbins=qual_nbins, smooth_sigma=smooth_sigma)
+        dd2 = self.__reads_2D_data (pass_df, len_nbins=len_nbins, qual_nbins=qual_nbins, smooth_sigma=smooth_sigma)
 
-        # Prepare empty plot
+        # Plot initial data
         data = [
-            go.Contour (name="Density", hoverinfo="name+x+y", colorscale=colorscale, showlegend=True, connectgaps=True, line={"width":0}),
-            go.Scatter (mode='markers', name='Median', hoverinfo="name+x+y", marker={"size":12,"color":'black', "symbol":"x"})
-            ]
+            go.Contour (x=dd1["x"][0], y=dd1["y"][0], z=dd1["z"][0], contours=dd1["contours"][0],
+                name="Density", hoverinfo="name+x+y", colorscale=colorscale, showlegend=True, connectgaps=True, line={"width":0}),
+            go.Scatter (x=dd1["x"][1], y=dd1["y"][1],
+                mode='markers', name='Median', hoverinfo="name+x+y", marker={"size":12,"color":'black', "symbol":"x"})]
 
+        # Create update buttons
         updatemenus = [
             dict (type="buttons", active=0, x=-0.2, y=0, xanchor='left', yanchor='bottom', buttons = [
-                dict (label='All Reads', method='restyle',
-                      args=[self.__reads_distr_2D_data (all_df, len_nbins=len_nbins, qual_nbins=qual_nbins, smooth_sigma=smooth_sigma)]),
-                dict (label='Pass Reads', method='restyle',
-                      args=[self.__reads_distr_2D_data (pass_df, len_nbins=len_nbins, qual_nbins=qual_nbins, smooth_sigma=smooth_sigma)]),
-            ])]
+                dict (label='All Reads', method='restyle', args=[dd1]),
+                dict (label='Pass Reads', method='restyle', args=[dd2])])]
 
+        # tweak plot layout
         layout = go.Layout (
             hovermode = "closest",
             legend = {"x":-0.2, "y":1,"xanchor":'left',"yanchor":'top'},
             updatemenus = updatemenus,
             width = width,
             height = height,
-            title = "Mean read quality per sequence length",
+            title = plot_title,
             xaxis = {"title":"Estimated read length", "showgrid":True, "zeroline":False, "showline":True, "type":"log"},
             yaxis = {"title":"Read quality scores", "showgrid":True, "zeroline":False, "showline":True,})
 
         return go.Figure (data=data, layout=layout)
 
-    def __reads_distr_2D_data (self, df, len_nbins, qual_nbins, smooth_sigma=1.5):
+    def __reads_2D_data (self, df, len_nbins, qual_nbins, smooth_sigma=1.5):
         """
         Private function preparing data for reads_len_qual_2D
         """
@@ -478,11 +490,12 @@ class pycoQC ():
     #~~~~~~~OUTPUT_OVER_TIME METHODS AND HELPER~~~~~~~#
 
     def output_over_time (self,
-        cumulative_color = "rgb(204,226,255)",
-        interval_color = "rgb(102,168,255)",
-        width = 1500,
-        height = 500,
-        sample = 100000):
+        cumulative_color="rgb(204,226,255)",
+        interval_color="rgb(102,168,255)",
+        width=None,
+        height=500,
+        sample=100000,
+        plot_title="Output over experiment time"):
         """
         Plot a yield over time
         * cumulative_color: Color of cumulative yield area (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -496,33 +509,40 @@ class pycoQC ():
         all_df = self.all_df.sample(sample) if sample and len (self.all_df)>sample else self.all_df
         pass_df = self.pass_df.sample(sample) if sample and len (self.pass_df)>sample else self.pass_df
 
-        # Prepare empty plots
-        data = [
-            go.Scatter (name="", fill='tozeroy', fillcolor=cumulative_color, mode='none'),
-            go.Scatter (name="", mode='lines', line={'color':interval_color,'width':2}),
-            go.Scatter (mode="lines+text", hoverinfo="skip", textposition='top center', line={'color':'gray','width':1,'dash':'dot'}),
-            go.Scatter (mode="lines+text", hoverinfo="skip", textposition='top center', line={'color':'gray','width':1,'dash':'dot'}),
-            go.Scatter (mode="lines+text", hoverinfo="skip", textposition='top center', line={'color':'gray','width':1,'dash':'dot'}),
-            go.Scatter (mode="lines+text", hoverinfo="skip", textposition='top center', line={'color':'gray','width':1,'dash':'dot'}),
-            go.Scatter (mode="lines+text", hoverinfo="skip", textposition='top center', line={'color':'gray','width':1,'dash':'dot'}),
-        ]
+        # Prepare all data
+        dd1, ld1 = args=self.__output_over_time_data (all_df, level="reads")
+        dd2, ld2 = args=self.__output_over_time_data (pass_df, level="reads")
+        dd3, ld3 = args=self.__output_over_time_data (all_df, level="bases")
+        dd4, ld4 = args=self.__output_over_time_data (pass_df, level="bases")
 
+        # Plot initial data
+        line_style = {'color':'gray','width':1,'dash':'dot'}
+        data = [
+            go.Scatter (x=dd1["x"][0], y=dd1["y"][0], name=dd1["name"][0], fill='tozeroy', fillcolor=cumulative_color, mode='none'),
+            go.Scatter (x=dd1["x"][1], y=dd1["y"][1], name=dd1["name"][1], mode='lines', line={'color':interval_color,'width':2}),
+            go.Scatter (x=dd1["x"][2], y=dd1["y"][2], name=dd1["name"][2], text=dd1["text"][2], mode="lines+text", hoverinfo="skip", textposition='top center', line=line_style),
+            go.Scatter (x=dd1["x"][3], y=dd1["y"][3], name=dd1["name"][3], text=dd1["text"][3], mode="lines+text", hoverinfo="skip", textposition='top center', line=line_style),
+            go.Scatter (x=dd1["x"][4], y=dd1["y"][4], name=dd1["name"][4], text=dd1["text"][4], mode="lines+text", hoverinfo="skip", textposition='top center', line=line_style),
+            go.Scatter (x=dd1["x"][5], y=dd1["y"][5], name=dd1["name"][5], text=dd1["text"][5], mode="lines+text", hoverinfo="skip", textposition='top center', line=line_style),
+            go.Scatter (x=dd1["x"][6], y=dd1["y"][6], name=dd1["name"][6], text=dd1["text"][6], mode="lines+text", hoverinfo="skip", textposition='top center', line=line_style)]
+
+        # Create update buttons
         updatemenus = [
             dict (type="buttons", active=0, x=-0.06, y=0, xanchor='right', yanchor='bottom', buttons = [
-                dict (label='All Reads', method='update', args=self.__output_over_time_data (all_df, level="reads")),
-                dict (label='Pass Reads', method='update', args=self.__output_over_time_data (pass_df, level="reads")),
-                dict (label='All Bases', method='update', args=self.__output_over_time_data (all_df, level="bases")),
-                dict (label='Pass Bases', method='update', args=self.__output_over_time_data (pass_df, level="bases")),
-            ])]
+                dict (label='All Reads',  method='update', args=[dd1, ld1]),
+                dict (label='Pass Reads', method='update', args=[dd2, ld2]),
+                dict (label='All Bases',  method='update', args=[dd3, ld3]),
+                dict (label='Pass Bases', method='update', args=[dd4, ld4])])]
 
+        # tweak plot layout
         layout = go.Layout (
             width=width,
             height=height,
             updatemenus=updatemenus,
             legend={"x":-0.05, "y":1,"xanchor":'right',"yanchor":'top'},
-            title="Output over experiment time",
-            yaxis={"title":"Count", "zeroline":False, "showline":True, "fixedrange":True},
-            xaxis={"title":"Experiment time (h)", "zeroline":False, "showline":True})
+            title=plot_title,
+            xaxis={"title":"Experiment time (h)", "zeroline":False, "showline":True},
+            yaxis={"title":"Count", "zeroline":False, "showline":True, "fixedrange":True, "range":ld1["yaxis.range"]})
 
         return go.Figure (data=data, layout=layout)
 
@@ -558,7 +578,7 @@ class pycoQC ():
         for lab in (50, 75, 90, 99, 100):
             val = y_cum_max*lab/100
             idx = (np.abs(y_cum-val)).argmin()
-            lab_text.append([None, '{}%<br>{}h<br>{:,} {}'.format(lab, round(x[idx],2), int(y_cum[idx]), level)])
+            lab_text.append(["", '{}%<br>{}h<br>{:,} {}'.format(lab, round(x[idx],2), int(y_cum[idx]), level)])
             lab_x.append ([x[idx], x[idx]])
             lab_name.append ("{}%".format(lab))
 
@@ -567,8 +587,7 @@ class pycoQC ():
             x = [x, x]+lab_x,
             y = [y_cum, y, [0,y_cum_max], [0,y_cum_max], [0,y_cum_max], [0,y_cum_max], [0,y_cum_max]],
             name = ["Cumulative", "Interval"]+lab_name,
-            text = [None, None]+lab_text
-        )
+            text = ["", ""]+lab_text)
 
         # Make layout dict = offset for labels on top
         layout_dict = {"yaxis.range": [0, y_cum_max+y_cum_max/6]}
@@ -578,13 +597,14 @@ class pycoQC ():
     #~~~~~~~QUAL_OVER_TIME METHODS AND HELPER~~~~~~~#
 
     def qual_over_time (self,
-        median_color = "rgb(102,168,255)",
-        quartile_color = "rgb(153,197,255)",
-        extreme_color = "rgba(153,197,255, 0.5)",
-        smooth_sigma = 1,
-        width = 1500,
-        height = 500,
-        sample = 100000):
+        median_color="rgb(102,168,255)",
+        quartile_color="rgb(153,197,255)",
+        extreme_color="rgba(153,197,255, 0.5)",
+        smooth_sigma=1,
+        width=None,
+        height=500,
+        sample=100000,
+        plot_title="Mean read quality over experiment time"):
         """
         Plot a mean quality over time
         * median_color: Color of median line color (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -599,29 +619,33 @@ class pycoQC ():
         all_df = self.all_df.sample(sample) if sample and len (self.all_df)>sample else self.all_df
         pass_df = self.pass_df.sample(sample) if sample and len (self.pass_df)>sample else self.pass_df
 
-        # Prepare empty plots
-        data= [
-            go.Scatter(mode="lines", line={"color":extreme_color}, connectgaps=True, legendgroup="Extreme"),
-            go.Scatter(mode="lines", fill="tonexty", line={"color":extreme_color}, connectgaps=True, legendgroup="Extreme"),
-            go.Scatter(mode="lines", line={"color":quartile_color}, connectgaps=True, legendgroup="Quartiles"),
-            go.Scatter(mode="lines", fill="tonexty", line={"color":quartile_color}, connectgaps=True, legendgroup="Quartiles"),
-            go.Scatter(mode="lines", line={"color":median_color}, connectgaps=True),
-        ]
+        # Prepare all data
+        dd1 = self.__qual_over_time_data (all_df, smooth_sigma=smooth_sigma)
+        dd2 = self.__qual_over_time_data (pass_df, smooth_sigma=smooth_sigma)
 
+        # Plot initial data
+        data= [
+            go.Scatter(x=dd1["x"][0], y=dd1["y"][0], name=dd1["name"][0], mode="lines", line={"color":extreme_color}, connectgaps=True, legendgroup="Extreme"),
+            go.Scatter(x=dd1["x"][1], y=dd1["y"][1], name=dd1["name"][1], mode="lines", fill="tonexty", line={"color":extreme_color}, connectgaps=True, legendgroup="Extreme"),
+            go.Scatter(x=dd1["x"][2], y=dd1["y"][2], name=dd1["name"][2], mode="lines", line={"color":quartile_color}, connectgaps=True, legendgroup="Quartiles"),
+            go.Scatter(x=dd1["x"][3], y=dd1["y"][3], name=dd1["name"][3], mode="lines", fill="tonexty", line={"color":quartile_color}, connectgaps=True, legendgroup="Quartiles"),
+            go.Scatter(x=dd1["x"][4], y=dd1["y"][4], name=dd1["name"][4], mode="lines", line={"color":median_color}, connectgaps=True)]
+
+        # Create update buttons
         updatemenus = [
             go.layout.Updatemenu (type="buttons", active=0, x=-0.07, y=0, xanchor='right', yanchor='bottom', buttons = [
                 go.layout.updatemenu.Button (
-                    label='All Reads', method='restyle', args=self.__qual_over_time_data (all_df, smooth_sigma=smooth_sigma)),
+                    label='All Reads', method='restyle', args=[dd1]),
                 go.layout.updatemenu.Button (
-                    label='Pass Reads', method='restyle', args=self.__qual_over_time_data (pass_df, smooth_sigma=smooth_sigma)),
-        ])]
+                    label='Pass Reads', method='restyle', args=[dd2])])]
 
+        # tweak plot layout
         layout = go.Layout (
             width=width,
             height=height,
             updatemenus=updatemenus,
             legend={"x":-0.07, "y":1,"xanchor":'right',"yanchor":'top'},
-            title="Mean read quality over experiment time",
+            title=plot_title,
             yaxis={"title":"Mean quality", "zeroline":False, "showline":True, "rangemode":'nonnegative', "fixedrange":True},
             xaxis={"title":"Experiment time (h)", "zeroline":False, "showline":True, "rangemode":'nonnegative'})
 
@@ -662,21 +686,20 @@ class pycoQC ():
 
         # make data dict
         data_dict = dict(
-            x = [x],
+            x = [x,x,x,x,x],
             y = [stat_dict["Min"], stat_dict["Max"], stat_dict["25%"], stat_dict["75%"], stat_dict["Median"]],
-            name = val_name,
-        )
+            name = val_name)
 
-        return [data_dict]
+        return data_dict
 
     #~~~~~~~BARCODE_COUNT METHODS AND HELPER~~~~~~~#
-
     def barcode_counts (self,
         min_percent_barcode = 0.1,
         colors = ["#f8bc9c", "#f6e9a1", "#f5f8f2", "#92d9f5", "#4f97ba"],
-        width = 800,
-        height = 600,
-        sample = 100000):
+        width =  None,
+        height = 500,
+        sample = 100000,
+        plot_title="Percentage of reads per barcode"):
         """
         Plot a mean quality over time
         * min_percent_barcode: minimal percentage od total reads for a barcode to be reported
@@ -693,25 +716,26 @@ class pycoQC ():
         all_df = self.all_df.sample(sample) if sample and len(self.all_df)>sample else self.all_df
         pass_df = self.pass_df.sample(sample) if sample and len(self.pass_df)>sample else self.pass_df
 
-        # Prepare empty plot
-        data = [
-            go.Pie (sort=False, marker=dict(colors=colors))
-            ]
+        # Prepare all data
+        dd1 = self.__barcode_counts_data (all_df, min_percent_barcode=min_percent_barcode)
+        dd2 = self.__barcode_counts_data (pass_df, min_percent_barcode=min_percent_barcode)
 
+        # Plot initial data
+        data= [go.Pie (labels=dd1["labels"][0] , values=dd1["values"][0] , sort=False, marker=dict(colors=colors))]
+
+        # Create update buttons
         updatemenus = [
             dict (type="buttons", active=0, x=-0.2, y=0, xanchor='left', yanchor='bottom', buttons = [
-                dict (label='All Reads', method='restyle',
-                      args=[self.__barcode_counts_data (df=all_df, min_percent_barcode=min_percent_barcode)]),
-                dict (label='Pass Reads', method='restyle',
-                      args=[self.__barcode_counts_data (df=pass_df, min_percent_barcode=min_percent_barcode)]),
-            ])]
+                dict (label='All Reads', method='restyle', args=[dd1]),
+                dict (label='Pass Reads', method='restyle', args=[dd2])])]
 
+        # tweak plot layout
         layout = go.Layout (
             legend = {"x":-0.2, "y":1,"xanchor":'left',"yanchor":'top'},
             updatemenus = updatemenus,
             width = width,
             height = height,
-            title = "Percentage of reads per barcode")
+            title = plot_title)
 
         return go.Figure (data=data, layout=layout)
 
@@ -737,11 +761,12 @@ class pycoQC ():
 
     def channels_activity (self,
         colorscale = [[0.0,'rgba(255,255,255,0)'], [0.01,'rgb(255,255,200)'], [0.25,'rgb(255,200,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(0,0,0)']],
-        n_channels = 512,
-        smooth_sigma = 1,
-        width = 1500,
-        height = 800,
-        sample = 100000):
+        n_channels=512,
+        smooth_sigma=1,
+        width=None,
+        height=600,
+        sample=100000,
+        plot_title="Output per channel over experiment time"):
         """
         Plot a yield over time
         * colorscale: a valid plotly color scale https://plot.ly/python/colorscales/ (Not recommanded to change)
@@ -756,24 +781,29 @@ class pycoQC ():
         all_df = self.all_df.sample(sample) if sample and len (self.all_df)>sample else self.all_df
         pass_df = self.pass_df.sample(sample) if sample and len (self.pass_df)>sample else self.pass_df
 
-        # Prepare empty plots
-        data = [
-            go.Heatmap(xgap=0.5, colorscale=colorscale, hoverinfo="x+y+z"),
-        ]
+        # Prepare all data
+        dd1 = args=self.__channels_activity_data(all_df, level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma)
+        dd2 = args=self.__channels_activity_data(pass_df, level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma)
+        dd3 = args=self.__channels_activity_data(all_df, level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma)
+        dd4 = args=self.__channels_activity_data(pass_df, level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma)
 
+        # Plot initial data
+        data = [go.Heatmap(x=dd1["x"][0], y=dd1["y"][0], z=dd1["z"][0], xgap=0.5, colorscale=colorscale, hoverinfo="x+y+z")]
+
+        # Create update buttons
         updatemenus = [
             dict (type="buttons", active=0, x=-0.06, y=0, xanchor='right', yanchor='bottom', buttons = [
-                dict (label='All Reads', method='restyle', args=self.__channels_activity_data (all_df, level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma)),
-                dict (label='Pass Reads', method='restyle', args=self.__channels_activity_data (pass_df, level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma)),
-                dict (label='All Bases', method='restyle', args=self.__channels_activity_data (all_df, level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma)),
-                dict (label='Pass Bases', method='restyle', args=self.__channels_activity_data (pass_df, level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma)),
-            ])]
+                dict (label='All Reads', method='restyle', args=[dd1]),
+                dict (label='Pass Reads', method='restyle', args=[dd2]),
+                dict (label='All Bases', method='restyle', args=[dd3]),
+                dict (label='Pass Bases', method='restyle', args=[dd4])])]
 
+        # tweak plot layout
         layout = go.Layout (
             width=width,
             height=height,
             updatemenus=updatemenus,
-            title="Output per channel over experiment time",
+            title=plot_title,
             xaxis={"title":"Channel id", "zeroline":False, "showline":False, "nticks":20, "showgrid":False},
             yaxis={"title":"Experiment time (h)", "zeroline":False, "showline":False, "hoverformat":".2f", "fixedrange":True})
 
@@ -807,7 +837,7 @@ class pycoQC ():
         # Make data dict
         data_dict = dict (x=[x], y=[y], z=[z])
 
-        return [data_dict]
+        return data_dict
 
     #~~~~~~~PRIVATE METHODS~~~~~~~#
     def _check_columns (self, df, required_colnames, optional_colnames):
