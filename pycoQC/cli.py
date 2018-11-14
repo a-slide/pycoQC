@@ -60,7 +60,7 @@ def main(args=None):
     group.add_argument("--list_plots", "-l", action='store_true',
         help="""Print the list of available plotting functions and exit""")
     group.add_argument("--help", "-h", action='store_true',
-        help="""Print a general help message or a plotting function specific help message and exit""")
+        help="""Print a help message and exit. If a plotting function name is also given, print a function specific help message """)
     parser.add_argument('method', nargs='?')
 
     # Try to parse arguments
