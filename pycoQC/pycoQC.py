@@ -67,7 +67,7 @@ class pycoQC ():
             raise pycoQCError ("File {} is not readeable".format(fp))
         if len(df) == 0:
             raise pycoQCError ("No valid read found in input file")
-        logger.debug ("\t{:,} reads found in initial file".format(len(df)))
+        logger.info ("\t{:,} reads found in initial file".format(len(df)))
 
         # Define specific parameters depending on the run_type
         logger.info ("Verify fields and discard unused columns")
@@ -104,14 +104,14 @@ class pycoQC ():
         logger.info ("Drop lines containing NA values")
         l = len(df)
         df = df.dropna()
-        logger.debug ("\t{:,} reads discarded".format(l-len(df)))
+        logger.info ("\t{:,} reads discarded".format(l-len(df)))
 
         # Filter out calibration strands read if the "calibration_strand_genome_template" field is available
         if "calibration" in df:
             logger.info ("Filter out calibration strand reads")
             l = len(df)
             df = df[(df["calibration"].isin(["filtered_out", "no_match"]))]
-            logger.debug ("\t{:,} reads discarded".format(l-len(df)))
+            logger.info ("\t{:,} reads discarded".format(l-len(df)))
             if len(df) == 0:
                 raise pycoQCError("No valid read left after calibration strand filtering")
 
@@ -120,7 +120,7 @@ class pycoQC ():
             logger.info ("Filter out zero length reads")
             l = len(df)
             df = df[(df["num_bases"] > 0)]
-            logger.debug ("\t{} reads discarded".format(l-len(df)))
+            logger.info ("\t{} reads discarded".format(l-len(df)))
             if len(df) == 0:
                 raise pycoQCError("No valid read left after zero_len filtering")
 
@@ -220,7 +220,7 @@ class pycoQC ():
         Private function preparing data for summary
         """
 
-        header=["Run_ID", "Reads", "Bases", "Mean Read Length", "Active Channels", "Run Duration (h)"]
+        header=["Run_ID", "Reads", "Bases", "Median Read Length", "Median Read Quality", "Active Channels", "Run Duration (h)"]
         if "barcode" in df:
             header.append("Unique Barcodes")
 
@@ -244,7 +244,8 @@ class pycoQC ():
         l.append (run_id)
         l.append ("{:,}".format(len(df)))
         l.append ("{:,}".format(df["num_bases"].sum()))
-        l.append ("{:,}".format(int(df["num_bases"].mean())))
+        l.append ("{:,}".format(int(df["num_bases"].median())))
+        l.append ("{:,}".format(int(df["mean_qscore"].median())))
         l.append ("{:,}".format(df["channel"].nunique()))
         l.append (round((df["start_time"].ptp())/3600, 2))
         if "barcode" in df:
