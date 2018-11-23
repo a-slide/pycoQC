@@ -9,6 +9,7 @@ import os
 import json
 import logging
 import datetime
+import hashlib
 
 # Third party imports
 import plotly.offline as py
@@ -167,13 +168,19 @@ def generate_report(summary_file, outfile, qual=7, config=None, template_file=No
         report_title+=title+"<br>"
     report_title+="generated on "+datetime.datetime.now().strftime("%d/%m/%y")
 
+    # Calculate SHA checksum and pass it to template
+    with open(summary_file, 'rb') as f:
+        contents = f.read()
+    summary_file_hash = hashlib.sha256(contents).hexdigest()
+
     # Render plots
     logger.info("\tRender plots with Jinja2")
     rendering = template.render(
         plots=plots,
         titles=titles,
         plotlyjs=py.get_plotlyjs(),
-        report_title=report_title)
+        report_title=report_title,
+        summary_file_hash=summary_file_hash)
 
     # Write to HTML file
     logger.info("\tWrite to HTML file")
