@@ -10,16 +10,15 @@
 
     <title>PycoQC report</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-<style>
-
-
-.tf {
-	  position: fixed;
-		    top: 0;
-			      left: 50%;
-				        transform: translateX(-50%);
-						}
-</style>
+    <style>
+    	.tf {
+    		position: fixed;
+    		top: 0;
+    		left: 50%;
+    		transform: translateX(-50%);
+		z-index: 99 !important;
+    	}
+    </style>
   </head>
 <body>
 
@@ -34,7 +33,7 @@
 	  			</section>
   	  			<section class="navbar-section">
 					<div class="dropdown dropdown-right">
-						<a href="#/" class="btn btn-link dropdown-toggle" tabindex="0">Menu <i class="icon icon-caret"></i></a>
+						<a href="#/" class="btn btn-link dropdown-toggle" tabindex="0">Menu <i class="icon icon-menu"></i></a>
 						<ul class="menu">
 							<li class="menu-item">
 								{% for item in titles%}
@@ -65,6 +64,10 @@
 				{% endfor %}
 			</div>
 		</div>
+
+	<div class="column col-12 col-mx-auto text-center">
+		<h6>SHA256: {{ summary_file_hash }}</h6>
+	</div>
        </div>
 </div>
 </body>
