@@ -45,6 +45,8 @@ def main(args=None):
         help="Path to the output html file")
     parser.add_argument("--min_pass_qual", "-q", default=7, type=int,
         help="Minimum quality to consider a read as 'pass'")
+    parser.add_argument("--title", "-t", default=None, type=str,
+        help="A title to be used in the html report")
     parser.add_argument("--verbose_level", choices=[3,2,1], type=int, default=1,
         help="Level of verbosity, from 3 (Chatty) to 1 (Nothing)")
     parser.add_argument("--config", "-c", type=str, default=None,
@@ -105,10 +107,11 @@ def main(args=None):
         qual = args.min_pass_qual,
         config = args.config,
         template_file = args.template_file,
-        verbose_level=args.verbose_level)
+        verbose_level=args.verbose_level,
+        title=args.title)
 
 #~~~~~~~~~~~~~~MAIN FUNCTION~~~~~~~~~~~~~~#
-def generate_report(summary_file, outfile, qual=7, config=None, template_file=None, verbose_level=1):
+def generate_report(summary_file, outfile, qual=7, config=None, template_file=None, verbose_level=1, title=None):
     """ Runs pycoQC and generates the HTML report"""
 
     # Parse configuration file
@@ -156,7 +159,13 @@ def generate_report(summary_file, outfile, qual=7, config=None, template_file=No
 
     # Load HTML template for Jinja
     logger.info("\tLoad HTML template")
-    template = get_jinja_template (template_file)
+    template = get_jinja_template(template_file)
+
+    # Set a title for the HTML report
+    report_title=""
+    if title:
+        report_title+=title+"<br>"
+    report_title+="generated on "+datetime.datetime.now().strftime("%d/%m/%y")
 
     # Render plots
     logger.info("\tRender plots with Jinja2")
@@ -164,7 +173,7 @@ def generate_report(summary_file, outfile, qual=7, config=None, template_file=No
         plots=plots,
         titles=titles,
         plotlyjs=py.get_plotlyjs(),
-        date=datetime.datetime.now().strftime("%d/%m/%y"))
+        report_title=report_title)
 
     # Write to HTML file
     logger.info("\tWrite to HTML file")
