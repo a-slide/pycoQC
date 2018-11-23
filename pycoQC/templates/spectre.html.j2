@@ -43,7 +43,7 @@
       <div class="text-center">
         <h1>PycoQC report</h1>
         <div class="divider"></div>
-        <h4>Generated on {{ date }}</h4>
+        <h4>{{ report_title }}</h4>
       </div>
       {% for item in plots %}
         <div id="{{ titles[loop.index0] }}" class="column col-11 col-mx-auto text-center">
