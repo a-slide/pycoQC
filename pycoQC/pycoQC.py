@@ -184,6 +184,10 @@ class pycoQC ():
     def has_barcodes (self):
         return "barcode" in self.all_df
 
+    @property
+    def is_promethion (self):
+        return self.all_df["channel"].max() > 512
+
     #~~~~~~~SUMMARY METHOD AND HELPER~~~~~~~#
     def summary (self,
         width = None,
@@ -763,7 +767,6 @@ class pycoQC ():
 
     def channels_activity (self,
         colorscale = [[0.0,'rgba(255,255,255,0)'], [0.01,'rgb(255,255,200)'], [0.25,'rgb(255,200,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(0,0,0)']],
-        n_channels=512,
         smooth_sigma=1,
         width=None,
         height=600,
@@ -772,7 +775,6 @@ class pycoQC ():
         """
         Plot a yield over time
         * colorscale: a valid plotly color scale https://plot.ly/python/colorscales/ (Not recommanded to change)
-        * n_channels: Overall number of expected channels (512 for Minion, 3000 for Promethion)
         * smooth_sigma: sigma parameter for the Gaussian filter line smoothing
         * width: With of the ploting area in pixel
         * height: height of the ploting area in pixel
@@ -782,6 +784,9 @@ class pycoQC ():
         # Downsample if needed
         all_df = self.all_df.sample(sample) if sample and len (self.all_df)>sample else self.all_df
         pass_df = self.pass_df.sample(sample) if sample and len (self.pass_df)>sample else self.pass_df
+
+        # Define maximal number of channels
+        n_channels = 40000 if self.is_promethion else 512
 
         # Prepare all data
         dd1 = args=self.__channels_activity_data(all_df, level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma)
