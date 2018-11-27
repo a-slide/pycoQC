@@ -48,8 +48,8 @@ def main(args=None):
         help="Minimum quality to consider a read as 'pass'")
     parser.add_argument("--title", "-t", default=None, type=str,
         help="A title to be used in the html report")
-    parser.add_argument("--verbose_level", choices=[3,2,1], type=int, default=1,
-        help="Level of verbosity, from 3 (Chatty) to 1 (Nothing)")
+    parser.add_argument("--verbose_level", choices=[2,1,0], type=int, default=1,
+        help="Level of verbosity, from 2 (Chatty) to 0 (Nothing)")
     parser.add_argument("--config", "-c", type=str, default=None,
         help="""Path to a JSON configuration file.
         If not provided, looks for it in ~/.pycoQC and ~/.config/pycoQC/config.
@@ -98,7 +98,7 @@ def main(args=None):
         exit()
 
     # Set logging level
-    logLevel_dict = {3:logging.DEBUG, 2:logging.INFO, 1:logging.WARNING}
+    logLevel_dict = {2:logging.DEBUG, 1:logging.INFO, 0:logging.WARNING}
     logger.setLevel (logLevel_dict.get (args.verbose_level, logging.INFO))
 
     # Run main function
@@ -216,6 +216,24 @@ def parse_config_file(config_file):
     logger.debug ("\tFall back to default configuration")
     return default_config()
 
+def get_jinja_template(template_file=None):
+
+    # First, try to read provided configuration file if given
+    if template_file:
+        logger.debug("\tTry to load provided template file")
+        try:
+            with open(template_file) as fp:
+                template = Template(fp.read())
+                return template
+        except (FileNotFoundError, IOError):
+            logger.debug ("\t\tFile not found, non-readable or invalid")
+
+    # Last use the default harcoded config_dict
+    logger.debug ("\tFall back to default template")
+    env = Environment (loader=PackageLoader('pycoQC', 'templates'), autoescape=False)
+    template = env.get_template('spectre.html.j2')
+    return template
+
 def default_config():
     config_dict = {
         'summary': dict(
@@ -264,24 +282,6 @@ def default_config():
             sample=100000),
         }
     return(config_dict)
-
-def get_jinja_template (template_file=None):
-
-    # First, try to read provided configuration file if given
-    if template_file:
-        logger.debug("\tTry to load provided template file")
-        try:
-            with open(template_file) as fp:
-                template = Template(fp.read())
-                return template
-        except (FileNotFoundError, IOError):
-            logger.debug ("\t\tFile not found, non-readable or invalid")
-
-    # Last use the default harcoded config_dict
-    logger.debug ("\tFall back to default template")
-    env = Environment (loader=PackageLoader('pycoQC', 'templates'), autoescape=False)
-    template = env.get_template('spectre.html.j2')
-    return template
 
 # execute only if run as a script
 if __name__ == "__main__":

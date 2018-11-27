@@ -46,10 +46,10 @@ class pycoQC ():
         * min_pass_qual INT [Default 7]
             Minimum quality to consider a read as 'pass'
         * verbose_level INT [Default 1]
-            Level of verbosity, from 3 (Chatty) to 1 (Nothing)
+            Level of verbosity, from 2 (Chatty) to 0 (Nothing)
         """
         # Set logging level
-        logLevel_dict = {3:logging.DEBUG, 2:logging.INFO, 1:logging.WARNING}
+        logLevel_dict = {2:logging.DEBUG, 1:logging.INFO, 0:logging.WARNING}
         logger.setLevel (logLevel_dict.get (verbose_level, logging.INFO))
 
         # Check that file is readable and import the summary file in a dataframe
