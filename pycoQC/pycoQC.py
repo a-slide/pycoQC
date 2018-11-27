@@ -220,7 +220,7 @@ class pycoQC ():
         Private function preparing data for summary
         """
 
-        header=["Run_ID", "Reads", "Bases", "Median Read Length", "Median Read Quality", "Active Channels", "Run Duration (h)"]
+        header=["Run_ID", "Reads", "Bases", "Med Read Length", "N50 Length", "Med Read Quality", "Active Channels", "Run Duration (h)"]
         if "barcode" in df:
             header.append("Unique Barcodes")
 
@@ -244,10 +244,11 @@ class pycoQC ():
         l.append (run_id)
         l.append ("{:,}".format(len(df)))
         l.append ("{:,}".format(df["num_bases"].sum()))
-        l.append ("{:,}".format(int(df["num_bases"].median())))
-        l.append ("{:,}".format(int(df["mean_qscore"].median())))
+        l.append ("{:,.2f}".format(df["num_bases"].median()))
+        l.append ("{:,.2f}".format(self._compute_N50(df["num_bases"])))
+        l.append ("{:,.2f}".format(df["mean_qscore"].median()))
         l.append ("{:,}".format(df["channel"].nunique()))
-        l.append (round((df["start_time"].ptp())/3600, 2))
+        l.append ("{:,.2f}".format(df["start_time"].ptp()/3600))
         if "barcode" in df:
             l.append ("{:,}".format(df["barcode"].nunique()))
         return l
@@ -385,7 +386,7 @@ class pycoQC ():
             count_y = gaussian_filter1d (count_y, sigma=smooth_sigma)
 
         # Get percentiles percentiles
-        stat = np.round (np.percentile (data, [10,25,50,75,90]), 2)
+        stat = np.percentile (data, [10,25,50,75,90])
         y_max = count_y.max()
 
         data_dict = dict (
@@ -393,11 +394,11 @@ class pycoQC ():
             y = [count_y, [0,y_max], [0,y_max], [0,y_max], [0,y_max], [0,y_max]],
             name = ["Density", "10%", "25%", "Median", "75%", "90%"],
             text = ["",
-                ["", "10%<br>{}".format(stat[0])],
-                ["", "25%<br>{}".format(stat[1])],
-                ["", "Median<br>{}".format(stat[2])],
-                ["", "75%<br>{}".format(stat[3])],
-                ["", "90%<br>{}".format(stat[4])]],
+                ["", "10%<br>{:,.2f}".format(stat[0])],
+                ["", "25%<br>{:,.2f}".format(stat[1])],
+                ["", "Median<br>{:,.2f}".format(stat[2])],
+                ["", "75%<br>{:,.2f}".format(stat[3])],
+                ["", "90%<br>{:,.2f}".format(stat[4])]],
         )
 
         # Make layout dict = Off set for labels on top
@@ -853,3 +854,13 @@ class pycoQC ():
             if col in df:
                 col_found.append(col)
         return col_found
+
+    def _compute_N50 (self, data):
+        data = data.values
+        data.sort()
+        half_sum = data.sum()/2
+        cum_sum = 0
+        for v in data:
+            cum_sum += v
+            if cum_sum >= half_sum:
+                return v
