@@ -101,4 +101,4 @@ ENV/
 .mypy_cache/
 
 # data
-/tests/
+./tests
