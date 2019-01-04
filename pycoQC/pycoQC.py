@@ -105,6 +105,8 @@ class pycoQC ():
         l = len(df)
         df = df.dropna()
         logger.info ("\t{:,} reads discarded".format(l-len(df)))
+        if len(df) <= 1:
+            raise pycoQCError("No valid read left after NA values filtering")
 
         # Filter out calibration strands read if the "calibration_strand_genome_template" field is available
         if "calibration" in df:
@@ -112,7 +114,7 @@ class pycoQC ():
             l = len(df)
             df = df[(df["calibration"].isin(["filtered_out", "no_match"]))]
             logger.info ("\t{:,} reads discarded".format(l-len(df)))
-            if len(df) == 0:
+            if len(df) <= 1:
                 raise pycoQCError("No valid read left after calibration strand filtering")
 
         # Filter out zero length reads
@@ -121,14 +123,14 @@ class pycoQC ():
             l = len(df)
             df = df[(df["num_bases"] > 0)]
             logger.info ("\t{} reads discarded".format(l-len(df)))
-            if len(df) == 0:
+            if len(df) <= 1:
                 raise pycoQCError("No valid read left after zero_len filtering")
 
         # Filter and reorder based on runid_list list if passed by user
         if runid_list:
             logger.info ("Select run_ids passed by user")
             df = df[(df["run_id"].isin(runid_list))]
-            if len(df) == 0:
+            if len(df) <= 1:
                 raise pycoQCError("No valid read left after run ID filtering")
 
         # Else sort the runids by output per time assuming that the throughput  decreases over time
@@ -159,8 +161,16 @@ class pycoQC ():
 
         # Save self var
         self.all_df = df
+        df = df[df["mean_qscore"]>=min_pass_qual]
+        if len(df) <= 1:
+            raise pycoQCError("No valid read left after quality filtering")
         self.pass_df = df[df["mean_qscore"]>=min_pass_qual]
         self._min_pass_qual = min_pass_qual
+
+        if len(self.all_df) < 100:
+            logger.info ("Low number of valid reads found. This is likely to lead to errors when trying to generate plots")
+        if len(self.pass_df) < 100:
+            logger.info ("Low number of pass reads found. This is likely to lead to errors when trying to generate plots")
 
         # Detailed report for debug level only
         logger.debug (str(self))
@@ -471,8 +481,8 @@ class pycoQC ():
 
         len_bins = np.logspace (start=np.log10((len_min)), stop=np.log10(len_max)+0.1, num=len_nbins, base=10)
         qual_bins = np.linspace (start=qual_min, stop=qual_max, num=qual_nbins)
-
         z, y, x = np.histogram2d (x=qual_data, y=len_data, bins=[qual_bins, len_bins])
+
         if smooth_sigma:
             z = gaussian_filter(z, sigma=smooth_sigma)
 
@@ -563,6 +573,7 @@ class pycoQC ():
             y = np.bincount(t)
         elif level == "bases":
             y = np.bincount(t, weights=df["num_bases"].values)
+
         # Scale counts in case of downsampling
         y = y*scaling_factor
 
