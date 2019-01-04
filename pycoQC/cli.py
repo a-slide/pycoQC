@@ -26,7 +26,16 @@ logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
 
 # List of current valid plotting methods names
-plot_methods = ["summary","reads_len_1D","reads_qual_1D","reads_len_qual_2D","output_over_time","qual_over_time","barcode_counts","channels_activity"]
+plot_methods = [
+    "summary",
+    "reads_len_1D",
+    "reads_qual_1D",
+    "reads_len_qual_2D",
+    "output_over_time",
+    "len_over_time",
+    "qual_over_time",
+    "barcode_counts",
+    "channels_activity"]
 
 #~~~~~~~~~~~~~~TOP LEVEL ENTRY POINT~~~~~~~~~~~~~~#
 def main(args=None):
@@ -134,14 +143,10 @@ def generate_report(summary_file, outfile, qual=7, config=None, template_file=No
         if not method_name in plot_methods:
             logger.info("\tWarning: Method {} is defined in configuration but not supported".format(method_name))
 
-        # Skip barcode_counts id not barcode info available
-        elif method_name == "barcode_counts" and not p.has_barcodes:
-            logger.info("\tMethod barcode_counts not available for non barcoded datasets")
-
-        # Generate plot and store in a list
-        else:
+        try:
             logger.info("\tRunning method {}".format(method_name))
-            titles.append(method_args["plot_title"])
+            logger.debug ("\t{} ({})".format(method_name, method_args))
+
             method_args["plot_title"]=""
             method = getattr(p, method_name)
             fig = method(**method_args)
@@ -154,7 +159,12 @@ def generate_report(summary_file, outfile, qual=7, config=None, template_file=No
                 image_height='',
                 show_link=False,
                 auto_open=False)
+
             plots.append(plot)
+            titles.append(method_args["plot_title"])
+
+        except pycoQCError as E:
+            logger.info(E)
 
     logger.warning("WRITE HTML REPORT")
 
@@ -262,22 +272,27 @@ def default_config():
             cumulative_color="rgb(204,226,255)",
             interval_color="rgb(102,168,255)",
             sample=100000),
-        'qual_over_time': dict(
-            plot_title='Mean read quality over time',
+        'len_over_time': dict(
+            plot_title='Read length over time',
             median_color="rgb(102,168,255)",
             quartile_color="rgb(153,197,255)",
-            extreme_color="rgba(153,197,255, 0.5)",
+            extreme_color="rgba(153,197,255,0.5)",
+            smooth_sigma=1,
+            sample=100000),
+        'qual_over_time': dict(
+            plot_title='Mean read quality over time',
+            median_color="rgb(250,128,114)",
+            quartile_color="rgb(250,170,160)",
+            extreme_color="rgba(250,170,160,0.5)",
             smooth_sigma=1,
             sample=100000),
         'barcode_counts': dict(
             plot_title='Number of reads per barcode',
             min_percent_barcode = 0.1,
-            colors = ["#f8bc9c", "#f6e9a1", "#f5f8f2", "#92d9f5", "#4f97ba"],
-            sample = 100000),
+            colors = ["#f8bc9c", "#f6e9a1", "#f5f8f2", "#92d9f5", "#4f97ba"]),
         'channels_activity': dict(
             plot_title='Channel activity over time',
             colorscale = [[0.0,'rgba(255,255,255,0)'], [0.01,'rgb(255,255,200)'], [0.25,'rgb(255,200,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(0,0,0)']],
-            n_channels=512,
             smooth_sigma=1,
             sample=100000),
         }
