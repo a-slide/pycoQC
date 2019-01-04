@@ -314,7 +314,7 @@ class pycoQC ():
             width=width,
             height=height,
             title = plot_title,
-            xaxis = {"title":"Read length", "type":"log", "zeroline":False, "showline":True},
+            xaxis = {"title":"Read length (log scale)", "type":"log", "zeroline":False, "showline":True},
             yaxis = {"title":"Read density", "zeroline":False, "showline":True, "fixedrange":True, "range":ld1["yaxis.range"]})
 
         return go.Figure (data=data, layout=layout)
@@ -610,15 +610,68 @@ class pycoQC ():
 
     #~~~~~~~QUAL_OVER_TIME METHODS AND HELPER~~~~~~~#
 
-    def qual_over_time (self,
+    def len_over_time (self,
         median_color="rgb(102,168,255)",
         quartile_color="rgb(153,197,255)",
-        extreme_color="rgba(153,197,255, 0.5)",
+        extreme_color="rgba(153,197,255,0.5)",
         smooth_sigma=1,
         width=None,
         height=500,
         sample=100000,
-        plot_title="Mean read quality over experiment time"):
+        plot_title="Read length over experiment time"):
+        """
+        Plot a read length over time
+        * median_color: Color of median line color (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
+        * quartile_color: Color of inter quartile area and lines (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
+        * extreme_color:: Color of inter extreme area and lines (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-col
+        * smooth_sigma: sigma parameter for the Gaussian filter line smoothing
+        * width: With of the ploting area in pixel
+        * height: height of the ploting area in pixel
+        * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
+        """
+
+        # Prepare all data
+        dd1 = self.__over_time_data (self.all_df, field_name="num_bases", smooth_sigma=smooth_sigma, sample=sample)
+        dd2 = self.__over_time_data (self.pass_df, field_name="num_bases", smooth_sigma=smooth_sigma, sample=sample)
+
+        # Plot initial data
+        data= [
+            go.Scatter(x=dd1["x"][0], y=dd1["y"][0], name=dd1["name"][0], mode="lines", line={"color":extreme_color}, connectgaps=True, legendgroup="Extreme"),
+            go.Scatter(x=dd1["x"][1], y=dd1["y"][1], name=dd1["name"][1], mode="lines", fill="tonexty", line={"color":extreme_color}, connectgaps=True, legendgroup="Extreme"),
+            go.Scatter(x=dd1["x"][2], y=dd1["y"][2], name=dd1["name"][2], mode="lines", line={"color":quartile_color}, connectgaps=True, legendgroup="Quartiles"),
+            go.Scatter(x=dd1["x"][3], y=dd1["y"][3], name=dd1["name"][3], mode="lines", fill="tonexty", line={"color":quartile_color}, connectgaps=True, legendgroup="Quartiles"),
+            go.Scatter(x=dd1["x"][4], y=dd1["y"][4], name=dd1["name"][4], mode="lines", line={"color":median_color}, connectgaps=True)]
+
+        # Create update buttons
+        updatemenus = [
+            go.layout.Updatemenu (type="buttons", active=0, x=-0.07, y=0, xanchor='right', yanchor='bottom', buttons = [
+                go.layout.updatemenu.Button (
+                    label='All Reads', method='restyle', args=[dd1]),
+                go.layout.updatemenu.Button (
+                    label='Pass Reads', method='restyle', args=[dd2])])]
+
+        # tweak plot layout
+        layout = go.Layout (
+            width=width,
+            height=height,
+            updatemenus=updatemenus,
+            legend={"x":-0.07, "y":1,"xanchor":'right',"yanchor":'top'},
+            title=plot_title,
+            yaxis={"title":"Read length (log scale)", "type":"log", "zeroline":False, "showline":True, "rangemode":'nonnegative', "fixedrange":True},
+            xaxis={"title":"Experiment time (h)", "zeroline":False, "showline":True, "rangemode":'nonnegative'})
+
+        return go.Figure (data=data, layout=layout)
+
+
+    def qual_over_time (self,
+        median_color="rgb(250,128,114)",
+        quartile_color="rgb(250,170,160)",
+        extreme_color="rgba(250,170,160,0.5)",
+        smooth_sigma=1,
+        width=None,
+        height=500,
+        sample=100000,
+        plot_title="Read quality over experiment time"):
         """
         Plot a mean quality over time
         * median_color: Color of median line color (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
@@ -631,8 +684,8 @@ class pycoQC ():
         """
 
         # Prepare all data
-        dd1 = self.__qual_over_time_data (self.all_df, smooth_sigma=smooth_sigma, sample=sample)
-        dd2 = self.__qual_over_time_data (self.pass_df, smooth_sigma=smooth_sigma, sample=sample)
+        dd1 = self.__over_time_data (self.all_df, field_name="mean_qscore", smooth_sigma=smooth_sigma, sample=sample)
+        dd2 = self.__over_time_data (self.pass_df, field_name="mean_qscore", smooth_sigma=smooth_sigma, sample=sample)
 
         # Plot initial data
         data= [
@@ -662,7 +715,7 @@ class pycoQC ():
 
         return go.Figure (data=data, layout=layout)
 
-    def __qual_over_time_data (self, df, smooth_sigma=1.5, sample=100000):
+    def __over_time_data (self, df, field_name="num_bases", smooth_sigma=1.5, sample=100000):
         """Private function preparing data for qual_over_time"""
 
         # Downsample if needed
@@ -677,17 +730,17 @@ class pycoQC ():
         t = np.digitize (t, bins=x, right=True)
 
         # List quality value per categories
-        bin_qual_dict = defaultdict (list)
-        for bin_idx, qual in zip (t, df["mean_qscore"].values) :
+        bin_dict = defaultdict (list)
+        for bin_idx, qual in zip (t, df[field_name].values) :
             bin = x[bin_idx]
-            bin_qual_dict[bin].append(qual)
+            bin_dict[bin].append(qual)
 
         # Aggregate values per category
         val_name = ["Min", "Max", "25%", "75%", "Median"]
         stat_dict = defaultdict(list)
         for bin in x:
-            if bin in bin_qual_dict:
-                p = np.percentile (bin_qual_dict[bin], [0, 100, 25, 75, 50])
+            if bin in bin_dict:
+                p = np.percentile (bin_dict[bin], [0, 100, 25, 75, 50])
             else:
                 p = [np.nan,np.nan,np.nan,np.nan,np.nan]
             for val, stat in zip (val_name, p):
@@ -721,7 +774,7 @@ class pycoQC ():
         * height: height of the ploting area in pixel
         """
         # Verify that barcode information are available
-        if not "barcode" in self.all_df:
+        if not self.has_barcodes:
             raise pycoQCError ("No barcode information available")
 
         # Prepare all data
