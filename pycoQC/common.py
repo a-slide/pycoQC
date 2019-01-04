@@ -51,7 +51,10 @@ def sequencing_summary_file_sample (infile, outfile=None, n_seq=10000, **kwargs)
     df = pd.concat(l)
     df.reset_index(inplace=True, drop=True)
     if outfile:
-        df.to_csv(outfile, index=False, sep="\t")
+        if outfile.endswith("gz"):
+            df.to_csv(outfile, index=False, sep="\t", compression="gzip")
+        else:
+            df.to_csv(outfile, index=False, sep="\t", compression=None)
     else:
         return df
 
