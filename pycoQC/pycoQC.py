@@ -276,13 +276,9 @@ class pycoQC ():
         * smooth_sigma: standard deviation for Gaussian kernel
         * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
         """
-        # Downsample if needed
-        all_df = self.all_df.sample(sample) if sample and len(self.all_df)>sample else self.all_df
-        pass_df = self.pass_df.sample(sample) if sample and len(self.pass_df)>sample else self.pass_df
-
         # Prepare all data
-        dd1, ld1 = self.__reads_1D_data (all_df, field_name="num_bases", xscale="log", nbins=nbins, smooth_sigma=smooth_sigma)
-        dd2, ld2 = self.__reads_1D_data (pass_df, field_name="num_bases", xscale="log", nbins=nbins, smooth_sigma=smooth_sigma)
+        dd1, ld1 = self.__reads_1D_data (self.all_df, field_name="num_bases", xscale="log", nbins=nbins, smooth_sigma=smooth_sigma, sample=sample)
+        dd2, ld2 = self.__reads_1D_data (self.pass_df, field_name="num_bases", xscale="log", nbins=nbins, smooth_sigma=smooth_sigma, sample=sample)
 
         # Plot initial data
         line_style = {'color':'gray','width':1,'dash': 'dot'}
@@ -330,13 +326,10 @@ class pycoQC ():
         * smooth_sigma: standard deviation for Gaussian kernel
         * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
         """
-        # Downsample if needed
-        all_df = self.all_df.sample(sample) if sample and len(self.all_df)>sample else self.all_df
-        pass_df = self.pass_df.sample(sample) if sample and len(self.pass_df)>sample else self.pass_df
 
         # Prepare all data
-        dd1, ld1 = self.__reads_1D_data (all_df, field_name="mean_qscore", nbins=nbins, smooth_sigma=smooth_sigma)
-        dd2, ld2 = self.__reads_1D_data (pass_df, field_name="mean_qscore", nbins=nbins, smooth_sigma=smooth_sigma)
+        dd1, ld1 = self.__reads_1D_data (self.all_df, field_name="mean_qscore", nbins=nbins, smooth_sigma=smooth_sigma, sample=sample)
+        dd2, ld2 = self.__reads_1D_data (self.pass_df, field_name="mean_qscore", nbins=nbins, smooth_sigma=smooth_sigma, sample=sample)
 
         # Plot initial data
         line_style = {'color':'gray','width':1,'dash': 'dot'}
@@ -367,10 +360,12 @@ class pycoQC ():
 
         return go.Figure (data=data, layout=layout)
 
-    def __reads_1D_data (self, df, field_name="num_bases", xscale="linear", nbins=200, smooth_sigma=2):
-        """
-        Private function preparing data for reads_len_1D and reads_qual_1D
-        """
+    def __reads_1D_data (self, df, field_name="num_bases", xscale="linear", nbins=200, smooth_sigma=2, sample=100000):
+        """Private function preparing data for reads_len_1D and reads_qual_1D"""
+        # Downsample if needed
+        if sample and len(df)>sample:
+            df = df.sample(sample)
+
         #Extract data field from df
         data = df[field_name].values
 
@@ -431,13 +426,10 @@ class pycoQC ():
         * smooth_sigma: standard deviation for 2D Gaussian kernel
         * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
         """
-        # Downsample if needed
-        all_df = self.all_df.sample(sample) if sample and len(self.all_df)>sample else self.all_df
-        pass_df = self.pass_df.sample(sample) if sample and len(self.pass_df)>sample else self.pass_df
 
         # Prepare all data
-        dd1 = self.__reads_2D_data (all_df, len_nbins=len_nbins, qual_nbins=qual_nbins, smooth_sigma=smooth_sigma)
-        dd2 = self.__reads_2D_data (pass_df, len_nbins=len_nbins, qual_nbins=qual_nbins, smooth_sigma=smooth_sigma)
+        dd1 = self.__reads_2D_data (self.all_df, len_nbins=len_nbins, qual_nbins=qual_nbins, smooth_sigma=smooth_sigma, sample=sample)
+        dd2 = self.__reads_2D_data (self.pass_df, len_nbins=len_nbins, qual_nbins=qual_nbins, smooth_sigma=smooth_sigma, sample=sample)
 
         # Plot initial data
         data = [
@@ -465,10 +457,12 @@ class pycoQC ():
 
         return go.Figure (data=data, layout=layout)
 
-    def __reads_2D_data (self, df, len_nbins, qual_nbins, smooth_sigma=1.5):
-        """
-        Private function preparing data for reads_len_qual_2D
-        """
+    def __reads_2D_data (self, df, len_nbins, qual_nbins, smooth_sigma=1.5, sample=100000):
+        """ Private function preparing data for reads_len_qual_2D """
+        # Downsample if needed
+        if sample and len(df)>sample:
+            df = df.sample(sample)
+
         len_data = df["num_bases"]
         qual_data = df["mean_qscore"]
 
@@ -511,15 +505,11 @@ class pycoQC ():
         * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
         """
 
-        # Downsample if needed
-        all_df = self.all_df.sample(sample) if sample and len (self.all_df)>sample else self.all_df
-        pass_df = self.pass_df.sample(sample) if sample and len (self.pass_df)>sample else self.pass_df
-
         # Prepare all data
-        dd1, ld1 = args=self.__output_over_time_data (all_df, level="reads")
-        dd2, ld2 = args=self.__output_over_time_data (pass_df, level="reads")
-        dd3, ld3 = args=self.__output_over_time_data (all_df, level="bases")
-        dd4, ld4 = args=self.__output_over_time_data (pass_df, level="bases")
+        dd1, ld1 = args=self.__output_over_time_data (self.all_df, level="reads", sample=sample)
+        dd2, ld2 = args=self.__output_over_time_data (self.pass_df, level="reads", sample=sample)
+        dd3, ld3 = args=self.__output_over_time_data (self.all_df, level="bases", sample=sample)
+        dd4, ld4 = args=self.__output_over_time_data (self.pass_df, level="bases", sample=sample)
 
         # Plot initial data
         line_style = {'color':'gray','width':1,'dash':'dot'}
@@ -552,10 +542,15 @@ class pycoQC ():
 
         return go.Figure (data=data, layout=layout)
 
-    def __output_over_time_data (self, df, level="reads"):
-        """
-        Private function preparing data for output_over_time
-        """
+    def __output_over_time_data (self, df, level="reads", sample=100000):
+        """Private function preparing data for output_over_time"""
+
+        # Downsample if needed
+        scaling_factor=1
+        if sample and len(df)>sample:
+            scaling_factor = len(df)/sample
+            df = df.sample(sample)
+
         # Bin data in categories
         t = (df["start_time"]/3600).values
         t_min = t.min()
@@ -568,6 +563,8 @@ class pycoQC ():
             y = np.bincount(t)
         elif level == "bases":
             y = np.bincount(t, weights=df["num_bases"].values)
+        # Scale counts in case of downsampling
+        y = y*scaling_factor
 
         # Transform to cummulative distribution
         y_cum = np.cumsum(y)
@@ -621,13 +618,10 @@ class pycoQC ():
         * height: height of the ploting area in pixel
         * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
         """
-        # Downsample if needed
-        all_df = self.all_df.sample(sample) if sample and len (self.all_df)>sample else self.all_df
-        pass_df = self.pass_df.sample(sample) if sample and len (self.pass_df)>sample else self.pass_df
 
         # Prepare all data
-        dd1 = self.__qual_over_time_data (all_df, smooth_sigma=smooth_sigma)
-        dd2 = self.__qual_over_time_data (pass_df, smooth_sigma=smooth_sigma)
+        dd1 = self.__qual_over_time_data (self.all_df, smooth_sigma=smooth_sigma, sample=sample)
+        dd2 = self.__qual_over_time_data (self.pass_df, smooth_sigma=smooth_sigma, sample=sample)
 
         # Plot initial data
         data= [
@@ -657,10 +651,13 @@ class pycoQC ():
 
         return go.Figure (data=data, layout=layout)
 
-    def __qual_over_time_data (self, df, smooth_sigma=1.5):
-        """
-        Private function preparing data for qual_over_time
-        """
+    def __qual_over_time_data (self, df, smooth_sigma=1.5, sample=100000):
+        """Private function preparing data for qual_over_time"""
+
+        # Downsample if needed
+        if sample and len(df)>sample:
+            df = df.sample(sample)
+
         # Bin data in categories
         t = (df["start_time"]/3600).values
         t_min = t.min()
@@ -704,7 +701,6 @@ class pycoQC ():
         colors = ["#f8bc9c", "#f6e9a1", "#f5f8f2", "#92d9f5", "#4f97ba"],
         width =  None,
         height = 500,
-        sample = 100000,
         plot_title="Percentage of reads per barcode"):
         """
         Plot a mean quality over time
@@ -712,19 +708,14 @@ class pycoQC ():
         * colors: List of colors (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
         * width: With of the ploting area in pixel
         * height: height of the ploting area in pixel
-        * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
         """
         # Verify that barcode information are available
         if not "barcode" in self.all_df:
             raise pycoQCError ("No barcode information available")
 
-        # Downsample if needed
-        all_df = self.all_df.sample(sample) if sample and len(self.all_df)>sample else self.all_df
-        pass_df = self.pass_df.sample(sample) if sample and len(self.pass_df)>sample else self.pass_df
-
         # Prepare all data
-        dd1 = self.__barcode_counts_data (all_df, min_percent_barcode=min_percent_barcode)
-        dd2 = self.__barcode_counts_data (pass_df, min_percent_barcode=min_percent_barcode)
+        dd1 = self.__barcode_counts_data (self.all_df, min_percent_barcode=min_percent_barcode)
+        dd2 = self.__barcode_counts_data (self.pass_df, min_percent_barcode=min_percent_barcode)
 
         # Plot initial data
         data= [go.Pie (labels=dd1["labels"][0] , values=dd1["values"][0] , sort=False, marker=dict(colors=colors))]
@@ -746,9 +737,8 @@ class pycoQC ():
         return go.Figure (data=data, layout=layout)
 
     def __barcode_counts_data (self, df, min_percent_barcode=0.1):
-        """
-        Private function preparing data for barcode_counts
-        """
+        """Private function preparing data for barcode_counts"""
+
         counts = df["barcode"].value_counts()
         counts = counts.sort_index()
 
@@ -781,18 +771,14 @@ class pycoQC ():
         * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
         """
 
-        # Downsample if needed
-        all_df = self.all_df.sample(sample) if sample and len (self.all_df)>sample else self.all_df
-        pass_df = self.pass_df.sample(sample) if sample and len (self.pass_df)>sample else self.pass_df
-
         # Define maximal number of channels
         n_channels = 40000 if self.is_promethion else 512
 
         # Prepare all data
-        dd1 = args=self.__channels_activity_data(all_df, level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma)
-        dd2 = args=self.__channels_activity_data(pass_df, level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma)
-        dd3 = args=self.__channels_activity_data(all_df, level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma)
-        dd4 = args=self.__channels_activity_data(pass_df, level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma)
+        dd1 = args=self.__channels_activity_data(self.all_df, level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma, sample=sample)
+        dd2 = args=self.__channels_activity_data(self.pass_df, level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma, sample=sample)
+        dd3 = args=self.__channels_activity_data(self.all_df, level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma, sample=sample)
+        dd4 = args=self.__channels_activity_data(self.pass_df, level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma, sample=sample)
 
         # Plot initial data
         data = [go.Heatmap(x=dd1["x"][0], y=dd1["y"][0], z=dd1["z"][0], xgap=0.5, colorscale=colorscale, hoverinfo="x+y+z")]
@@ -816,7 +802,15 @@ class pycoQC ():
 
         return go.Figure (data=data, layout=layout)
 
-    def __channels_activity_data (self, df, level="bases", n_channels=512, smooth_sigma=2):
+    def __channels_activity_data (self, df, level="bases", n_channels=512, smooth_sigma=2, sample=100000):
+        """Private function preparing data for channels_activity"""
+
+        # Downsample if needed
+        scaling_factor=1
+        if sample and len(df)>sample:
+            scaling_factor = len(df)/sample
+            df = df.sample(sample)
+
         # Bin data in categories
         t = (df["start_time"]/3600).values
         t_min = t.min()
@@ -832,6 +826,8 @@ class pycoQC ():
         elif level == "reads":
             for t_idx, channel in zip(t, df["channel"]):
                 z[t_idx][channel-1]+=1
+        # Scale counts in case of downsampling
+        z=z*scaling_factor
 
         # Time series smoothing
         if smooth_sigma:
