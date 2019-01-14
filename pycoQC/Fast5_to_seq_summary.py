@@ -75,6 +75,7 @@ class Fast5_to_seq_summary ():
         threads = 4,
         basecall_id = 0,
         verbose_level = 0,
+        include_path = False,
         fields = [
             "read_id", "run_id", "channel", "start_time",
             "sequence_length_template", "mean_qscore_template",
@@ -97,6 +98,8 @@ class Fast5_to_seq_summary ():
         * basecall_id
             id of the basecalling group. By default leave to 0, but if you perfome multiple basecalling on the same fast5 files,
             this can be used to indicate the corresponding group (1, 2 ...)
+        * include_path
+            If True the absolute path to the corresponding file is added in an extra column
         * verbose_level INT [Default 0]
             Level of verbosity, from 2 (Chatty) to 0 (Nothing)
         """
@@ -123,6 +126,7 @@ class Fast5_to_seq_summary ():
         self.max_fast5 = max_fast5
         self.fields = fields
         self.basecall_id = basecall_id
+        self.include_path = include_path
         self.verbose_level = verbose_level
 
         # Init Multiprocessing variables
@@ -218,7 +222,7 @@ class Fast5_to_seq_summary ():
                                 grp=grp_dict[self.attrs_grp_dict["channel_sampling_rate"]["grp"]],
                                 attrs=self.attrs_grp_dict["channel_sampling_rate"]["attrs"])
                             if start_time and sampling_rate:
-                                d[field] = int(start_time/sampling_rate*60) ##### Not sure but it seems to work
+                                d[field] = int(start_time/sampling_rate)
                                 c["fields_found"][field] +=1
                             else:
                                 c["fields_not_found"][field] +=1
@@ -232,12 +236,15 @@ class Fast5_to_seq_summary ():
                             else:
                                 c["fields_not_found"][field] +=1
 
-                    # Put read data in queue
-                    if d:
-                        out_q.put(d)
-                        c["overall"]["valid files"] += 1
-                    else:
-                        c["overall"]["invalid files"]
+                if self.include_path:
+                    d["path"] = os.path.abspath(fast5_fn)
+
+                # Put read data in queue
+                if d:
+                    out_q.put(d)
+                    c["overall"]["valid files"] += 1
+                else:
+                    c["overall"]["invalid files"]
 
             # Put counter in counter queue
             counter_q.put(c)

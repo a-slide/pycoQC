@@ -503,6 +503,7 @@ class pycoQC ():
         interval_color="rgb(102,168,255)",
         width=None,
         height=500,
+        time_bins=500,
         sample=100000,
         plot_title="Output over experiment time"):
         """
@@ -511,14 +512,15 @@ class pycoQC ():
         * interval_color: Color of interval yield line (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
         * width: With of the ploting area in pixel
         * height: height of the ploting area in pixel
+        * time_bins: Number of bins to divide the time values in (x axis)
         * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
         """
 
         # Prepare all data
-        dd1, ld1 = args=self.__output_over_time_data (self.all_df, level="reads", sample=sample)
-        dd2, ld2 = args=self.__output_over_time_data (self.pass_df, level="reads", sample=sample)
-        dd3, ld3 = args=self.__output_over_time_data (self.all_df, level="bases", sample=sample)
-        dd4, ld4 = args=self.__output_over_time_data (self.pass_df, level="bases", sample=sample)
+        dd1, ld1 = args=self.__output_over_time_data (self.all_df, level="reads", time_bins=time_bins, sample=sample)
+        dd2, ld2 = args=self.__output_over_time_data (self.pass_df, level="reads", time_bins=time_bins, sample=sample)
+        dd3, ld3 = args=self.__output_over_time_data (self.all_df, level="bases", time_bins=time_bins, sample=sample)
+        dd4, ld4 = args=self.__output_over_time_data (self.pass_df, level="bases", time_bins=time_bins, sample=sample)
 
         # Plot initial data
         line_style = {'color':'gray','width':1,'dash':'dot'}
@@ -551,7 +553,7 @@ class pycoQC ():
 
         return go.Figure (data=data, layout=layout)
 
-    def __output_over_time_data (self, df, level="reads", sample=100000):
+    def __output_over_time_data (self, df, level="reads", time_bins=500, sample=100000):
         """Private function preparing data for output_over_time"""
 
         # Downsample if needed
@@ -562,9 +564,7 @@ class pycoQC ():
 
         # Bin data in categories
         t = (df["start_time"]/3600).values
-        t_min = t.min()
-        t_max = t.max()
-        x = np.linspace (t_min, t_max, int((t_max-t_min)*10))
+        x = np.linspace (t.min(), t.max(), num=time_bins)
         t = np.digitize (t, bins=x, right=True)
 
         # Count reads or bases per categories
@@ -616,6 +616,7 @@ class pycoQC ():
         smooth_sigma=1,
         width=None,
         height=500,
+        time_bins=500,
         sample=100000,
         plot_title="Read length over experiment time"):
         """
@@ -626,12 +627,13 @@ class pycoQC ():
         * smooth_sigma: sigma parameter for the Gaussian filter line smoothing
         * width: With of the ploting area in pixel
         * height: height of the ploting area in pixel
+        * time_bins: Number of bins to divide the time values in (x axis)
         * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
         """
 
         # Prepare all data
-        dd1 = self.__over_time_data (self.all_df, field_name="num_bases", smooth_sigma=smooth_sigma, sample=sample)
-        dd2 = self.__over_time_data (self.pass_df, field_name="num_bases", smooth_sigma=smooth_sigma, sample=sample)
+        dd1 = self.__over_time_data (self.all_df, field_name="num_bases", smooth_sigma=smooth_sigma, time_bins=time_bins, sample=sample)
+        dd2 = self.__over_time_data (self.pass_df, field_name="num_bases", smooth_sigma=smooth_sigma, time_bins=time_bins, sample=sample)
 
         # Plot initial data
         data= [
@@ -669,6 +671,7 @@ class pycoQC ():
         smooth_sigma=1,
         width=None,
         height=500,
+        time_bins=500,
         sample=100000,
         plot_title="Read quality over experiment time"):
         """
@@ -679,12 +682,13 @@ class pycoQC ():
         * smooth_sigma: sigma parameter for the Gaussian filter line smoothing
         * width: With of the ploting area in pixel
         * height: height of the ploting area in pixel
+        * time_bins: Number of bins to divide the time values in (x axis)
         * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
         """
 
         # Prepare all data
-        dd1 = self.__over_time_data (self.all_df, field_name="mean_qscore", smooth_sigma=smooth_sigma, sample=sample)
-        dd2 = self.__over_time_data (self.pass_df, field_name="mean_qscore", smooth_sigma=smooth_sigma, sample=sample)
+        dd1 = self.__over_time_data (self.all_df, field_name="mean_qscore", smooth_sigma=smooth_sigma, time_bins=time_bins, sample=sample)
+        dd2 = self.__over_time_data (self.pass_df, field_name="mean_qscore", smooth_sigma=smooth_sigma, time_bins=time_bins, sample=sample)
 
         # Plot initial data
         data= [
@@ -714,7 +718,7 @@ class pycoQC ():
 
         return go.Figure (data=data, layout=layout)
 
-    def __over_time_data (self, df, field_name="num_bases", smooth_sigma=1.5, sample=100000):
+    def __over_time_data (self, df, field_name="num_bases", smooth_sigma=1.5, time_bins=500, sample=100000):
         """Private function preparing data for qual_over_time"""
 
         # Downsample if needed
@@ -723,16 +727,14 @@ class pycoQC ():
 
         # Bin data in categories
         t = (df["start_time"]/3600).values
-        t_min = t.min()
-        t_max = t.max()
-        x = np.linspace (t_min, t_max, int((t_max-t_min)*10))
+        x = np.linspace (t.min(), t.max(), num=time_bins)
         t = np.digitize (t, bins=x, right=True)
 
         # List quality value per categories
         bin_dict = defaultdict (list)
-        for bin_idx, qual in zip (t, df[field_name].values) :
+        for bin_idx, val in zip (t, df[field_name].values) :
             bin = x[bin_idx]
-            bin_dict[bin].append(qual)
+            bin_dict[bin].append(val)
 
         # Aggregate values per category
         val_name = ["Min", "Max", "25%", "75%", "Median"]
@@ -823,6 +825,7 @@ class pycoQC ():
         smooth_sigma=1,
         width=None,
         height=600,
+        time_bins=150,
         sample=100000,
         plot_title="Output per channel over experiment time"):
         """
@@ -830,7 +833,8 @@ class pycoQC ():
         * colorscale: a valid plotly color scale https://plot.ly/python/colorscales/ (Not recommanded to change)
         * smooth_sigma: sigma parameter for the Gaussian filter line smoothing
         * width: With of the ploting area in pixel
-        * height: height of the ploting area in pixel
+        * height: Height of the ploting area in pixel
+        * time_bins: Number of bins to divide the time values in (y axis)
         * sample: If given, a n number of reads will be randomly selected instead of the entire dataset
         """
 
@@ -838,10 +842,10 @@ class pycoQC ():
         n_channels = 40000 if self.is_promethion else 512
 
         # Prepare all data
-        dd1 = args=self.__channels_activity_data(self.all_df, level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma, sample=sample)
-        dd2 = args=self.__channels_activity_data(self.pass_df, level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma, sample=sample)
-        dd3 = args=self.__channels_activity_data(self.all_df, level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma, sample=sample)
-        dd4 = args=self.__channels_activity_data(self.pass_df, level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma, sample=sample)
+        dd1 = args=self.__channels_activity_data(self.all_df, level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma, time_bins=time_bins, sample=sample)
+        dd2 = args=self.__channels_activity_data(self.pass_df, level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma, time_bins=time_bins, sample=sample)
+        dd3 = args=self.__channels_activity_data(self.all_df, level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma, time_bins=time_bins, sample=sample)
+        dd4 = args=self.__channels_activity_data(self.pass_df, level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma, time_bins=time_bins, sample=sample)
 
         # Plot initial data
         data = [go.Heatmap(x=dd1["x"][0], y=dd1["y"][0], z=dd1["z"][0], xgap=0.5, colorscale=colorscale, hoverinfo="x+y+z")]
@@ -865,7 +869,7 @@ class pycoQC ():
 
         return go.Figure (data=data, layout=layout)
 
-    def __channels_activity_data (self, df, level="bases", n_channels=512, smooth_sigma=2, sample=100000):
+    def __channels_activity_data (self, df, level="bases", n_channels=512, smooth_sigma=2, time_bins=150, sample=100000):
         """Private function preparing data for channels_activity"""
 
         # Downsample if needed
@@ -876,9 +880,7 @@ class pycoQC ():
 
         # Bin data in categories
         t = (df["start_time"]/3600).values
-        t_min = t.min()
-        t_max = t.max()
-        bins = np.linspace (t_min, t_max, int((t_max-t_min)*3))
+        bins = np.linspace (t.min(), t.max(), num=time_bins)
         t = np.digitize (t, bins=bins, right=True)
 
         # Count values per categories
