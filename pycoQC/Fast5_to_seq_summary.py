@@ -82,7 +82,7 @@ class Fast5_to_seq_summary ():
             "calibration_strand_genome_template", "barcode_arrangement"]):
         """
         * fast5_dir
-            Directory containing fast5 files. Can be recursive
+            Directory containing fast5 files. Can contain multiple subdirectories
         * seq_summary_fn
             path of the summary sequencing file where to write the data extracted from the fast5 files
         * max_fast5 (default = 0)
@@ -105,7 +105,6 @@ class Fast5_to_seq_summary ():
         """
         # Set logging level
         logger.setLevel(logLevel_dict.get(verbose_level, logging.WARNING))
-        logger.info("Initialise Whitelist and checks options")
 
         # Perform checks
         logger.info ("Check input data and options")
@@ -143,6 +142,7 @@ class Fast5_to_seq_summary ():
         ps_list.append (mp.Process (target=self._write_seq_summary, args=(out_q, error_q, counter_q)))
 
 
+        logger.info ("Start processing fast5 files")
         try:
             # Start all processes
             for ps in ps_list:
