@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Define self package variable
-__version__ = '2.1a2'
+__version__ = '2.1a3'
 __all__ = ["pycoQC", "common"]
 __description__="""
 pycoQC computes metrics and generates interactive QC plots from the sequencing
