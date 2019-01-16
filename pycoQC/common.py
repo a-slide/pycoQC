@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 # Standard library imports
-from os import access, R_OK
-from warnings import warn
+from os import access, R_OK, listdir, path
+from inspect import signature, isfunction, ismethod
+from glob import iglob
+import sys
 
 # Third party imports
-from IPython.core.display import display, HTML
 import pandas as pd
 
 #~~~~~~~~~~~~~~CUSTOM EXCEPTION AND WARN CLASSES~~~~~~~~~~~~~~#
@@ -19,57 +20,9 @@ class pycoQCWarning (Warning):
 
 ##~~~~~~~ FUNCTIONS ~~~~~~~#
 
-def jprint(*args, **kwargs):
-    """
-    Format a string in HTML and print the output. Equivalent of print, but highly customizable. Many options can be passed to the function.
-    * args
-        One or several objects that can be cast in str
-    ** kwargs
-        Formatting options to tweak the html rendering
-        Boolean options : bold, italic, highlight, underlined, striked, subscripted, superscripted
-        String options: font, color, size, align, background_color
-    """
-
-    # Join the different elements together and cast in string
-    s =  " ".join([str(i) for i in args])
-
-    # Replace new lines and tab by their html equivalent
-    s = s.replace("\n", "<br>").replace("\t", "&emsp;")
-
-    # For boolean options
-    if "bold" in kwargs and kwargs["bold"]: s = "<b>{}</b>".format(s)
-    if "italic" in kwargs and kwargs["italic"]: s = "<i>{}</i>".format(s)
-    if "highlight" in kwargs and kwargs["highlight"]: s = "<mark>{}</mark>".format(s)
-    if "underlined" in kwargs and kwargs["underlined"]: s = "<ins>{}</ins>".format(s)
-    if "striked" in kwargs and kwargs["striked"]: s = "<del>{}</del>".format(s)
-    if "subscripted" in kwargs and kwargs["subscripted"]: s = "<sub>{}</sub>".format(s)
-    if "superscripted" in kwargs and kwargs["superscripted"]: s = "<sup>{}</sup>".format(s)
-
-    # for style options
-    style=""
-    if "font" in kwargs and kwargs["font"]: style+= "font-family:{};".format(kwargs["font"])
-    if "color" in kwargs and kwargs["color"]: style+= "color:{};".format(kwargs["color"])
-    if "size" in kwargs and kwargs["size"]: style+= "font-size:{}%;".format(kwargs["size"])
-    if "align" in kwargs and kwargs["align"]: style+= "text-align:{};".format(kwargs["align"])
-    if "background_color" in kwargs and kwargs["background_color"]: style+= "background-color:{};".format(kwargs["background_color"])
-
-    # Format final string
-    if style: s = "<p style=\"{}\">{}</p>".format(style,s)
-    else: s = "<p>{}</p>".format(s)
-
-    display(HTML(s))
-
-def is_readable_file (fp, raise_exception=True, **kwargs):
-    """
-    Verify the readability of a file or list of file
-    """
-    if not access(fp, R_OK):
-        if raise_exception:
-            raise IOError ("Cannot find/read file {}".format(fp))
-        else:
-            return False
-    else:
-        return True
+def is_readable_file (fp, **kwargs):
+    """Verify the readability of a file or list of file"""
+    return access(fp, R_OK)
 
 def sequencing_summary_file_sample (infile, outfile=None, n_seq=10000, **kwargs):
     """
@@ -100,6 +53,50 @@ def sequencing_summary_file_sample (infile, outfile=None, n_seq=10000, **kwargs)
     df = pd.concat(l)
     df.reset_index(inplace=True, drop=True)
     if outfile:
-        df.to_csv(outfile, index=False, sep="\t")
+        if outfile.endswith("gz"):
+            df.to_csv(outfile, index=False, sep="\t", compression="gzip")
+        else:
+            df.to_csv(outfile, index=False, sep="\t", compression=None)
     else:
         return df
+
+def print_help (function):
+    """Print a nice looking help string based on the name of a declared function"""
+    if isfunction(function) or ismethod(function):
+        print ("{} {}\n{}".format(function.__name__, signature(function), function.__doc__))
+    else:
+        print("{} is not a function".format(function))
+
+def recursive_file_gen (dir, ext, **kwargs):
+    """
+    create a generator listing all files with a particular extension in a folder arborescence
+    The recursivity is broken when at least 1 file with a particular extenssion is found.
+    """
+    # In the case where the folder is a file
+    if path.isdir(dir):
+
+        # If matching files in the folder
+        file_found=False
+        for fn in iglob (path.join(dir, "*."+ext)):
+            yield fn
+            file_found=True
+
+        # If no matching file go deeper until a leaf containing fast5 is found
+        if not file_found:
+            for item in listdir(dir):
+                for fn in recursive_file_gen (path.join(dir, item), ext):
+                    yield fn
+
+
+def stderr_print (*args):
+    """reproduce print with stderr.write
+    """
+    sys.stderr.write(" ".join(str(a) for a in args))
+    sys.stderr.flush()
+
+def counter_to_str (c):
+    """Transform a counter dict to a tabulated str"""
+    m = ""
+    for i, j in c.most_common():
+        m += "\t{}: {:,}".format(i, j)
+    return m
