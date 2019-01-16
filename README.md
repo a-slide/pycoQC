@@ -185,7 +185,7 @@ Customizable parameters of plotting functions are usually self explanatory, but 
 
 `pycoQC reads_len_1D --help`
 
-### Generating a summary sequencing file 
+### Generating a summary sequencing file
 
 `Fast5_to_seq_summary -f {path to fast5 dir} -s {path to output summary sequecing file}`
 
@@ -235,13 +235,11 @@ optional arguments:
                         (default: 0)
 ```
 
-# Note to power-users and developers
+# Contributing
 
-Please be aware that pycoQC is a research package that is still under development. It was tested under Linux Ubuntu 16.04 and in an HPC environment running under Red Hat Enterprise 7.1.
+Thanks for considering contributing to our_package!
 
-You are welcome to contribute by requesting additional functionalities, reporting bugs or by forking and submitting pull requests
-
-Thank you
+Please see [contribution guidelines](https://github.com/a-slide/pycoQC/blob/master/CONTRIBUTING.md) as well as the [code of conduct](https://github.com/a-slide/pycoQC/blob/master/CODE_OF_CONDUCT.md) for more information.
 
 ### Authors
 
