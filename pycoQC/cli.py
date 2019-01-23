@@ -25,6 +25,18 @@ from pycoQC import __name__ as package_name
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
 
+# List of current valid plotting methods names
+plot_methods = [
+    "summary",
+    "reads_len_1D",
+    "reads_qual_1D",
+    "reads_len_qual_2D",
+    "output_over_time",
+    "len_over_time",
+    "qual_over_time",
+    "barcode_counts",
+    "channels_activity"]
+
 #~~~~~~~~~~~~~~Fast5_to_seq_summary CLI ENTRY POINT~~~~~~~~~~~~~~#
 def main_Fast5_to_seq_summary (args=None):
     if args is None:
@@ -89,6 +101,8 @@ def main_pycoQC (args=None):
         help="Minimum quality to consider a read as 'pass' (default: %(default)s)")
     parser.add_argument("--title", "-t", default=None, type=str,
         help="A title to be used in the html report (default: %(default)s)")
+    parser.add_argument("--filter_calibration", default=False, action='store_true',
+        help="If given reads flagged as calibration strand by the basecaller are removed (default: %(default)s)")
     parser.add_argument("--verbose_level", choices=[2,1,0], type=int, default=1,
         help="Level of verbosity, from 2 (Chatty) to 0 (Nothing) (default: %(default)s)")
     parser.add_argument("--config", "-c", type=str, default=None,
@@ -96,9 +110,9 @@ def main_pycoQC (args=None):
         The first level keys are the names of the plots to be included. The second level keys are the parameters to pass to each plotting function (default: %(default)s)")""")
     parser.add_argument("--template_file", type=str, default=None,
         help="Jinja2 html template (default: %(default)s)")
-    group.add_argument("--default_config", "-d",  action='store_true',
+    group.add_argument("--default_config", "-d", action='store_true',
         help="Print default configuration file. Can be used to generate a template JSON file (default: %(default)s)")
-    group.add_argument("--list_plots", "-l", action='store_true',
+    group.add_argument("--list_plots", "-l", default=None, action='store_true',
         help="Print the list of available plotting functions and exit (default: %(default)s)")
     group.add_argument("--help", "-h", action='store_true',
         help="Print a help message and exit. If a plotting function name is also given, print a function specific help message (default: %(default)s)")
@@ -144,26 +158,15 @@ def main_pycoQC (args=None):
         summary_file = args.file,
         outfile = args.outfile,
         qual = args.min_pass_qual,
+        filter_calibration = args.filter_calibration,
         config = args.config,
         template_file = args.template_file,
         verbose_level=args.verbose_level,
         title=args.title)
 
 #~~~~~~~~~~~~~~MAIN FUNCTION~~~~~~~~~~~~~~#
-def generate_report(summary_file, outfile, qual=7, config=None, template_file=None, verbose_level=1, title=None):
+def generate_report(summary_file, outfile, qual=7, filter_calibration=False, config=None, template_file=None, verbose_level=1, title=None):
     """ Runs pycoQC and generates the HTML report"""
-
-    # List of current valid plotting methods names
-    plot_methods = [
-        "summary",
-        "reads_len_1D",
-        "reads_qual_1D",
-        "reads_len_qual_2D",
-        "output_over_time",
-        "len_over_time",
-        "qual_over_time",
-        "barcode_counts",
-        "channels_activity"]
 
     # Parse configuration file
     logger.warning("PARSE CONFIGURATION FILE")
@@ -172,7 +175,11 @@ def generate_report(summary_file, outfile, qual=7, config=None, template_file=No
 
     # Initiate pycoQC
     logger.warning("PARSE DATA FILES")
-    p = pycoQC (seq_summary_file=summary_file, verbose_level=verbose_level, min_pass_qual=qual)
+    p = pycoQC (
+        seq_summary_file=summary_file,
+        verbose_level=verbose_level,
+        min_pass_qual=qual,
+        filter_calibration=filter_calibration)
 
     # Loop over configuration file and run the pycoQC functions defined
     logger.warning("GENERATES PLOTS")
@@ -188,10 +195,13 @@ def generate_report(summary_file, outfile, qual=7, config=None, template_file=No
             logger.info("\tRunning method {}".format(method_name))
             logger.debug ("\t{} ({})".format(method_name, method_args))
 
+            # Store plot title for HTML tittle and remove from data passed to plotly
+            plot_title = method_args["plot_title"]
             method_args["plot_title"]=""
+
+            # Get method and generate plot
             method = getattr(p, method_name)
             fig = method(**method_args)
-
             plot = py.plot(
                 fig,
                 output_type='div',
@@ -202,7 +212,7 @@ def generate_report(summary_file, outfile, qual=7, config=None, template_file=No
                 auto_open=False)
 
             plots.append(plot)
-            titles.append(method_args["plot_title"])
+            titles.append(plot_title)
 
         except pycoQCError as E:
             logger.info(E)

@@ -30,7 +30,7 @@ class pycoQC ():
         seq_summary_file,
         runid_list = [],
         min_pass_qual = 7,
-        filter_calibration=True,
+        filter_calibration=False,
         verbose_level = 0):
         """
         Parse Albacore sequencing_summary.txt file and clean-up the data
@@ -41,7 +41,7 @@ class pycoQC ():
             Select only specific runids to be analysed. Can also be used to force pycoQC to order the runids for
             temporal plots, if the sequencing_summary file contain several sucessive runs. By default pycoQC analyses
             all the runids in the file and uses the runid order as defined in the file.
-        * filter_calibration BOOL [Default True]
+        * filter_calibration BOOL [Default False]
             If True read flagged as calibration strand by the software are removed
         * min_pass_qual INT [Default 7]
             Minimum quality to consider a read as 'pass'
