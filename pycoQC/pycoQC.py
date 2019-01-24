@@ -120,7 +120,7 @@ class pycoQC ():
         if filter_calibration and "calibration" in df:
             logger.info ("Filter out calibration strand reads")
             l = len(df)
-            df = df[(df["calibration"].isin(["filtered_out", "no_match"]))]
+            df = df[(df["calibration"].isin(["filtered_out", "no_match", "*"]))]
             logger.info ("\t{:,} reads discarded".format(l-len(df)))
             if len(df) <= 1:
                 raise pycoQCError("No valid read left after calibration strand filtering")
