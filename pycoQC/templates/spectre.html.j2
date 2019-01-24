@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
+	<link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
+	<link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
+
+    <title>PycoQC report</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+    	.tf {
+    		position: fixed;
+    		top: 0;
+    		left: 50%;
+    		transform: translateX(-50%);
+		z-index: 99 !important;
+    	}
+    </style>
+  </head>
+<body>
+
+<div class="container">
+	<div class="columns">
+		<div class="column col-12 col-mx-auto tf">
+			<header class="navbar">
+				<section class="navbar-section">
+    	    				<a href="https://a-slide.github.io/pycoQC/" class="navbar-brand mr-2" target="_blank">PycoQC</a>
+    	    				<a href="https://a-slide.github.io/pycoQC/pycoQC_usage.html" class="btn btn-link" target="_blank">Docs</a>
+    	    				<a href="https://github.com/a-slide/pycoQC" class="btn btn-link" target="_blank">GitHub</a>
+	  			</section>
+  	  			<section class="navbar-section">
+					<div class="dropdown dropdown-right">
+						<a href="#/" class="btn btn-link dropdown-toggle" tabindex="0">Menu <i class="icon icon-menu"></i></a>
+						<ul class="menu">
+							<li class="menu-item">
+								{% for item in titles%}
+								<a href="#{{ item }}">{{ item }}</a>
+								{% endfor %}
+							</li>
+						</ul>
+					</div>
+				</section>
+			</header>
+      		</div>
+	</div>
+	<div class="columns">
+
+		<div class="column col-9 col-mx-auto">
+			<div class="text-center">
+				<h1>PycoQC report</h1>
+				<div class="divider"></div>
+				<h4>{{ report_title }}</h4>
+			</div>
+			<div class="columns">
+				{% for item in plots %}
+					<div id="{{ titles[loop.index0] }}" class="column col-11 col-mx-auto text-center">
+						<h4 style="margin-top: 50px;">{{ titles[loop.index0] }}</h4>
+						{{ item }}
+						<div class="divider"></div>
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+
+	<!-- <div class="column col-12 col-mx-auto text-center">
+		<h6>SHA256: {{ summary_file_hash }}</h6>
+	</div> -->
+    </div>
+</div>
+</body>
+</html>
