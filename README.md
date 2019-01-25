@@ -18,7 +18,7 @@ As opposed to more exhaustive QC programs for nanopore data, pycoQC is very fast
 
 [![reads_len_1D_example](./pictures/reads_len_1D_example.png)](https://plot.ly/~aleg/2/distribution-of-read-length/)
 
-[![summary](./pictures/summary.png)](https://plot.ly/~aleg/16/)
+[![summary](./pictures/summary.gif)](https://plot.ly/~aleg/16/)
 
 [![reads_qual_len_2D_example](./pictures/reads_qual_len_2D_example.png)](https://plot.ly/~aleg/3/mean-read-quality-per-sequence-length/)
 
