@@ -267,13 +267,29 @@ optional arguments:
                         (default: 0)
 ```
 
-# Contributing
+## Contributing
 
 Thanks for considering contributing to our_package!
 
 Please see [contribution guidelines](https://github.com/a-slide/pycoQC/blob/master/CONTRIBUTING.md) as well as the [code of conduct](https://github.com/a-slide/pycoQC/blob/master/CODE_OF_CONDUCT.md) for more information.
 
-### Authors
+## Authors
 
 * Adrien Leger - aleg {at} ebi.ac.uk
 * Tommaso Leonardi - tom {at} tleo.io
+
+## Acknowledgements
+
+We would like to thank the following people for providing us with example files:
+
+* Paulo Amaral
+* Kim Judge
+* Daan Verhagen
+* Jon Sanders
+
+In addition thanks pycoQC 2.0 beta testers:
+
+* Michael Clark
+* Jack Monahan
+* Tomas Fitzgerald
+
