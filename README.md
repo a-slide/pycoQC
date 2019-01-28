@@ -198,6 +198,7 @@ optional arguments:
   --help, -h            Print a help message and exit. If a plotting function
                         name is also given, print a function specific help
                         message (default: False)
+
 ```
 
 ### Advanced pycoQC usage
