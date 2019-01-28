@@ -27,7 +27,7 @@ bibliography: paper.bib
 
 # Summary
 
-Nanopore sequencing of nucleic acids took nearly 30 years to develop and is now firmly established as a reliable alternative to sequencing by synthesis methods [@deamer_three_2016]. Oxford Nanopore Technologies (ONT) released the first commercial nanopore sequencing device in 2014 and has continually improved the technology since then [@jain_oxford_2016]. Although the read accuracy is only around 90%, ONT technology can sequence very long molecules and generates data in real time. In addition, RNA can be sequenced directly and modified bases can be detected [@garalde2018highly].
+Nanopore sequencing of nucleic acids took nearly 30 years to develop and is now firmly established as an alternative to sequencing by synthesis methods [@deamer_three_2016]. Oxford Nanopore Technologies (ONT) released the first commercial nanopore device for DNA sequencing in 2014 and has continually improved the technology since then [@jain_oxford_2016]. Although the read accuracy is only around 90%, ONT technology can sequence very long molecules and generates data in real time. In addition, RNA can be sequenced directly and modified bases can be detected [@garalde2018highly].
 
 The electrical signal acquired by the array of nanopores is stored in hdf5 format, with one file (called fast5) per molecule sequenced. The signal is then converted into a nucleic acid sequence using a basecalling software. There are several alternatives, but the best performers for read accuracy are Albacore and Guppy developed and maintained by ONT [@ryan_wick_comparison_2018]. Both can generate fastq files, fast5 files containing basecalling information and a text summary file. Although ONT recently released best-practice guidelines for quality control analysis of sequencing runs [@oxford_nanopore_technologies_bioinformatics_2019], it did not provide a turnkey solution to explore the sequencing data quality in depth.
 
@@ -65,6 +65,8 @@ pycoQC is available at https://github.com/a-slide/pycoQC together with extensive
 
 # Acknowledgements
 
-The authors would like to thank Paulo Amaral, who generated most of the datasets provided as example data with pycoQC as well as Tomas Fitzgerald, Jack Monahan and Michael Clark who beta-tested the package and suggested new features. In addition we would also like to thanks Kim Judge, Daan Verhagen and Jon Sanders for providing us with summary sequencing files used to develop and test the package. A.L is supported by a fellowship co-funded by EMBL and the ERC Marie Curie Actions program. T.L is funded by .... 
+The authors would like to thank Paulo Amaral, who generated most of the datasets provided as example data with pycoQC as well as Tomas Fitzgerald, Jack Monahan and Michael Clark who beta-tested the package and suggested new features. In addition we would also like to thanks Kim Judge, Daan Verhagen and Jon Sanders for providing us with summary sequencing files used to develop and test the package. Finally, we thank Ewan Birney for reviewing the paper draft.
+
+A.L is supported by a fellowship co-funded by EMBL and the ERC Marie Curie Actions program. T.L is funded by .... 
 
 # References
