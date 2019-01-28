@@ -2,16 +2,29 @@
   "@context": "https://raw.githubusercontent.com/codemeta/codemeta/master/codemeta.jsonld",
   "@type": "Code",
   "author": [
-
+    {
+      "@id": "http://orcid.org/0000-0001-8772-6776",
+      "@type": "Person",
+      "email": "aleg@ebi.ac.uk",
+      "name": "Adrien Leger",
+      "affiliation": "EMBL-EBI"
+    },
+    {
+      "@id": "http://orcid.org/0000-0002-4449-1863",
+      "@type": "Person",
+      "email": "tl344@cam.ac.uk",
+      "name": "Tommaso Leonardi",
+      "affiliation": "Gurdon Institute / Center for Genomic Science IIT@SEMM"
+    }
   ],
   "identifier": "https://doi.org/10.5281/zenodo.1116396",
   "codeRepository": "https://github.com/a-slide/pycoQC",
-  "datePublished": "2018-11-08",
-  "dateModified": "2018-11-08",
-  "dateCreated": "2018-11-08",
-  "description": "pycoQC is a python package that generates interactive plots from ONT sequencing data basecalled with Albacore (or equivalent)",
-  "keywords": "plots, interactive, metrics, nanopore, sequencing, python3",
-  "license": "MIT",
-  "title": "pycoQC",
-  "version": "v2.0"
+  "datePublished": "2019-01-28",
+  "dateModified": "2019-01-28",
+  "dateCreated": "2019-01-28",
+  "description": "PycoQC computes metrics and generates interactive quality control plots for Oxford Nanopore technologies sequencing runs",
+  "keywords": "python3, metrics, plots, nanopore sequencing, interactive, quality control",
+  "license": "GPL v3.0",
+  "title": "pycoQC, interactive quality control for Oxford Nanopore Sequencing",
+  "version": "v2.2.0"
 }
