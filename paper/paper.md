@@ -65,8 +65,6 @@ pycoQC is available at https://github.com/a-slide/pycoQC together with extensive
 
 # Acknowledgements
 
-The authors would like to thank Paulo Amaral, who generated most of the datasets provided as example data with pycoQC as well as Tomas Fitzgerald, Jack Monahan and Michael Clark who beta-tested the package and suggested new features. In addition we would also like to thank Kim Judge, Daan Verhagen and Jon Sanders for providing us with summary sequencing files used to develop and test the package. Finally, we thank Ewan Birney for reviewing the paper draft.
-
-A.L is supported by a fellowship co-funded by EMBL and the ERC Marie Curie Actions program. T.L is funded by .... 
+The authors would like to thank Paulo Amaral, who generated most of the datasets provided as example data with pycoQC as well as Tomas Fitzgerald, Jack Monahan and Michael Clark who beta-tested the package and suggested new features. In addition we would also like to thank Kim Judge, Daan Verhagen and Jon Sanders for providing us with summary sequencing files used to develop and test the package. Finally, we thank Ewan Birney for reviewing the paper draft and Tony Kouzarides for providing funding for T.L. A.L is supported by a fellowship co-funded by EMBL and the ERC Marie Curie Actions program. 
 
 # References
