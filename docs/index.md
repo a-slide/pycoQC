@@ -7,10 +7,12 @@
 
 ###  Command line interface
 
-* [DNA_1D Albacore 1.7.0 + barcoding](https://a-slide.github.io/pycoQC/pycoQC_Albacore-1.7.0_basecall-barcode-1D-DNA.html)
-* [RNA_1D Albacore 2.1.10](https://a-slide.github.io/pycoQC/pycoQC_Albacore-2.1.10_basecall-1D-RNA.html)
-* [DNA_1D Albacore 2.1.10](https://a-slide.github.io/pycoQC/pycoQC_Albacore-2.1.10_basecall-1D-DNA.html)
-* [RNA_1D Albacore 2.3.1](https://a-slide.github.io/pycoQC/pycoQC_Albacore-2.3.1_basecall-1D-RNA.html)
-* [RNA_1D Guppy 2.1.3](https://a-slide.github.io/pycoQC/pycoQC_Guppy-2-1-3_basecall-1D-RNA.html)
-* [DNA_1D Guppy 2.1.3 + barcoding](https://a-slide.github.io/pycoQC/pycoQC_Guppy-2-1-3_basecall-barcode-1D-DNA.html)
+* [Albacore-1.2.1_basecall-1D-DNA](https://a-slide.github.io/pycoQC/summary/Albacore-1.2.1_basecall-1D-DNA_sequencing_summary.txt.gz)
+* [Albacore-1.2.3_basecall-1D-RNA](https://a-slide.github.io/pycoQC/summary/Albacore-1.2.3_basecall-1D-RNA_sequencing_summary.txt.gz)
+* [Albacore-1.7.0_basecall-1D-DNA](https://a-slide.github.io/pycoQC/summary/Albacore-1.7.0_basecall-1D-DNA_sequencing_summary.txt.gz)
+* [Albacore-2.1.10_basecall-1D-DNA](https://a-slide.github.io/pycoQC/summary/Albacore-2.1.10_basecall-1D-DNA_sequencing_summary.txt.gz)
+* [Albacore-2.1.10_basecall-1D-RNA](https://a-slide.github.io/pycoQC/summary/Albacore-2.1.10_basecall-1D-RNA_sequencing_summary.txt.gz)
+* [Albacore-2.3.1_basecall-1D-RNA](https://a-slide.github.io/pycoQC/summary/Albacore-2.3.1_basecall-1D-RNA_sequencing_summary.txt.gz)
+* [Guppy-2.1.3_basecall-1D-DNA](https://a-slide.github.io/pycoQC/summary/Guppy-2.1.3_basecall-1D-DNA_sequencing_summary.txt.gz)
+* [Guppy-2.1.3_basecall-1D-RNA](https://a-slide.github.io/pycoQC/summary/Guppy-2.1.3_basecall-1D-RNA_sequencing_summary.txt.gz)
 
