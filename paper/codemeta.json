@@ -26,5 +26,5 @@
   "keywords": "python3, metrics, plots, nanopore sequencing, interactive, quality control",
   "license": "GPL v3.0",
   "title": "pycoQC, interactive quality control for Oxford Nanopore Sequencing",
-  "version": "v2.2.0"
+  "version": "v2.2.1"
 }
