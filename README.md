@@ -40,7 +40,15 @@ Ideally, before installation, create a clean **Python 3** virtual environment to
 
 ## Dependencies
 
-pycoQC relies on a few robustly maintained third party libraries (numpy, scipy, pandas, plotly, jinja2). The correct versions of the packages are installed together with the software when using pip.
+pycoQC relies on a few robustly maintained third party libraries listed below. The correct versions of the packages are installed together with the software when using pip.
+
+* numpy>=1.13
+* scipy>=1.1
+* pandas>=0.23
+* plotly>=3.4
+* jinja2>=2.10
+* h5py>=2.8.0
+* tqdm>=4.23'
 
 ## Option 1: Direct installation with pip from pipy (recommended)
 
