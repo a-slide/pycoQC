@@ -948,7 +948,7 @@ class pycoQC ():
         return col_found
 
     def _compute_N50 (self, data):
-        data = data.values
+        data = data.values.copy()
         data.sort()
         half_sum = data.sum()/2
         cum_sum = 0

@@ -229,7 +229,7 @@ def generate_report(
             titles.append(plot_title)
 
         except pycoQCError as E:
-            logger.info(E)
+            logger.info("\t\t{}".format(E))
 
     logger.warning("WRITE HTML REPORT")
 
