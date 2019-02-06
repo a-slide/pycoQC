@@ -1,5 +1,6 @@
 # pycoQC-2
 
+[![JOSS](http://joss.theoj.org/papers/ea8e08dc950622bdd5d16a65649954aa/status.svg)](http://joss.theoj.org/papers/ea8e08dc950622bdd5d16a65649954aa)
 [![DOI](https://zenodo.org/badge/94531811.svg)](https://zenodo.org/badge/latestdoi/94531811)
 [![GitHub license](https://img.shields.io/github/license/a-slide/pycoQC.svg)](https://github.com/a-slide/pycoQC/blob/master/LICENSE)
 [![Language](./pictures/language-Python3-brightgreen.svg)](https://www.python.org/)
