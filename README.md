@@ -65,7 +65,7 @@ To update the package:
 
 With this option, the package will be locally installed in “editable” or “develop” mode. This allows the package to be both installed and editable in project form. This is the recommended option if you wish to modify the code and/or participate to the development of the package (see [contribution guidelines](https://github.com/a-slide/pycoQC/blob/master/CONTRIBUTING.md)).
 
-`git clone https://github.com/a-slide/pycoQC.git`
+`git clone https://github.com/a-slide/pycoQC.git` or bleeding edge `git clone --branch dev https://github.com/a-slide/pycoQC.git`
 
 `cd pycoQC`
 
