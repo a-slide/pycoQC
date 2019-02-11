@@ -1,12 +1,12 @@
 # Contributing to pycoQC
 
-First of all, thanks for considering contributing to our_package! 👍 It's people like you that make it rewarding for us to work on our_package.
+First of all, thanks for considering contributing to `pycoQC`! 👍 It's people like you that make it rewarding for us to work on `pycoQC`.
 
-our_package is an open source project, maintained by publicly funded academic researchers.
+`pycoQC` is an open source project, maintained by publicly funded academic researchers.
 
-[repo]: https://github.com/our_org/pycoQC
-[issues]: https://github.com/our_org/pycoQC/issues
-[new_issue]: https://github.com/our_org/pycoQC/issues/new
+[repo]: https://github.com/a-slide/pycoQC
+[issues]: https://github.com/a-slide/pycoQC/issues
+[new_issue]: https://github.com/a-slide/pycoQC/issues/new
 [citation]: https://zenodo.org/record/2540931
 [email]: aleg@ebi.ac.uk
 [code_of_conduct]: https://github.com/a-slide/pycoQC/blob/master/CODE_OF_CONDUCT.md
@@ -22,13 +22,13 @@ There are several ways you can contribute to this project. If you want to know m
 
 ### Share the love ❤️
 
-Think our_package is useful? Let others discover it, by telling them in person, via Twitter or a blog post.
+Think `pycoQC` is useful? Let others discover it, by telling them in person, via Twitter or a blog post.
 
-Using our_package for a paper you are writing? Please cite it. 
+Using `pycoQC` for a paper you are writing? Please cite it. 
 
 ### Ask a question ⁉️
 
-Using our_package and got stuck? Browse the  [readme ][repo] and the [demo notebook][demo_notebook]  to see if you can find a solution.
+Using `pycoQC` and got stuck? Browse the  [readme ][repo] and the [demo notebook][demo_notebook]  to see if you can find a solution.
 
 Still stuck? Post your question as an [issue on GitHub][new_issue].
 
@@ -38,7 +38,7 @@ Want to ask a question in private? Contact the package maintainer by [email][ema
 
 ### Propose an idea 💡
 
-Have an idea for a new our_package feature? Take a look at the [issue list][issues] to see if it isn't included or suggested yet. If not, suggest your idea as an [issue on GitHub][new_issue]. While we can't promise to implement your idea, it helps to:
+Have an idea for a new `pycoQC` feature? Take a look at the [issue list][issues] to see if it isn't included or suggested yet. If not, suggest your idea as an [issue on GitHub][new_issue]. While we can't promise to implement your idea, it helps to:
 
 * Explain in detail how it would work.
 * Keep the scope as narrow as possible.
@@ -47,7 +47,7 @@ See below if you want to contribute code for your idea as well.
 
 ### Report a bug 🐛
 
-Using our_package and discovered a bug? That's annoying! Don't let others have the same experience and report it as an [issue on GitHub][new_issue] so we can fix it. A good bug report makes it easier for us to do so, so please include:
+Using `pycoQC` and discovered a bug? That's annoying! Don't let others have the same experience and report it as an [issue on GitHub][new_issue] so we can fix it. A good bug report makes it easier for us to do so, so please include:
 
 * Your operating system name and version (e.g. Mac OS 10.13.6).
 * Any details about your local setup that might be helpful in troubleshooting.
@@ -62,7 +62,7 @@ Noticed a typo on the website? Think a function could use a better example? Good
 
 ### Contribute code 📝
 
-Care to fix bugs or implement new functionality for our_package? Awesome! 👏 Have a look at the [issue list][issues] and leave a comment on the things you want to work on. See also the development guidelines below.
+Care to fix bugs or implement new functionality for `pycoQC`? Awesome! 👏 Have a look at the [issue list][issues] and leave a comment on the things you want to work on. See also the development guidelines below.
 
 ## Development guidelines
 
