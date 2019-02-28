@@ -19,7 +19,7 @@ affiliations:
    index: 1
  - name: Gurdon Institute, Cambridge, Cambridgeshire, UK
    index: 2
- - name: Center for Genomic Science IIT@SEMM, Istituto Italiano di Tecnologia (IIT), Milan, Italy
+ - name: Center for Genomic Science IIT\@SEMM, Istituto Italiano di Tecnologia (IIT), Milan, Italy
    index: 3
 date: 08 November 2018
 bibliography: paper.bib
