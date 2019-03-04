@@ -277,7 +277,7 @@ def parse_config_file(config_file):
             logger.debug ("\t\tFile not found, non-readable or invalid")
 
     # Second, look into default system folder
-    home=os.environ['HOME']
+    home=os.path.expanduser('~')
     for config_file in [home+"/.pycoQC", home+"/.config/pycoQC/config"]:
         logger.debug ("\tTry to read config file from system directory:{}".format(config_file))
         try:
