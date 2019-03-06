@@ -287,7 +287,7 @@ class pycoQC ():
         l.append ("{:,.2f}".format(self._compute_N50(df["num_bases"])))
         l.append ("{:,.2f}".format(df["mean_qscore"].median()))
         l.append ("{:,}".format(df["channel"].nunique()))
-        l.append ("{:,.2f}".format(np.ptp(sdf["start_time"])/3600))
+        l.append ("{:,.2f}".format(np.ptp(df["start_time"])/3600))
         if "barcode" in df:
             l.append ("{:,}".format(df["barcode"].nunique()))
         return l
