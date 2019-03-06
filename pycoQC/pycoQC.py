@@ -163,7 +163,7 @@ class pycoQC ():
             logger.info ("Sort run IDs by decreasing throughput")
             d = {}
             for run_id, sdf in df.groupby("run_id"):
-                d[run_id] = len(sdf)/sdf["start_time"].ptp()
+                d[run_id] = len(sdf)/np.ptp(sdf["start_time"])
             runid_list = [i for i, j in sorted (d.items(), key=lambda t: t[1], reverse=True)]
             logger.debug ("\tRun-id order {}".format(runid_list))
 
@@ -208,7 +208,7 @@ class pycoQC ():
         msg += "\tTotal reads: {:,}\n".format(len(self.all_df))
         msg += "\tPass reads: {:,}\n".format(len(self.pass_df))
         msg += "\tMinimal Pass Quality: {}\n".format(self._min_pass_qual)
-        msg += "\tRun Duration: {} h\n".format(round((self.all_df["start_time"].ptp())/3600, 2))
+        msg += "\tRun Duration: {} h\n".format(round(np.ptp(self.all_df["start_time"])/3600, 2))
         msg += "\tTotal Bases: {:,}\n".format(self.all_df["num_bases"].sum())
         msg += "\tBarcode found: {}\n".format(self.has_barcodes)
 
@@ -287,7 +287,7 @@ class pycoQC ():
         l.append ("{:,.2f}".format(self._compute_N50(df["num_bases"])))
         l.append ("{:,.2f}".format(df["mean_qscore"].median()))
         l.append ("{:,}".format(df["channel"].nunique()))
-        l.append ("{:,.2f}".format(df["start_time"].ptp()/3600))
+        l.append ("{:,.2f}".format(np.ptp(sdf["start_time"])/3600))
         if "barcode" in df:
             l.append ("{:,}".format(df["barcode"].nunique()))
         return l
