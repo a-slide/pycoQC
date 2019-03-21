@@ -182,12 +182,12 @@ def generate_report(
     """ Runs pycoQC and generates the HTML report"""
 
     # Parse configuration file
-    logger.warning("PARSE CONFIGURATION FILE")
+    logger.warning("PARSING CONFIGURATION FILE")
     config_dict = parse_config_file(config)
     logger.debug(config_dict)
 
     # Initiate pycoQC
-    logger.warning("PARSE DATA FILES")
+    logger.warning("PARSING DATA FILES")
     p = pycoQC (
         seq_summary_file=summary_file,
         barcode_summary_file=barcode_file,
@@ -196,7 +196,7 @@ def generate_report(
         filter_calibration=filter_calibration)
 
     # Loop over configuration file and run the pycoQC functions defined
-    logger.warning("GENERATES PLOTS")
+    logger.warning("GENERATING PLOTS")
     plots = list()
     titles = list()
     for method_name, method_args in config_dict.items ():
@@ -231,7 +231,7 @@ def generate_report(
         except pycoQCError as E:
             logger.info("\t\t{}".format(E))
 
-    logger.warning("WRITE HTML REPORT")
+    logger.warning("WRITING HTML REPORT")
 
     # Load HTML template for Jinja
     logger.info("\tLoad HTML template")
