@@ -36,6 +36,6 @@ setup_dict = {
     "entry_points": {
         'console_scripts': [
             'pycoQC=pycoQC.cli:main_pycoQC',
-            'Fast5_to_seq_summary=pycoQC.cli:main_Fast5_to_seq_summary'],
+            'Fast5_to_seq_summary=pycoQC.__main__:main_Fast5_to_seq_summary'],
     }
 }
