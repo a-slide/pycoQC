@@ -5,6 +5,7 @@ from os import access, R_OK, listdir, path
 from inspect import signature, isfunction, ismethod
 from glob import iglob
 import sys
+from collections import *
 
 # Third party imports
 import pandas as pd
@@ -59,6 +60,17 @@ def sequencing_summary_file_sample (infile, outfile=None, n_seq=10000, **kwargs)
             df.to_csv(outfile, index=False, sep="\t", compression=None)
     else:
         return df
+
+def dict_to_str (c, prefix="\t", suffix="\n"):
+    """ Transform a dict to a tabulated str """
+    m = ""
+    if type(c) == Counter:
+        for i, j in c.most_common():
+            m += "{}{}: {:,}{}}".format(prefix, i, j, suffix)
+    else:
+        for i, j in c.items():
+            m += "{}{}: {}{}".format(prefix, i, j, suffix)
+    return m
 
 def print_help (function):
     """Print a nice looking help string based on the name of a declared function"""
