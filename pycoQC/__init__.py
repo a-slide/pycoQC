@@ -35,7 +35,7 @@ setup_dict = {
     "package_data": {__name__: ['templates/*']},
     "entry_points": {
         'console_scripts': [
-            'pycoQC=pycoQC.cli:main_pycoQC',
+            'pycoQC=pycoQC.__main__:main_pycoQC',
             'Fast5_to_seq_summary=pycoQC.__main__:main_Fast5_to_seq_summary'],
     }
 }
