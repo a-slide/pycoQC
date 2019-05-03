@@ -228,18 +228,20 @@ class pycoQC ():
         return self.all_df["channel"].max() > 512
 
     #~~~~~~~SUMMARY METHOD AND HELPER~~~~~~~#
+
     def summary (self,
+        groupby = None,
         width = None,
         height = None,
         plot_title="Run summary"):
         """
-        Plot an interactive summary table
+        Plot an interactive summary table per runid
         * width: With of the ploting area in pixel
         * height: height of the ploting area in pixel
         """
         # Prepare all data
-        dd1 = self.__summary_data (df=self.all_df)
-        dd2 = self.__summary_data (df=self.pass_df)
+        dd1 = self.__summary_data (df=self.all_df, groupby=groupby)
+        dd2 = self.__summary_data (df=self.pass_df, groupby=groupby)
 
         # Plot initial data
         data = [go.Table(header = dd1["header"][0], cells = dd1["cells"][0], columnwidth = [60, 20])]
@@ -252,39 +254,67 @@ class pycoQC ():
 
         # Autodefine height depending on the numbers of run_ids
         if not height:
-            height = 300+(30*self.all_df["run_id"].nunique())
+            height = 300+(30*self.all_df[groupby].nunique()) if groupby else 300
+
         # tweak plot layout
         layout = go.Layout (updatemenus=updatemenus, width=width, height=height, title=plot_title)
 
         return go.Figure (data=data, layout=layout)
 
-    def __summary_data (self, df):
+    def barcode_summary (self,
+        width = None,
+        height = None,
+        plot_title="Run summary by barcode"):
+        """
+        Plot an interactive summary table per barcode (if available)
+        * width: With of the ploting area in pixel
+        * height: height of the ploting area in pixel
+        """
+        # Verify that barcode information are available
+        if not self.has_barcodes:
+            raise pycoQCError ("No barcode information available")
+
+        return self.summary(groupby="barcode", width=width, height=height, plot_title=plot_title)
+
+    def run_id_summary (self,
+        width = None,
+        height = None,
+        plot_title="Run summary by Run ID"):
+        """
+        Plot an interactive summary table per run_id
+        * width: With of the ploting area in pixel
+        * height: height of the ploting area in pixel
+        """
+        return self.summary(groupby="run_id", width=width, height=height, plot_title=plot_title)
+
+    def __summary_data (self, df, groupby=None):
         """
         Private function preparing data for summary
         """
-
-        header=["Run_ID", "Reads", "Bases", "Med Read Length", "N50 Length", "Med Read Quality", "Active Channels", "Run Duration (h)"]
-        if "barcode" in df:
-            header.append("Unique Barcodes")
-
+        # Group by barcode if required. Otherwise fall back to runid
         cells = []
-        cells.append (self.__df_to_cell("All Run_IDs", df))
-        for run_id, sdf in df.groupby ("run_id"):
-            cells.append (self.__df_to_cell(run_id, sdf))
+        if groupby:
+            header=[groupby.capitalize(), "Reads", "Bases", "Med Read Length", "N50 Length", "Med Read Quality", "Active Channels", "Run Duration (h)"]
+            for id, sdf in df.groupby (groupby):
+                cells.append (self.__df_to_cell(sdf, id))
+        else:
+            header=["Reads", "Bases", "Med Read Length", "N50 Length", "Med Read Quality", "Active Channels", "Run Duration (h)"]
+            cells.append (self.__df_to_cell(df))
 
         # Transpose list of list
         cells = [*zip(*cells)]
 
         data_dict = dict (
             header = [{"values":header, "fill":{"color":"lightgrey"}, "align":"center", "font":{"color":'black', "size":12}, "height":40}],
-            cells  = [{"values":cells, "fill":{"color":["lightgrey", "white"]}, "align":"center", "font":{"color":'black', "size":12}, "height":30}])
+            cells  = [{"values":cells, "fill":{"color":["white"]}, "align":"center", "font":{"color":'black', "size":12}, "height":30}])
 
         return data_dict
 
-    def __df_to_cell (self, run_id, df):
+    def __df_to_cell (self, df, id=None):
         """Extract information from sub-dataframes and return a list of values"""
         l = []
-        l.append (run_id)
+        if id:
+            l.append (id)
         l.append ("{:,}".format(len(df)))
         l.append ("{:,}".format(df["num_bases"].sum()))
         l.append ("{:,.2f}".format(df["num_bases"].median()))
@@ -292,8 +322,6 @@ class pycoQC ():
         l.append ("{:,.2f}".format(df["mean_qscore"].median()))
         l.append ("{:,}".format(df["channel"].nunique()))
         l.append ("{:,.2f}".format(np.ptp(df["start_time"])/3600))
-        if "barcode" in df:
-            l.append ("{:,}".format(df["barcode"].nunique()))
         return l
 
     #~~~~~~~1D DISTRIBUTION METHODS AND HELPER~~~~~~~#
