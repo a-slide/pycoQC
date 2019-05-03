@@ -64,9 +64,16 @@ class pycoQC ():
         logger.info ("Import raw data from sequencing summary files")
         try:
             df_list = []
-            fp_list = glob (seq_summary_file)
+            if type(seq_summary_file) == str:
+                fp_list = glob (seq_summary_file)
+            elif type(seq_summary_file) == list:
+                fp_list=[]
+                for fp in seq_summary_file:
+                    fp_list.extend(glob(fp))
+            else:
+                raise pycoQCError ("`seq_summary_file` has to be either a file or a regular expression or a list of files")
             if len(fp_list) == 0:
-                raise pycoQCError ("Could not find any files matching {}".format(seq_summary_file))
+                raise pycoQCError ("Could not find any valid sequencing summary file")
             logger.debug ("\tSequencing summary files found: {}".format(fp_list))
             for fp in fp_list:
                 df_list.append (pd.read_csv(fp, sep ="\t"))
@@ -82,9 +89,16 @@ class pycoQC ():
             logger.info ("Import barcode information from barcode summary files")
             try:
                 df_list = []
-                fp_list = glob (barcode_summary_file)
+                if type(barcode_summary_file) == str:
+                    fp_list = glob (barcode_summary_file)
+                elif type(barcode_summary_file) == list:
+                    fp_list=[]
+                    for fp in barcode_summary_file:
+                        fp_list.extend(glob(fp))
+                else:
+                    raise pycoQCError ("`barcode_summary_file` has to be either a file or a regular expression or a list of files")
                 if len(fp_list) == 0:
-                    raise pycoQCError ("Could not find any files matching {}".format(seq_summary_file))
+                    raise pycoQCError ("Could not find any valid barcode summary file")
                 logger.debug ("\tBarcode summary files found: {}".format(fp_list))
                 for fp in fp_list:
                     df_list.append (pd.read_csv(fp, sep ="\t"))
