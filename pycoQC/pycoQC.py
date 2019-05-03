@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 # Standard library imports
-from collections import OrderedDict, defaultdict
+from collections import *
 from glob import glob
 import logging
 import warnings
+import datetime
 
 # Third party imports
 import numpy as np
@@ -14,7 +15,9 @@ import plotly.graph_objs as go
 import plotly.offline as py
 
 # Local lib import
-from pycoQC.common import pycoQCError, pycoQCWarning
+from pycoQC.common import *
+from pycoQC import __version__ as package_version
+from pycoQC import __name__ as package_name
 
 # Logger setup
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -36,6 +39,7 @@ class pycoQC ():
         runid_list = [],
         min_pass_qual = 7,
         filter_calibration=False,
+        min_barcode_percent=0.1,
         verbose_level = 0):
         """
         Parse Albacore sequencing_summary.txt file and clean-up the data
@@ -53,15 +57,31 @@ class pycoQC ():
             If True read flagged as calibration strand by the software are removed
         * min_pass_qual INT [Default 7]
             Minimum quality to consider a read as 'pass'
+        * min_barcode_percent [Default 0.1]
+            Minimal percent of total reads to retain barcode label. If below the barcode value is set as `unclassified`.
         * verbose_level INT [Default 0]
             Level of verbosity, from 2 (Chatty) to 0 (Nothing)
         """
+
+        # Collect args in dict for log report
+        kwargs = locals()
+        self.option_d = OrderedDict()
+        self.option_d["package_name"] = package_name
+        self.option_d["package_version"] = package_version
+        self.option_d["timestamp"] = str(datetime.datetime.now())
+        for i, j in kwargs.items():
+            if i != "self":
+                self.option_d[i]=j
+
         # Set logging level
         logLevel_dict = {2:logging.DEBUG, 1:logging.INFO, 0:logging.WARNING}
         logger.setLevel (logLevel_dict.get (verbose_level, logging.INFO))
 
+        # Init read counter
+        self.counter = OrderedDict()
+
         # Check that the summary file is readable and import in a dataframe
-        logger.info ("Import raw data from sequencing summary files")
+        logger.info ("Importing raw data from sequencing summary files")
         try:
             df_list = []
             if type(seq_summary_file) == str:
@@ -82,11 +102,13 @@ class pycoQC ():
             raise pycoQCError ("File {} is not readeable".format(fp))
         if len(df) == 0:
             raise pycoQCError ("No valid read found in input file")
-        logger.info ("\t{:,} reads found in initial file".format(len(df)))
+        n = len(df)
+        logger.debug ("\t{:,} reads found in initial file".format(n))
+        self.counter["Initial reads"] = n
 
         # If provided,check that the barcode file is readable, import in a dataframe and merge with summary df
         if barcode_summary_file:
-            logger.info ("Import barcode information from barcode summary files")
+            logger.info ("Importing barcode information from barcode summary files")
             try:
                 df_list = []
                 if type(barcode_summary_file) == str:
@@ -111,13 +133,15 @@ class pycoQC ():
                 df['barcode_arrangement'].fillna('unclassified', inplace=True)
             except IOError:
                 raise pycoQCError ("File {} is not readeable".format(fp))
-            logger.info ("\t{:,} reads with barcodes assigned".format(len(df[df['barcode_arrangement']!="unclassified"])))
+            n = len(df[df['barcode_arrangement']!="unclassified"])
+            logger.debug ("\t{:,} reads with barcodes assigned".format(n))
+            self.counter["Reads with barcodes"] = n
 
         # Define specific parameters depending on the run_type
-        logger.info ("Verify fields and discard unused columns")
+        logger.info ("Verifying fields and discarding unused columns")
 
         if "sequence_length_template" in df:
-            logger.info ("\t1D Run type")
+            logger.debug ("\t1D Run type")
             self.run_type = "1D"
             required_colnames = ["read_id", "run_id", "channel", "start_time", "sequence_length_template", "mean_qscore_template"]
             optional_colnames = ["calibration_strand_genome_template", "barcode_arrangement"]
@@ -126,7 +150,7 @@ class pycoQC ():
                 "calibration_strand_genome_template":"calibration","barcode_arrangement":"barcode"}
 
         elif "sequence_length_2d" in df:
-            logger.info ("\t1D2 Run type")
+            logger.debug ("\t1D2 Run type")
             self.run_type = "1D2"
             required_colnames = ["read_id", "run_id", "channel", "start_time", "sequence_length_2d", "mean_qscore_2d"]
             optional_colnames = ["calibration_strand_genome_template", "barcode_arrangement"]
@@ -143,42 +167,51 @@ class pycoQC ():
         df = df.rename(columns=rename_colmanes)
 
         # Drop lines containing NA values
-        logger.info ("Drop lines containing NA values")
+        logger.info ("Droping lines containing NA values")
         l = len(df)
         df = df.dropna()
-        logger.info ("\t{:,} reads discarded".format(l-len(df)))
+        n=l-len(df)
+        logger.debug ("\t{:,} reads discarded".format(n))
+        self.counter["Reads with NA values discarded"] = n
         if len(df) <= 1:
             raise pycoQCError("No valid read left after NA values filtering")
 
-
         # Filter out zero length reads
         if (df["num_bases"]==0).any():
-            logger.info ("Filter out zero length reads")
+            logger.info ("Filtering out zero length reads")
             l = len(df)
             df = df[(df["num_bases"] > 0)]
-            logger.info ("\t{} reads discarded".format(l-len(df)))
+            n=l-len(df)
+            logger.debug ("\t{:,} reads discarded".format(n))
+            self.counter["Zero length reads discarded"] = n
             if len(df) <= 1:
                 raise pycoQCError("No valid read left after zero_len filtering")
 
         # Filter out calibration strands read if the "calibration_strand_genome_template" field is available
         if filter_calibration and "calibration" in df:
-            logger.info ("Filter out calibration strand reads")
+            logger.info ("Filtering out calibration strand reads")
             l = len(df)
             df = df[(df["calibration"].isin(["filtered_out", "no_match", "*"]))]
-            logger.info ("\t{:,} reads discarded".format(l-len(df)))
+            n=l-len(df)
+            logger.debug ("\t{:,} reads discarded".format(n))
+            self.counter["Calibration reads discarded"] = n
             if len(df) <= 1:
                 raise pycoQCError("No valid read left after calibration strand filtering")
 
         # Filter and reorder based on runid_list list if passed by user
         if runid_list:
-            logger.info ("Select run_ids passed by user")
+            logger.info ("Selecting run_ids passed by user")
+            l = len(df)
             df = df[(df["run_id"].isin(runid_list))]
+            n=l-len(df)
+            logger.debug ("\t{:,} reads discarded".format(n))
+            self.counter["Excluded runid reads discarded"] = n
             if len(df) <= 1:
                 raise pycoQCError("No valid read left after run ID filtering")
 
-        # Else sort the runids by output per time assuming that the throughput  decreases over time
+        # Else sort the runids by output per time assuming that the throughput decreases over time
         else:
-            logger.info ("Sort run IDs by decreasing throughput")
+            logger.info ("Sorting run IDs by decreasing throughput")
             d = {}
             for run_id, sdf in df.groupby("run_id"):
                 d[run_id] = len(sdf)/np.ptp(sdf["start_time"])
@@ -186,7 +219,7 @@ class pycoQC ():
             logger.debug ("\tRun-id order {}".format(runid_list))
 
         # Modify start time per run ids to order them following the runid_list
-        logger.info ("\tReorder runids")
+        logger.info ("Reordering runids")
         increment_time = 0
         runid_start = OrderedDict()
         for runid in runid_list:
@@ -197,40 +230,49 @@ class pycoQC ():
             increment_time += max_val+1
         df = df.sort_values ("start_time")
 
+        #  Unset low frequency barcodes
+        if "barcode" in df:
+            logger.info ("Cleaning up low frequency barcodes")
+            l = (df["barcode"]=="unclassified").sum()
+            barcode_counts = df["barcode"].value_counts()
+            cutoff = int(barcode_counts.sum()*min_barcode_percent/100)
+            low_barcode = barcode_counts[barcode_counts<cutoff].index
+            df.loc[df["barcode"].isin(low_barcode), "barcode"] = "unclassified"
+            n= int((df["barcode"]=="unclassified").sum()-l)
+            logger.debug ("\t{:,} reads with low frequency barcode unset".format(n))
+            self.counter["Reads with low frequency barcode unset"] = n
+
         # Reindex final df
-        logger.info ("Reindex dataframe by read_ids")
+        logger.info ("Reindexing dataframe by read_ids")
         df = df.reset_index (drop=True)
         df = df.set_index ("read_id")
 
-        # Save self var
+        # Save final df
         self.all_df = df
+        self.counter["Valid reads"] = len(self.all_df)
         df = df[df["mean_qscore"]>=min_pass_qual]
         if len(df) <= 1:
             raise pycoQCError("No valid read left after quality filtering")
         self.pass_df = df[df["mean_qscore"]>=min_pass_qual]
-        self._min_pass_qual = min_pass_qual
-
+        self.counter["Valid pass reads"] = len(self.pass_df)
         if len(self.all_df) < 100:
-            logger.info ("Low number of valid reads found. This is likely to lead to errors when trying to generate plots")
+            logger.warning ("WARNING: Low number of reads found. This is likely to lead to errors when trying to generate plots")
         if len(self.pass_df) < 100:
-            logger.info ("Low number of pass reads found. This is likely to lead to errors when trying to generate plots")
+            logger.warning ("WARNING: Low number of pass reads found. This is likely to lead to errors when trying to generate plots")
 
         # Detailed report for debug level only
         logger.debug (str(self))
 
     def __str__(self):
-        """
-        readable description of the object
-        """
         msg = "[{}]\n".format(self.__class__.__name__)
-        msg += "\tTotal reads: {:,}\n".format(len(self.all_df))
-        msg += "\tPass reads: {:,}\n".format(len(self.pass_df))
-        msg += "\tMinimal Pass Quality: {}\n".format(self._min_pass_qual)
-        msg += "\tRun Duration: {} h\n".format(round(np.ptp(self.all_df["start_time"])/3600, 2))
-        msg += "\tTotal Bases: {:,}\n".format(self.all_df["num_bases"].sum())
-        msg += "\tBarcode found: {}\n".format(self.has_barcodes)
-
+        msg+= "Runtime info\n"
+        msg+=dict_to_str(self.option_d)
+        msg+= "Read counts\n"
+        msg+=dict_to_str(self.counter)
         return msg
+
+    def __repr__(self):
+        return str(self)
 
     #~~~~~~~PROPERTY METHODS~~~~~~~#
     @property
@@ -240,6 +282,42 @@ class pycoQC ():
     @property
     def is_promethion (self):
         return self.all_df["channel"].max() > 512
+
+    #~~~~~~~SUMMARY_STATS_DICT METHOD AND HELPER~~~~~~~#
+
+    def summary_stats_dict (self):
+        """
+        Return a dictionnary containing exhaustive information about the run.
+        """
+        d = OrderedDict ()
+        d["Runtime_info"] = self.option_d
+        d["Read_counts"] = self.counter
+
+        for df, lab in ((self.all_df, "all_reads"), (self.pass_df, "pass_reads")):
+
+            d[lab] = OrderedDict()
+            d[lab]["General_stats"] = self._compute_stats(df)
+
+            d[lab]["run_id_stats"] = OrderedDict ()
+            for id, sdf in df.groupby("run_id"):
+                d[lab]["run_id_stats"][id] = self._compute_stats(sdf)
+
+            if self.has_barcodes:
+                d[lab]["barcode_stats"] = OrderedDict ()
+                for id, sdf in df.groupby("barcode"):
+                    d[lab]["barcode_stats"][id] = self._compute_stats(sdf)
+        return d
+
+    def _compute_stats (self, df):
+        d = OrderedDict ()
+        d["Number of reads"] = len(df)
+        d["Number of bases"] = int(df["num_bases"].sum())
+        d["Quality score quantiles"] = self._compute_quantiles (df["mean_qscore"])
+        d["Read length quantiles"] = self._compute_quantiles (df["num_bases"])
+        d["N50"] = int(self._compute_N50(df["num_bases"]))
+        d["Run Duration"] = float(np.ptp(df["start_time"])/3600)
+        d["Active channels"] = int(df["channel"].nunique())
+        return d
 
     #~~~~~~~SUMMARY METHOD AND HELPER~~~~~~~#
 
@@ -834,14 +912,12 @@ class pycoQC ():
 
     #~~~~~~~BARCODE_COUNT METHODS AND HELPER~~~~~~~#
     def barcode_counts (self,
-        min_percent_barcode = 0.1,
         colors = ["#f8bc9c", "#f6e9a1", "#f5f8f2", "#92d9f5", "#4f97ba"],
         width =  None,
         height = 500,
         plot_title="Percentage of reads per barcode"):
         """
         Plot a mean quality over time
-        * min_percent_barcode: minimal percentage od total reads for a barcode to be reported
         * colors: List of colors (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
         * width: With of the ploting area in pixel
         * height: height of the ploting area in pixel
@@ -851,8 +927,8 @@ class pycoQC ():
             raise pycoQCError ("No barcode information available")
 
         # Prepare all data
-        dd1 = self.__barcode_counts_data (self.all_df, min_percent_barcode=min_percent_barcode)
-        dd2 = self.__barcode_counts_data (self.pass_df, min_percent_barcode=min_percent_barcode)
+        dd1 = self.__barcode_counts_data (self.all_df)
+        dd2 = self.__barcode_counts_data (self.pass_df)
 
         # Plot initial data
         data= [go.Pie (labels=dd1["labels"][0] , values=dd1["values"][0] , sort=False, marker=dict(colors=colors))]
@@ -873,15 +949,11 @@ class pycoQC ():
 
         return go.Figure (data=data, layout=layout)
 
-    def __barcode_counts_data (self, df, min_percent_barcode=0.1):
+    def __barcode_counts_data (self, df):
         """Private function preparing data for barcode_counts"""
 
         counts = df["barcode"].value_counts()
         counts = counts.sort_index()
-
-        if min_percent_barcode:
-            cuttoff = counts.sum()*min_percent_barcode/100
-            counts = counts[counts>cuttoff]
 
         # Extract label and values
         data_dict = dict (
@@ -980,7 +1052,9 @@ class pycoQC ():
         return data_dict
 
     #~~~~~~~PRIVATE METHODS~~~~~~~#
-    def _check_columns (self, df, required_colnames, optional_colnames):
+
+    @staticmethod
+    def _check_columns (df, required_colnames, optional_colnames):
         col_found = []
         # Verify the presence of the columns required for pycoQC
         for col in required_colnames:
@@ -993,7 +1067,17 @@ class pycoQC ():
                 col_found.append(col)
         return col_found
 
-    def _compute_N50 (self, data):
+    @staticmethod
+    def _compute_quantiles (data):
+        d = OrderedDict ()
+        quantil_lab = ("Min","C1","D1","Q1","Median","Q3","D9","C99","Max")
+        quantile_val = np.quantile(data, q=[0,0.01,0.1,0.25,0.5,0.75,0.9,0.99,1])
+        for lab, val in (zip(quantil_lab, quantile_val)):
+            d[lab] = val
+        return d
+
+    @staticmethod
+    def _compute_N50 (data):
         data = data.values.copy()
         data.sort()
         half_sum = data.sum()/2
