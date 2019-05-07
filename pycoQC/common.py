@@ -2,7 +2,7 @@
 
 # Standard library imports
 from os import access, R_OK, listdir, path
-from inspect import signature, isfunction, ismethod
+import inspect
 from glob import iglob
 import sys
 from collections import *
@@ -72,13 +72,6 @@ def dict_to_str (c, prefix="\t", suffix="\n"):
             m += "{}{}: {}{}".format(prefix, i, j, suffix)
     return m
 
-def print_help (function):
-    """Print a nice looking help string based on the name of a declared function"""
-    if isfunction(function) or ismethod(function):
-        print ("{} {}\n{}".format(function.__name__, signature(function), function.__doc__))
-    else:
-        print("{} is not a function".format(function))
-
 def recursive_file_gen (dir, ext, **kwargs):
     """
     create a generator listing all files with a particular extension in a folder arborescence
@@ -99,7 +92,6 @@ def recursive_file_gen (dir, ext, **kwargs):
                 for fn in recursive_file_gen (path.join(dir, item), ext):
                     yield fn
 
-
 def stderr_print (*args):
     """reproduce print with stderr.write
     """
@@ -112,3 +104,60 @@ def counter_to_str (c):
     for i, j in c.most_common():
         m += "\t{}: {:,}".format(i, j)
     return m
+
+def jhelp (f:"python function or method"):
+    """
+    Display a Markdown pretty help message for functions and class methods (default __init__ is a class is passed)
+    jhelp also display default values and type annotations if available.
+    Undocumented options are not displayed.
+    The docstring synthax should follow the markdown formated convention below
+    * f
+        Function or method to display the help message for
+    """
+    # For some reason signature is not always importable. In these cases the build-in help is called instead
+    try:
+        from IPython.core.display import display, Markdown, HTML
+    except (NameError, ImportError) as E:
+        NanocomporeWarning ("jupyter notebook is required to use this function. Please verify your dependencies")
+        return
+
+    if inspect.isclass(f):
+        f = f.__init__
+
+    if inspect.isfunction(f) or inspect.ismethod(f):
+
+        # Parse arguments default values and annotations
+        sig_dict = OrderedDict()
+        for name, p in inspect.signature(f).parameters.items():
+            sig_dict[p.name] = []
+            # Get Annotation
+            if p.annotation != inspect._empty:
+                sig_dict[p.name].append(": {}".format(p.annotation))
+            # Get default value if available
+            if p.default == inspect._empty:
+                sig_dict[p.name].append("(required)")
+            else:
+                sig_dict[p.name].append("(default = {})".format(p.default))
+
+        # Parse the docstring
+        doc_dict = OrderedDict()
+        descr = []
+        lab=None
+        for l in inspect.getdoc(f).split("\n"):
+            l = l.strip()
+            if l:
+                if l.startswith("*"):
+                    lab = l[1:].strip()
+                    doc_dict[lab] = []
+                elif lab:
+                    doc_dict[lab].append(l)
+                else:
+                    descr.append(l)
+
+        # Reformat collected information in Markdown synthax
+        s = "---\n\n**{}.{}**\n\n{}\n\n---\n\n".format(f.__module__, f.__name__, " ".join(descr))
+        for k, v in doc_dict.items():
+            s+="* **{}** *{}*\n\n{}\n\n".format(k, " ".join(sig_dict[k]), " ".join(v))
+
+        # Display in Jupyter
+        display (Markdown(s))
