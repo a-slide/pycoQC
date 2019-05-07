@@ -1,0 +1,146 @@
+{
+  "Runtime_info": {
+    "package_name": "pycoQC",
+    "package_version": "2.2.3.7",
+    "timestamp": "2019-05-07 14:28:20.706734",
+    "verbose_level": 1,
+    "min_barcode_percent": 0.1,
+    "filter_calibration": false,
+    "min_pass_qual": 7,
+    "runid_list": [],
+    "barcode_summary_file": null,
+    "seq_summary_file": [
+      "data/summary/Guppy-2.1.3_basecall-1D-RNA_sequencing_summary.txt.gz"
+    ]
+  },
+  "Read_counts": {
+    "Initial reads": 10000,
+    "Reads with NA values discarded": 0,
+    "Valid reads": 10000,
+    "Valid pass reads": 8222
+  },
+  "all_reads": {
+    "General_stats": {
+      "Number of reads": 10000,
+      "Number of bases": 8090452,
+      "Quality score quantiles": {
+        "Min": 2.357485,
+        "C1": 4.6114406400000005,
+        "D1": 6.4260469,
+        "Q1": 7.32498475,
+        "Median": 8.0074875,
+        "Q3": 8.50953225,
+        "D9": 8.8773466,
+        "C99": 9.373011470000002,
+        "Max": 9.845694
+      },
+      "Read length quantiles": {
+        "Min": 6.0,
+        "C1": 103.99000000000001,
+        "D1": 298.0,
+        "Q1": 437.0,
+        "Median": 627.5,
+        "Q3": 997.25,
+        "D9": 1568.0,
+        "C99": 3094.1500000000033,
+        "Max": 6024.0
+      },
+      "N50": 999,
+      "Run Duration": 46.590750389722224,
+      "Active channels": 455
+    },
+    "run_id_stats": {
+      "9835d20f1d205bdbd1fb4d464ae778de95beab24": {
+        "Number of reads": 10000,
+        "Number of bases": 8090452,
+        "Quality score quantiles": {
+          "Min": 2.357485,
+          "C1": 4.6114406400000005,
+          "D1": 6.4260469,
+          "Q1": 7.32498475,
+          "Median": 8.0074875,
+          "Q3": 8.50953225,
+          "D9": 8.8773466,
+          "C99": 9.373011470000002,
+          "Max": 9.845694
+        },
+        "Read length quantiles": {
+          "Min": 6.0,
+          "C1": 103.99000000000001,
+          "D1": 298.0,
+          "Q1": 437.0,
+          "Median": 627.5,
+          "Q3": 997.25,
+          "D9": 1568.0,
+          "C99": 3094.1500000000033,
+          "Max": 6024.0
+        },
+        "N50": 999,
+        "Run Duration": 46.590750389722224,
+        "Active channels": 455
+      }
+    }
+  },
+  "pass_reads": {
+    "General_stats": {
+      "Number of reads": 8222,
+      "Number of bases": 7214516,
+      "Quality score quantiles": {
+        "Min": 7.000208,
+        "C1": 7.044746729999998,
+        "D1": 7.3720732,
+        "Q1": 7.741180750000002,
+        "Median": 8.191953,
+        "Q3": 8.603945249999999,
+        "D9": 8.936588299999999,
+        "C99": 9.40810033,
+        "Max": 9.845694
+      },
+      "Read length quantiles": {
+        "Min": 120.0,
+        "C1": 206.0,
+        "D1": 360.0,
+        "Q1": 484.0,
+        "Median": 688.0,
+        "Q3": 1083.0,
+        "D9": 1665.0,
+        "C99": 3168.95,
+        "Max": 5666.0
+      },
+      "N50": 1059,
+      "Run Duration": 44.388276431388896,
+      "Active channels": 449
+    },
+    "run_id_stats": {
+      "9835d20f1d205bdbd1fb4d464ae778de95beab24": {
+        "Number of reads": 8222,
+        "Number of bases": 7214516,
+        "Quality score quantiles": {
+          "Min": 7.000208,
+          "C1": 7.044746729999998,
+          "D1": 7.3720732,
+          "Q1": 7.741180750000002,
+          "Median": 8.191953,
+          "Q3": 8.603945249999999,
+          "D9": 8.936588299999999,
+          "C99": 9.40810033,
+          "Max": 9.845694
+        },
+        "Read length quantiles": {
+          "Min": 120.0,
+          "C1": 206.0,
+          "D1": 360.0,
+          "Q1": 484.0,
+          "Median": 688.0,
+          "Q3": 1083.0,
+          "D9": 1665.0,
+          "C99": 3168.95,
+          "Max": 5666.0
+        },
+        "N50": 1059,
+        "Run Duration": 44.388276431388896,
+        "Active channels": 449
+      }
+    }
+  }
+}

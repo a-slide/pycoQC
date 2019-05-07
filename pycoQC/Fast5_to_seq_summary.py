@@ -69,14 +69,14 @@ class Fast5_to_seq_summary ():
     }
 
     def __init__ (self,
-        fast5_dir,
-        seq_summary_fn,
-        max_fast5 = 0,
-        threads = 4,
-        basecall_id = 0,
-        verbose_level = 0,
-        include_path = False,
-        fields = [
+        fast5_dir:"str",
+        seq_summary_fn:"str",
+        max_fast5:"int"=0,
+        threads:"int"=4,
+        basecall_id:"int"=0,
+        verbose_level:"int {0,1,2}"=0,
+        include_path:"bool"=False,
+        fields:"list of str"=[
             "read_id", "run_id", "channel", "start_time",
             "sequence_length_template", "mean_qscore_template",
             "calibration_strand_genome_template", "barcode_arrangement"]):
@@ -85,7 +85,7 @@ class Fast5_to_seq_summary ():
             Directory containing fast5 files. Can contain multiple subdirectories
         * seq_summary_fn
             path of the summary sequencing file where to write the data extracted from the fast5 files
-        * max_fast5 (default = 0)
+        * max_fast5
             Maximum number of file to try to parse. 0 to deactivate
         * threads
             Total number of threads to use. 1 thread is used for the reader and 1 for the writer. Minimum 3 (default = 4)
@@ -100,7 +100,7 @@ class Fast5_to_seq_summary ():
             this can be used to indicate the corresponding group (1, 2 ...)
         * include_path
             If True the absolute path to the corresponding file is added in an extra column
-        * verbose_level INT [Default 0]
+        * verbose_level
             Level of verbosity, from 2 (Chatty) to 0 (Nothing)
         """
         # Set logging level

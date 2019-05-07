@@ -1,0 +1,72 @@
+# Required python packages to generate the documentation
+# * mkdocs
+# * mkdocs-material
+# * pygments
+# * pymdown-extensions
+# * mknotebooks
+
+# Project information
+site_name: 'pycoQC'
+site_description: 'PycoQC computes metrics and generates interactive QC plots for Oxford Nanopore technologies sequencing data'
+site_author: 'Adrien Leger & Tommaso Leonardi'
+site_url: 'https://a-slide.github.io/pycoQC/'
+
+# Repository
+repo_name: 'a-slide/pycoQC'
+repo_url: 'https://github.com/a-slide/pycoQC'
+
+# Copyright
+copyright: 'Copyright &copy; 2019 Adrien Leger & Tommaso Leonardi '
+
+# Navigation menu
+nav:
+    - Home: index.md
+    - Installation instructions: installation.md
+    - pycoQC Usage:
+        - Using pycoQC: pycoQC_usage.md
+        - jupyter API usage: demo/pycoQC_API_demo.ipynb
+        - Command line usage: demo/pycoQC_CLI_demo.ipynb
+    - Fast5_to_seq_summary Usage:
+        - Using Fast5_to_seq_summary: Fast5_to_seq_summary_usage.md
+        - jupyter API usage: demo/Fast5_to_seq_summary_API_demo.ipynb
+        - Command line usage: demo/Fast5_to_seq_summary_CLI_demo.ipynb
+    - Citing pycoQC: citing.md
+    - Acknowledgements: acknowledgements.md
+    - Alternative and complementary packages: alternative.md
+    - Contributing Guidelines: contributing.md
+    - Code of conduct: code_of_conduct.md
+    - Licence: licence.md
+
+# Theme customization
+theme:
+    name: 'material'
+    highlightjs: true
+    font: false
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink:
+      repo_url_shorthand: true
+      user: a-slide
+      repo: pycoQC
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+plugins:
+  - mknotebooks
+
+
+        #- Command line usage:

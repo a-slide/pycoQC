@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Define self package variable
-__version__ = '2.2.3.3'
+__version__ = '2.2.3.7'
 __all__ = ["pycoQC", "common"]
 __description__="""
 PycoQC computes metrics and generates interactive QC plots for Oxford Nanopore technologies sequencing data
@@ -35,7 +35,7 @@ setup_dict = {
     "package_data": {__name__: ['templates/*']},
     "entry_points": {
         'console_scripts': [
-            'pycoQC=pycoQC.cli:main_pycoQC',
-            'Fast5_to_seq_summary=pycoQC.cli:main_Fast5_to_seq_summary'],
+            'pycoQC=pycoQC.__main__:main_pycoQC',
+            'Fast5_to_seq_summary=pycoQC.__main__:main_Fast5_to_seq_summary'],
     }
 }
