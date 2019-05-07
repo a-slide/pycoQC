@@ -24,12 +24,12 @@ nav:
     - Installation instructions: installation.md
     - pycoQC Usage:
         - Using pycoQC: pycoQC_usage.md
-        - Command line usage: demo/pycoQC_CLI_demo.ipynb
         - jupyter API usage: demo/pycoQC_API_demo.ipynb
+        - Command line usage: demo/pycoQC_CLI_demo.ipynb
     - Fast5_to_seq_summary Usage:
-        - Using Fast5_to_seq_summary: Fast5_to_seq_summary.md
-        - Command line usage: demo/Fast5_to_seq_summary_CLI_demo.ipynb
+        - Using Fast5_to_seq_summary: Fast5_to_seq_summary_usage.md
         - jupyter API usage: demo/Fast5_to_seq_summary_API_demo.ipynb
+        - Command line usage: demo/Fast5_to_seq_summary_CLI_demo.ipynb
     - Citing pycoQC: citing.md
     - Acknowledgements: acknowledgements.md
     - Alternative and complementary packages: alternative.md
@@ -67,3 +67,6 @@ markdown_extensions:
 
 plugins:
   - mknotebooks
+
+
+        #- Command line usage:

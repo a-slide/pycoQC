@@ -285,9 +285,15 @@ class pycoQC ():
 
     #~~~~~~~SUMMARY_STATS_DICT METHOD AND HELPER~~~~~~~#
 
-    def summary_stats_dict (self):
+    def summary_stats_dict (self,
+        barcode_split:"bool"=False,
+        run_id_split:"bool"=False):
         """
         Return a dictionnary containing exhaustive information about the run.
+        * barcode_split
+            Add statistics split per barcode
+        * run_id_split
+            Add statistics split per run_id
         """
         d = OrderedDict ()
         d["Runtime_info"] = self.option_d
@@ -298,11 +304,12 @@ class pycoQC ():
             d[lab] = OrderedDict()
             d[lab]["General_stats"] = self._compute_stats(df)
 
-            d[lab]["run_id_stats"] = OrderedDict ()
-            for id, sdf in df.groupby("run_id"):
-                d[lab]["run_id_stats"][id] = self._compute_stats(sdf)
+            if run_id_split:
+                d[lab]["run_id_stats"] = OrderedDict ()
+                for id, sdf in df.groupby("run_id"):
+                    d[lab]["run_id_stats"][id] = self._compute_stats(sdf)
 
-            if self.has_barcodes:
+            if self.has_barcodes and barcode_split:
                 d[lab]["barcode_stats"] = OrderedDict ()
                 for id, sdf in df.groupby("barcode"):
                     d[lab]["barcode_stats"][id] = self._compute_stats(sdf)

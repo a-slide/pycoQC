@@ -60,7 +60,7 @@ def main_Fast5_to_seq_summary (args=None):
         help="Total number of threads to use. 1 thread is used for the reader and 1 for the writer. Minimum 3 (default: %(default)s)")
     parser.add_argument("--basecall_id", type=int, default=0,
         help="id of the basecalling group. By default leave to 0, but if you perfome multiple basecalling on the same fast5 files, this can be used to indicate the corresponding group (1, 2 ...) (default: %(default)s)")
-    parser.add_argument("--fields", type=str, default="read_id run_id channel start_time sequence_length_template mean_qscore_template calibration_strand_genome_template barcode_arrangement",
+    parser.add_argument("--fields", type=str, nargs="+", default=["read_id", "run_id", "channel", "start_time", "sequence_length_template", "mean_qscore_template", "calibration_strand_genome_template", "barcode_arrangement"],
         help="list of field names corresponding to attributes to try to fetch from the fast5 files (default: %(default)s)")
     parser.add_argument("--include_path", action='store_true', default=False,
         help="If given, the absolute path to the corresponding file is added in an extra column (default: %(default)s)")
@@ -77,7 +77,7 @@ def main_Fast5_to_seq_summary (args=None):
         max_fast5 = args.max_fast5,
         threads = args.threads,
         basecall_id = args.basecall_id,
-        fields = args.fields.split(),
+        fields = args.fields,
         include_path = args.include_path,
         verbose_level = args.verbose_level)
 
@@ -266,7 +266,7 @@ def generate_html_report(
 def generate_json_report(pycoqc_res, outfile):
     """"""
     logger.info("\tRunning summary_stats_dict method")
-    res_dict = pycoqc_res.summary_stats_dict()
+    res_dict = pycoqc_res.summary_stats_dict (barcode_split=True, run_id_split=True)
 
     logger.info("\tWriting to JSON file")
     with open (outfile, "w") as fp:

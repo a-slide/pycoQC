@@ -161,3 +161,60 @@ def jhelp (f:"python function or method"):
 
         # Display in Jupyter
         display (Markdown(s))
+
+def head (fp, n=10, sep="\t", comment=None):
+    """
+    Emulate linux head cmd. Handle gziped files and bam files
+    * fp
+        Path to the file to be parse.
+    * n
+        Number of lines to print starting from the begining of the file (Default 10)
+    """
+    line_list = []
+
+    # Get lines
+    try:
+        with open(fp) as fh:
+            line_num = 0
+            while (line_num < n):
+                l= next(fh).strip()
+                if comment and l.startswith(comment):
+                    continue
+                if sep:
+                    line_list.append (l.split(sep))
+                else:
+                    line_list.append (l)
+                line_num+=1
+
+    except StopIteration:
+        pass
+
+    # Add padding if sep given
+    if sep:
+        try:
+            # Find longest elem per col
+            col_len_list = [0 for _ in range (len(line_list[0]))]
+            for ls in line_list:
+                for i in range (len(ls)):
+                    len_col = len(ls[i])
+                    if len_col > col_len_list[i]:
+                        col_len_list[i] = len_col
+
+            # Add padding
+            line_list_tab = []
+            for ls in line_list:
+                s = ""
+                for i in range (len(ls)):
+                    len_col = col_len_list[i]
+                    len_cur_col = len(ls[i])
+                    s += ls[i][0:len_col] + " "*(len_col-len_cur_col)+" "
+                line_list_tab.append(s)
+            line_list = line_list_tab
+
+        # Fall back to non tabulated display
+        except IndexError:
+            return head (fp=fp, n=n, sep=None)
+
+    for l in line_list:
+        print (l)
+    print()
