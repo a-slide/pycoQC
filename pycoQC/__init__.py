@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Define self package variable
-__version__ = '2.2.3.7'
+__version__ = '2.2.4.1'
 __all__ = ["pycoQC", "common"]
 __description__="""
 PycoQC computes metrics and generates interactive QC plots for Oxford Nanopore technologies sequencing data
