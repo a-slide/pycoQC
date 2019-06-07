@@ -1,3 +1,5 @@
+# For mybinder Notebook server
+
 # Activate extensions
 jupyter contrib nbextension install --sys-prefix
 jupyter nbextension enable collapsible_headings/main --sys-prefix

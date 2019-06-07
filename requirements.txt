@@ -1,3 +1,5 @@
+# For mybinder Notebook server
+
 notebook>=4.0.0
 jupyterthemes
 jupyter_contrib_nbextensions

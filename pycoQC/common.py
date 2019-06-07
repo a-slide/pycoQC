@@ -3,8 +3,9 @@
 # Standard library imports
 from os import access, R_OK, listdir, path
 import inspect
-from glob import iglob
+from glob import iglob, glob
 import sys
+import logging
 from collections import *
 
 # Third party imports
@@ -21,11 +22,33 @@ class pycoQCWarning (Warning):
 
 ##~~~~~~~ FUNCTIONS ~~~~~~~#
 
-def is_readable_file (fp, **kwargs):
+def is_readable_file (fn):
     """Verify the readability of a file or list of file"""
-    return access(fp, R_OK)
+    return path.isfile (fn) and access (fn, R_OK)
 
-def sequencing_summary_file_sample (infile, outfile=None, n_seq=10000, **kwargs):
+def check_arg (arg_name, arg_val, required_type, allow_none=True, min=None, max=None, choices=[]):
+    """Check argument values and type"""
+    if allow_none and arg_val == None:
+        return arg_val
+
+    if not isinstance(arg_val, required_type):
+        try:
+            arg_val = required_type(arg_val)
+        except:
+            raise Exception ("Argument `{}` value `{}` is not in correct type: `{}` and cannot be coerced".format(arg_name, arg_val, required_type.__name__))
+
+    if required_type in [float, int]:
+        if min and arg_val < min:
+            raise Exception ("Argument `{}` value `{}` is too low. Minimal value: {}".format(arg_name, arg_val, min))
+        if max and arg_val > max:
+            raise Exception ("Argument `{}` value `{}` is too high. Maximal value: {}".format(arg_name, arg_val, max))
+
+    if choices and arg_val not in choices:
+        raise Exception ("Argument `{}` value `{}` is not in the list of possible choices. Choices: {}".format(arg_name, arg_val, ", ".join(choices)))
+
+    return arg_val
+
+def sequencing_summary_file_sample (infile, outfile=None, n_seq=10000):
     """
     Sample a number read lines in infile and write the output_over_time in output_file
     If the file contains several runids the function will sample proportionally to the
@@ -72,7 +95,7 @@ def dict_to_str (c, prefix="\t", suffix="\n"):
             m += "{}{}: {}{}".format(prefix, i, j, suffix)
     return m
 
-def recursive_file_gen (dir, ext, **kwargs):
+def recursive_file_gen (dir, ext):
     """
     create a generator listing all files with a particular extension in a folder arborescence
     The recursivity is broken when at least 1 file with a particular extenssion is found.
@@ -92,18 +115,21 @@ def recursive_file_gen (dir, ext, **kwargs):
                 for fn in recursive_file_gen (path.join(dir, item), ext):
                     yield fn
 
-def stderr_print (*args):
-    """reproduce print with stderr.write
-    """
-    sys.stderr.write(" ".join(str(a) for a in args))
-    sys.stderr.flush()
+def get_logger (name=None, verbose=False, quiet=False):
+    """Set logger to appropriate log level"""
 
-def counter_to_str (c):
-    """Transform a counter dict to a tabulated str"""
-    m = ""
-    for i, j in c.most_common():
-        m += "\t{}: {:,}".format(i, j)
-    return m
+    logging.basicConfig(format='%(message)s')
+    logger = logging.getLogger(name)
+
+    # Define overall verbose level
+    if verbose:
+        logger.setLevel(logging.DEBUG)
+    elif quiet:
+        logger.setLevel(logging.WARNING)
+    else:
+        logger.setLevel(logging.INFO)
+
+    return logger
 
 def jhelp (f:"python function or method"):
     """
