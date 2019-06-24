@@ -287,16 +287,17 @@ class pycoQC_parse ():
             return []
 
         # Try to expand file name to list
-        if type(fn) == str:
-            fn_list = glob (fn)
-        elif type(fn) == list:
-            fn_list=[]
-            for fp in fn:
-                fn_list.extend(glob(fp))
+        if isinstance(fn, list):
+            if len(fn) ==1:
+                fn_list=glob(fn[0])
+            else:
+                fn_list=fn
+        elif isinstance(fn, str):
+            fn_list=glob(fn)
         else:
             raise pycoQCError ("{} has to be either a file or a regular expression or a list of files".format(fn))
 
-        # Verify that a least 1 file was found and that files are readeable
+        # Verify that a least 1 file was found and that files are readable
         if len(fn_list) == 0:
             raise pycoQCError ("{} does not correspond to any valid file".format(fn))
         for fn in fn_list:
