@@ -6,7 +6,6 @@
 from collections import *
 import warnings
 import datetime
-from pkg_resources import resource_filename
 
 # Local lib import
 from pycoQC.common import *
@@ -92,9 +91,6 @@ def pycoQC (
     logger.warning ("Checking arguments values")
 
     # Save all verified values + type
-    summary_file = check_arg("summary_file", summary_file, required_type=str)
-    barcode_file = check_arg("barcode_file", barcode_file, required_type=str, allow_none=True)
-    bam_file = check_arg("bam_file", bam_file, required_type=str, allow_none=True)
     runid_list = check_arg("runid_list", runid_list, required_type=list, allow_none=True)
     filter_calibration = check_arg("filter_calibration", filter_calibration, required_type=bool, allow_none=False)
     min_barcode_percent = check_arg("min_barcode_percent", min_barcode_percent, required_type=float, min=0, max=100, allow_none=False)
