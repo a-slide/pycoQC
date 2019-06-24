@@ -28,11 +28,11 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 class pycoQC_plot ():
 
     def __init__ (self,
-        df:"pandas dataframe",
-        min_pass_qual:"int"=7,
-        sample:"int"=100000,
-        verbose:"bool"=False,
-        quiet:"bool"=False):
+        df:pd.DataFrame,
+        min_pass_qual:int=7,
+        sample:int=100000,
+        verbose:bool=False,
+        quiet:bool=False):
         """
         * df
             pandas dataframe obtained with pycoQC_parse
@@ -100,8 +100,8 @@ class pycoQC_plot ():
     #~~~~~~~SUMMARY_STATS_DICT METHOD AND HELPER~~~~~~~#
 
     def summary_stats_dict (self,
-        barcode_split:"bool"=False,
-        run_id_split:"bool"=False):
+        barcode_split:bool=False,
+        run_id_split:bool=False):
         """
         Return a dictionnary containing exhaustive information about the run.
         * barcode_split
@@ -141,10 +141,10 @@ class pycoQC_plot ():
     #~~~~~~~SUMMARY METHOD AND HELPER~~~~~~~#
 
     def summary (self,
-        groupby:"str {run_id, barcode, None}" = None,
-        width:"int" = None,
-        height:"int" = None,
-        plot_title:"str"="Run summary"):
+        groupby:str = None,
+        width:int = None,
+        height:int = None,
+        plot_title:str="Run summary"):
         """
         Plot an interactive summary table per runid
         * groupby
@@ -176,7 +176,7 @@ class pycoQC_plot ():
 
         # Autodefine height depending on the numbers of run_ids
         if not height:
-            height:"int"=300+(30*self.all_df[groupby].nunique()) if groupby else 300
+            height:int=300+(30*self.all_df[groupby].nunique()) if groupby else 300
 
         # tweak plot layout
         layout = go.Layout (updatemenus=updatemenus, width=width, height=height, title=plot_title)
@@ -184,9 +184,9 @@ class pycoQC_plot ():
         return go.Figure (data=data, layout=layout)
 
     def barcode_summary (self,
-        width:"int" = None,
-        height:"int" = None,
-        plot_title:"str"="Run summary by barcode"):
+        width:int = None,
+        height:int = None,
+        plot_title:str="Run summary by barcode"):
         """
         Plot an interactive summary table per barcode (if available)
         """
@@ -197,9 +197,9 @@ class pycoQC_plot ():
         return self.summary(groupby="barcode", width=width, height=height, plot_title=plot_title)
 
     def run_id_summary (self,
-        width:"int" = None,
-        height:"int" = None,
-        plot_title:"str"="Run summary by Run ID"):
+        width:int = None,
+        height:int = None,
+        plot_title:str="Run summary by Run ID"):
         """
         Plot an interactive summary table per run_id
         """
@@ -251,12 +251,12 @@ class pycoQC_plot ():
     #~~~~~~~1D DISTRIBUTION METHODS AND HELPER~~~~~~~#
 
     def reads_len_1D (self,
-        color:"str"="lightsteelblue",
-        nbins:"int"=200,
-        smooth_sigma:"float"=2,
-        width:"int"=None,
-        height:"int"=500,
-        plot_title:"str"="Distribution of read length"):
+        color:str="lightsteelblue",
+        nbins:int=200,
+        smooth_sigma:float=2,
+        width:int=None,
+        height:int=500,
+        plot_title:str="Distribution of read length"):
         """
         Plot a distribution of read length (log scale)
         * color
@@ -308,12 +308,12 @@ class pycoQC_plot ():
         return go.Figure (data=data, layout=layout)
 
     def reads_qual_1D (self,
-        color:"str"="salmon",
-        nbins:"int"=200,
-        smooth_sigma:"float"=2,
-        width:"int"=None,
-        height:"int"=500,
-        plot_title:"str"="Distribution of read quality scores"):
+        color:str="salmon",
+        nbins:int=200,
+        smooth_sigma:float=2,
+        width:int=None,
+        height:int=500,
+        plot_title:str="Distribution of read quality scores"):
         """
         Plot a distribution of quality scores
         * color
@@ -412,12 +412,12 @@ class pycoQC_plot ():
 
     def reads_len_qual_2D (self,
         colorscale = [[0.0,'rgba(255,255,255,0)'], [0.1,'rgba(255,150,0,0)'], [0.25,'rgb(255,100,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(70,0,0)']],
-        len_nbins:"int"=200,
-        qual_nbins:"int"=75,
-        smooth_sigma:"float"=2,
-        width:"int"=None,
-        height:"int"=600,
-        plot_title:"str"="Mean read quality per sequence length"):
+        len_nbins:int=200,
+        qual_nbins:int=75,
+        smooth_sigma:float=2,
+        width:int=None,
+        height:int=600,
+        plot_title:str="Mean read quality per sequence length"):
         """
         Plot a 2D distribution of quality scores vs length of the reads
         * colorscale
@@ -501,12 +501,12 @@ class pycoQC_plot ():
     #~~~~~~~OUTPUT_OVER_TIME METHODS AND HELPER~~~~~~~#
 
     def output_over_time (self,
-        cumulative_color:"str"="rgb(204,226,255)",
-        interval_color:"str"="rgb(102,168,255)",
-        time_bins:"int"=500,
-        width:"int"=None,
-        height:"int"=500,
-        plot_title:"str"="Output over experiment time"):
+        cumulative_color:str="rgb(204,226,255)",
+        interval_color:str="rgb(102,168,255)",
+        time_bins:int=500,
+        width:int=None,
+        height:int=500,
+        plot_title:str="Output over experiment time"):
         """
         Plot a yield over time
         * cumulative_color
@@ -618,14 +618,14 @@ class pycoQC_plot ():
     #~~~~~~~QUAL_OVER_TIME METHODS AND HELPER~~~~~~~#
 
     def len_over_time (self,
-        median_color:"str"="rgb(102,168,255)",
-        quartile_color:"str"="rgb(153,197,255)",
-        extreme_color:"str"="rgba(153,197,255,0.5)",
-        smooth_sigma:"float"=1,
-        time_bins:"int"=500,
-        width:"int"=None,
-        height:"int"=500,
-        plot_title:"str"="Read length over experiment time"):
+        median_color:str="rgb(102,168,255)",
+        quartile_color:str="rgb(153,197,255)",
+        extreme_color:str="rgba(153,197,255,0.5)",
+        smooth_sigma:float=1,
+        time_bins:int=500,
+        width:int=None,
+        height:int=500,
+        plot_title:str="Read length over experiment time"):
         """
         Plot a read length over time
         * median_color
@@ -678,14 +678,14 @@ class pycoQC_plot ():
         return go.Figure (data=data, layout=layout)
 
     def qual_over_time (self,
-        median_color:"str"="rgb(250,128,114)",
-        quartile_color:"str"="rgb(250,170,160)",
-        extreme_color:"str"="rgba(250,170,160,0.5)",
-        smooth_sigma:"float"=1,
-        time_bins:"int"=500,
-        width:"int"=None,
-        height:"int"=500,
-        plot_title:"str"="Read quality over experiment time"):
+        median_color:str="rgb(250,128,114)",
+        quartile_color:str="rgb(250,170,160)",
+        extreme_color:str="rgba(250,170,160,0.5)",
+        smooth_sigma:float=1,
+        time_bins:int=500,
+        width:int=None,
+        height:int=500,
+        plot_title:str="Read quality over experiment time"):
         """
         Plot a mean quality over time
         * median_color
@@ -784,10 +784,10 @@ class pycoQC_plot ():
 
     #~~~~~~~BARCODE_COUNT METHODS AND HELPER~~~~~~~#
     def barcode_counts (self,
-        colors:"list of str"=["#f8bc9c", "#f6e9a1", "#f5f8f2", "#92d9f5", "#4f97ba"],
-        width:"int"= None,
-        height:"int"=500,
-        plot_title:"str"="Percentage of reads per barcode"):
+        colors:list=["#f8bc9c", "#f6e9a1", "#f5f8f2", "#92d9f5", "#4f97ba"],
+        width:int= None,
+        height:int=500,
+        plot_title:str="Percentage of reads per barcode"):
         """
         Plot a mean quality over time
         * colors
@@ -848,12 +848,12 @@ class pycoQC_plot ():
     #~~~~~~~BARCODE_COUNT METHODS AND HELPER~~~~~~~#
 
     def channels_activity (self,
-        colorscale:"list" = [[0.0,'rgba(255,255,255,0)'], [0.01,'rgb(255,255,200)'], [0.25,'rgb(255,200,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(0,0,0)']],
-        smooth_sigma:"float"=1,
-        time_bins:"int"=100,
-        width:"int"=None,
-        height:"int"=600,
-        plot_title:"str"="Output per channel over experiment time"):
+        colorscale:list = [[0.0,'rgba(255,255,255,0)'], [0.01,'rgb(255,255,200)'], [0.25,'rgb(255,200,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(0,0,0)']],
+        smooth_sigma:float=1,
+        time_bins:int=100,
+        width:int=None,
+        height:int=600,
+        plot_title:str="Output per channel over experiment time"):
         """
         Plot a yield over time
         * colorscale

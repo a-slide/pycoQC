@@ -37,9 +37,9 @@ class pycoQC_report ():
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~INIT METHOD~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     def __init__ (self,
-        pp:"pycoQC_plot object",
-        verbose:"bool"=False,
-        quiet:"bool"=False):
+        pp:pycoQC_plot,
+        verbose:bool=False,
+        quiet:bool=False):
         """
         * pp
             A pycoQC_plot object
@@ -62,10 +62,10 @@ class pycoQC_report ():
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~PUBLIC METHODS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     def html_report( self,
-        outfile:"str",
-        config_file:"str"="",
-        template_file:"str"="",
-        report_title:"str"=""):
+        outfile:str,
+        config_file:str="",
+        template_file:str="",
+        report_title:str=""):
         """"""
         # Parse configuration file
         self.logger.info("\tParsing html config file")
@@ -134,7 +134,7 @@ class pycoQC_report ():
             fp.write(rendering)
 
     def json_report(self,
-        outfile):
+        outfile:str):
         """"""
         self.logger.info("\tRunning summary_stats_dict method")
         res_dict = self.pp.summary_stats_dict (barcode_split=True, run_id_split=True)

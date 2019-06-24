@@ -25,14 +25,14 @@ class pycoQC_parse ():
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~INIT METHOD~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     def __init__ (self,
-        summary_file:"str",
-        barcode_file:"str"=None,
-        bam_file:"str"=None,
-        runid_list:"list"=None,
-        filter_calibration:"bool"=False,
-        min_barcode_percent:"float"=0.1,
-        verbose:"bool"=False,
-        quiet:"bool"=False):
+        summary_file:str,
+        barcode_file:str="",
+        bam_file:str="",
+        runid_list:list=[],
+        filter_calibration:bool=False,
+        min_barcode_percent:float=0.1,
+        verbose:bool=False,
+        quiet:bool=False):
         """
         Parse Albacore sequencing_summary.txt file and clean-up the data
         * summary_file
@@ -179,7 +179,7 @@ class pycoQC_parse ():
         l = len(df)
         df = df.dropna()
         n=l-len(df)
-        self.logger.debug ("\t\t{:,} reads discarded".format(n))
+        self.logger.info ("\t\t{:,} reads discarded".format(n))
         self.counter["Reads with NA values discarded"] = n
         if len(df) <= 1:
             raise pycoQCError("No valid read left after NA values filtering")
@@ -189,7 +189,7 @@ class pycoQC_parse ():
         l = len(df)
         df = df[(df["num_bases"] > 0)]
         n=l-len(df)
-        self.logger.debug ("\t\t{:,} reads discarded".format(n))
+        self.logger.info ("\t\t{:,} reads discarded".format(n))
         self.counter["Zero length reads discarded"] = n
         if len(df) <= 1:
             raise pycoQCError("No valid read left after zero_len filtering")
@@ -200,7 +200,7 @@ class pycoQC_parse ():
             l = len(df)
             df = df[(df["calibration"].isin(["filtered_out", "no_match", "*"]))]
             n=l-len(df)
-            self.logger.debug ("\t\t{:,} reads discarded".format(n))
+            self.logger.info ("\t\t{:,} reads discarded".format(n))
             self.counter["Calibration reads discarded"] = n
             if len(df) <= 1:
                 raise pycoQCError("No valid read left after calibration strand filtering")
@@ -224,14 +224,14 @@ class pycoQC_parse ():
             for run_id, sdf in df.groupby("run_id"):
                 d[run_id] = len(sdf)/np.ptp(sdf["start_time"])
             runid_list = [i for i, j in sorted (d.items(), key=lambda t: t[1], reverse=True)]
-            self.logger.debug ("\t\tRun-id order {}".format(runid_list))
+            self.logger.info ("\t\tRun-id order {}".format(runid_list))
 
         # Modify start time per run ids to order them following the runid_list
         self.logger.info ("\tReordering runids")
         increment_time = 0
         runid_start = OrderedDict()
         for runid in runid_list:
-            self.logger.debug ("\t\tProcessing reads with Run_ID {} / time offset: {}".format(runid, increment_time))
+            self.logger.info ("\t\tProcessing reads with Run_ID {} / time offset: {}".format(runid, increment_time))
             max_val = df['start_time'][df["run_id"] == runid].max()
             df.loc[df["run_id"] == runid, 'start_time'] += increment_time
             runid_start[runid] = increment_time
@@ -247,17 +247,17 @@ class pycoQC_parse ():
             low_barcode = barcode_counts[barcode_counts<cutoff].index
             df.loc[df["barcode"].isin(low_barcode), "barcode"] = "unclassified"
             n= int((df["barcode"]=="unclassified").sum()-l)
-            self.logger.debug ("\t\t{:,} reads with low frequency barcode unset".format(n))
+            self.logger.info ("\t\t{:,} reads with low frequency barcode unset".format(n))
             self.counter["Reads with low frequency barcode unset"] = n
 
         # Reindex final df
         self.logger.info ("\tReindexing dataframe by read_ids")
         df = df.reset_index (drop=True)
         df = df.set_index ("read_id")
+        self.logger.info ("\t\t{:,} Final valid reads".format(len(df)))
 
         # Save final df
         self.counter["Valid reads"] = len(df)
-        self.logger.debug ("\t\t{:,} Final valid reads".format(len(df)))
         if len(df) < 500:
             self.logger.warning ("WARNING: Low number of reads found. This is likely to lead to errors when trying to generate plots")
 
