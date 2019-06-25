@@ -6,11 +6,37 @@ branches:
   - master
   - devel
   - deploy
+
+install:
+  - pip install mkdocs mkdocs-material pygments pymdown-extensions mknotebooks
+
 script: true
+
+before_deploy:
+  - mkdocs build --verbose --clean --strict
+
 deploy:
-  provider: pypi
-  user: aleg
-  server: https://test.pypi.org/legacy/
-  on:
-    all_branches: true
-  password: $PYPI_PW
+
+  # deploy on test pypi if commit on deploy
+  - provider: pypi
+    user: aleg
+    server: https://test.pypi.org/legacy/
+    on:
+      branch: deploy
+    password: $PYPI_PW
+
+  # deploy on real pypi if commit on master
+  - provider: pypi
+    user: aleg
+    on:
+      branch: master
+    password: $PYPI_PW
+
+  # Deploy doc on test branch
+  - provider: pages
+    skip_cleanup: true
+    target_branch: gh-pages-test
+    github_token: $GH_TOKEN
+    local_dir: site
+    on:
+      branch: deploy
