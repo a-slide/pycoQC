@@ -6,7 +6,7 @@ branches:
   - master
   - devel
   - deploy
-script:true
+script: true
 
 deploy:
   provider: pypi
