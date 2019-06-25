@@ -14,7 +14,7 @@ install:
 script: true
 
 before_deploy:
-  - mkdocs build --verbose --clean --strict
+  - mkdocs build --verbose --clean
 
 deploy:
 
