@@ -6,12 +6,11 @@ branches:
   - master
   - devel
   - deploy
-script:
-- touch foo
+script:true
+
 deploy:
   provider: pypi
   user: aleg
-  server: https://test.pypi.org/legacy/
   on:
     all_branches: true
   password:
