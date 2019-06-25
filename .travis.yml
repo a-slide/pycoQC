@@ -8,7 +8,7 @@ branches:
   - deploy
 
 install:
-  - pip install mkdocs mkdocs-material pygments pymdown-extensions mknotebooks
+  - pip install nbconvert mkdocs mkdocs-material pygments pymdown-extensions mknotebooks
 
 script: true
 
