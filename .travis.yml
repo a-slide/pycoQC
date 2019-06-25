@@ -1,35 +1,36 @@
 language: python
 python: 3.6
-branches:
+
+ branches:
   only:
-  - master
-  - dev
-  - deploy
+    - master
+    - dev
+    - deploy
 
 install:
-    - pip install setuptools wheel mkdocs mkdocs-material pygments pymdown-extensions mknotebooks nbconvert twine
+  - pip install setuptools wheel mkdocs mkdocs-material pygments pymdown-extensions mknotebooks nbconvert twine
 
 script: true
 
 before_deploy:
-    - mkdocs build --verbose --clean --strict
-    - python setup.py sdist bdist_wheel
+  - mkdocs build --verbose --clean --strict
+  - python setup.py sdist bdist_wheel
 
 deploy:
-    - provider: pages
-        skip_cleanup: true
-        local_dir: site
-        target_branch: gh_pages_test
-        on:
-            branch: deploy
-        github_token:
-            secure: 478bc5f3231ea36b0918d78488ed326361822e1d
-    - provider: pypi
-        user: "aleg"
-        distributions: "sdist bdist_wheel"
-        server: https://test.pypi.org/legacy/
-        skip_existing: true
-        on:
-            branch: deploy
-        password:
-            secure:   XbT3Fkf/qKJX0t54hzibAX0I2EAFyJpsIqbq7gvqXGIwHUzp7WhFX3V2it8o0h2wgRCPxOjrNn89IeDFtw/BHgPbrQ7VFi1QcTXS0y005ewW8x3zj9AbLKVCkVWEkO1qw4Dn+G9AG3HncD2gGliQva2mdWUbfM1UH42XHOBe8wfygfoC32/h+zoMT1vxCWWvnQgPFZGd36zUsKiF5ZEIT3mgFB3O6GVwY44T/7RKzJiSiBfGI7Wcq4yTz+JlQpU1CqUvx41M7TqZ1egVNLRvD6jcY4O98YCryv7rDMUdltIorKBvGTDJbXzLgsxHXShqHC1JC9FJTagt1vAJ6TLOA6kHfFz80sMbGPkrqLDGxcfx8PnU+MAvBKgDN4VPQc5WWAB1MNRS5Rg5x6ws/99n+hNnO0JC+30Y2CBBFIn/cvY6s1HvsOE9T+IwBy3HhcyVc1YTysAOjMFJ5Hr3LpvIebgm58oSTY0OOmlPX0+tswrdQ/N24WEGqMNZCflV0RBPfCkfgIIO5nqRdh/u/yGJPYh1ZRFfmbTkaqxK5OwJgWKy/87QsA0fdzbcjV3O54MhsoIQcnkISuzmxK9go8SJG3yYUfe3XLjed+HK6OWAtcpYhVNe7cZI3OKU/gmZpEk/asTnLYpKoLi9TQ4xn1S7ZISh/SuECAmYR5vDSxYLTI0=
+  - provider: pages
+    skip_cleanup: true
+    local_dir: site
+    target_branch: gh_pages_test
+    on:
+      branch: deploy
+    github_token:
+    secure: "478bc5f3231ea36b0918d78488ed326361822e1d"
+  - provider: pypi
+    user: "aleg"
+    distributions: "sdist bdist_wheel"
+    server: https://test.pypi.org/legacy/
+    skip_existing: true
+    on:
+      branch: deploy
+    password:
+      secure:   "XbT3Fkf/qKJX0t54hzibAX0I2EAFyJpsIqbq7gvqXGIwHUzp7WhFX3V2it8o0h2wgRCPxOjrNn89IeDFtw/BHgPbrQ7VFi1QcTXS0y005ewW8x3zj9AbLKVCkVWEkO1qw4Dn+G9AG3HncD2gGliQva2mdWUbfM1UH42XHOBe8wfygfoC32/h+zoMT1vxCWWvnQgPFZGd36zUsKiF5ZEIT3mgFB3O6GVwY44T/7RKzJiSiBfGI7Wcq4yTz+JlQpU1CqUvx41M7TqZ1egVNLRvD6jcY4O98YCryv7rDMUdltIorKBvGTDJbXzLgsxHXShqHC1JC9FJTagt1vAJ6TLOA6kHfFz80sMbGPkrqLDGxcfx8PnU+MAvBKgDN4VPQc5WWAB1MNRS5Rg5x6ws/99n+hNnO0JC+30Y2CBBFIn/cvY6s1HvsOE9T+IwBy3HhcyVc1YTysAOjMFJ5Hr3LpvIebgm58oSTY0OOmlPX0+tswrdQ/N24WEGqMNZCflV0RBPfCkfgIIO5nqRdh/u/yGJPYh1ZRFfmbTkaqxK5OwJgWKy/87QsA0fdzbcjV3O54MhsoIQcnkISuzmxK9go8SJG3yYUfe3XLjed+HK6OWAtcpYhVNe7cZI3OKU/gmZpEk/asTnLYpKoLi9TQ4xn1S7ZISh/SuECAmYR5vDSxYLTI0="
