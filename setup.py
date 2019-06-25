@@ -4,10 +4,14 @@
 from setuptools import setup
 import pycoQC as pqc
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
     name = pqc.__name__,
     version = pqc.__version__,
     description = pqc.__description__,
+    long_description = long_description,
     url = "https://github.com/a-slide/pycoQC",
     author = 'Adrien Leger & Tommaso Leonardi',
     author_email = 'aleg@ebi.ac.uk',
