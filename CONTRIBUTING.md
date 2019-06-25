@@ -1,4 +1,4 @@
-# Contributing to pycoQC
+# Contributing to pycoQCAcknowledgements
 
 First of all, thanks for considering contributing to `pycoQC`! 👍 It's people like you that make it rewarding for us to work on `pycoQC`.
 
@@ -24,13 +24,13 @@ There are several ways you can contribute to this project. If you want to know m
 
 Think `pycoQC` is useful? Let others discover it, by telling them in person, via Twitter or a blog post.
 
-Using `pycoQC` for a paper you are writing? Please cite it. 
+Using `pycoQC` for a paper you are writing? Please cite it.
 
 ### Ask a question ⁉️
 
-Using `pycoQC` and got stuck? Browse the  [readme ][repo] and the [demo notebook][demo_notebook]  to see if you can find a solution.
+Using `pycoQC` and got stuck? Browse the [documentation][https://a-slide.github.io/pycoQC/] to see if you can find a solution.
 
-Still stuck? Post your question as an [issue on GitHub][new_issue].
+Still stuck? Post your question as an [issue on GitHub][new_issue] or you can chat with the developers using our [gitter chat room](https://gitter.im/pycoQC/community?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
 While we cannot offer user support, we'll try to do our best to address it, as questions often lead to better documentation or the discovery of bugs.
 
@@ -55,7 +55,7 @@ Using `pycoQC` and discovered a bug? That's annoying! Don't let others have the 
 
 ### Improve the documentation 📖
 
-Noticed a typo on the website? Think a function could use a better example? Good documentation makes all the difference, so your help to improve it is very welcome! 
+Noticed a typo on the website? Think a function could use a better example? Good documentation makes all the difference, so your help to improve it is very welcome!
 
 1. Fork [this repo][repo] and clone it to your computer. To learn more about this process, see [this guide](https://guides.github.com/activities/forking/).
 2. Edit the README.md file and submit a pull request. We will review your changes and include the fix in the next release.
@@ -66,7 +66,7 @@ Care to fix bugs or implement new functionality for `pycoQC`? Awesome! 👏 Have
 
 ## Development guidelines
 
-We try to follow the [GitHub flow](https://guides.github.com/introduction/flow/) for development and the [PEP 8](https://www.python.org/dev/peps/pep-0008/) style Guide for Python Code. 
+We try to follow the [GitHub flow](https://guides.github.com/introduction/flow/) for development and the [PEP 8](https://www.python.org/dev/peps/pep-0008/) style Guide for Python Code.
 
 1. Fork [this repo][repo] and clone it to your computer. To learn more about this process, see [this guide](https://guides.github.com/activities/forking/).
 
@@ -78,7 +78,7 @@ We try to follow the [GitHub flow](https://guides.github.com/introduction/flow/)
 
 5. Submit a [pull request](https://guides.github.com/activities/forking/#making-a-pull-request).
 
-    
+
 
 ---
 
