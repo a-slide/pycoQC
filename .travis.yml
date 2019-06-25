@@ -8,7 +8,7 @@ branches:
 
 install:
     - pip install setuptools wheel mkdocs mkdocs-material pygments pymdown-extensions mknotebooks nbconvert twine
-
+    
 script: true
 
 before_deploy:
