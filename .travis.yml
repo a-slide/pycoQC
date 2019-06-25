@@ -1,5 +1,10 @@
 language: python
 python: 3.6
+branches:
+  only:
+  - master
+  - dev
+  - deploy
 
 install:
     - pip install setuptools wheel mkdocs mkdocs-material pygments pymdown-extensions mknotebooks nbconvert twine
@@ -23,6 +28,7 @@ deploy:
         user: "aleg"
         distributions: "sdist bdist_wheel"
         server: https://test.pypi.org/legacy/
+        skip_existing: true
         on:
             branch: deploy
         password:
