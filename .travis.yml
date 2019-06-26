@@ -7,37 +7,70 @@ branches:
   - devel
   - deploy
 
+before_install:
+# Set up conda package manager
+- wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+- bash miniconda.sh -b -p $HOME/miniconda
+- export PATH="$HOME/miniconda/bin:$PATH"
+- hash -r
+- conda config --set always_yes yes --set changeps1 no --set anaconda_upload no
+- conda update -q conda
+- conda info -a
+
 install:
-  - pip install notebook nbconvert
-  - pip install mkdocs mkdocs-material pygments pymdown-extensions mknotebooks
+# Install conda dep for conda package deployment
+- conda install -q python=3.6 conda-build anaconda-client
+# Install other pip dependencies
+- pip install nbconvert requests jinja2 mkdocs mkdocs-material pygments pymdown-extensions
+# Install this one after or it raises an error
+- pip install mknotebooks
 
 script: true
 
 before_deploy:
-  - mkdocs build --verbose --clean
+# Prebuild mkdocs site documentation
+- mkdocs build --verbose --clean
 
 deploy:
+# Deploy package to pypy
+- provider: pypi
+  user: aleg
+  password: "$PYPI_PW"
+  server: https://test.pypi.org/legacy/
+  on:
+    branch: deploy
 
-  # deploy on test pypi if commit on deploy
-  - provider: pypi
-    user: aleg
-    server: https://test.pypi.org/legacy/
-    on:
-      branch: deploy
-    password: $PYPI_PW
+- provider: pypi
+  user: aleg
+  password: "$PYPI_PW"
+  on:
+    branch: master
+    tags: true
 
-  # deploy on real pypi if commit on master
-  - provider: pypi
-    user: aleg
-    on:
-      branch: master
-    password: $PYPI_PW
+# Deploy mkdoc documentation to github page
+- provider: pages
+  skip_cleanup: true
+  target_branch: gh-pages-test
+  github_token: "$GH_TOKEN"
+  local_dir: site
+  on:
+    branch: deploy
 
-  # Deploy doc on test branch
-  - provider: pages
-    skip_cleanup: true
-    target_branch: gh-pages-test
-    github_token: $GH_TOKEN
-    local_dir: site
-    on:
-      branch: deploy
+- provider: pages
+  skip_cleanup: true
+  github_token: "$GH_TOKEN"
+  local_dir: site
+  on:
+    branch: master
+    tags: true
+
+# Deploy to Anaconda.org
+- provider: script
+  skip_cleanup: true
+  script: bash ./deploy_anaconda.sh
+  on:
+    branch: deploy
+
+# Send a notification to our Slack channel 
+notifications:
+  slack: $SLACK_PW
