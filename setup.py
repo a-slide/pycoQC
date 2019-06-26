@@ -12,6 +12,7 @@ setup(
     version = pqc.__version__,
     description = pqc.__description__,
     long_description = long_description,
+    long_description_content_type="text/markdown",
     url = "https://github.com/a-slide/pycoQC",
     author = 'Adrien Leger & Tommaso Leonardi',
     author_email = 'aleg@ebi.ac.uk',
@@ -25,7 +26,7 @@ setup(
         'Programming Language :: Python :: 3'],
     install_requires = [
         'numpy==1.16.4',
-        'scipy==1.3.0',
+        'scipy==1.2.0',
         'pandas==0.24.2',
         'plotly==3.10.0',
         'jinja2==2.10.1',
