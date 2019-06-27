@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!python3
 # -*- coding: utf-8 -*-
 
 from setuptools import setup
@@ -9,8 +9,8 @@ with open("README.md", "r") as fh:
 
 setup(
     name = pqc.__name__,
+    description = "PycoQC computes metrics and generates interactive QC plots for Oxford Nanopore technologies sequencing data",
     version = pqc.__version__,
-    description = pqc.__description__,
     long_description = long_description,
     long_description_content_type="text/markdown",
     url = "https://github.com/a-slide/pycoQC",

@@ -1,12 +1,10 @@
 #!bash
+# -*- coding: utf-8 -*-
 
 set -e
 
-echo "Build recipe from pypi package..."
-conda skeleton pypi pycoQC --output-dir conda_build --noarch-python
-
 echo "Build noarch package..."
-conda build conda_build/pycoqc/meta.yaml --output-folder conda_build
+conda build meta.yaml --python 3.6 --numpy 1.1 --output-folder conda_build
 
 echo "Deploying to Anaconda.org..."
 anaconda -t $ANACONDA_TOKEN upload conda_build/**/pycoqc-*.tar.bz2

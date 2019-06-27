@@ -1,0 +1,50 @@
+{% set version = "2.3.0.8" %}
+{% set name = "pycoQC" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  path: dist/{{ name }}-{{ version }}.tar.gz
+
+build:
+  number: 0
+  script: "pip install {{ name }}-{{ version }}.tar.gz --no-deps --ignore-installed -vv "
+  entry_points:
+    - pycoQC=pycoQC.__main__:main_pycoQC
+    - Fast5_to_seq_summary=pycoQC.__main__:main_Fast5_to_seq_summary
+  noarch: "python"
+
+requirements:
+  host:
+    - python
+    - pip
+    - h5py ==2.9.0
+    - jinja2 ==2.10.1
+    - numpy ==1.16.4
+    - pandas ==0.24.2
+    - plotly ==3.10.0
+    - scipy ==1.2.0
+    - tqdm ==4.32.1
+  run:
+    - python
+    - h5py ==2.9.0
+    - jinja2 ==2.10.1
+    - numpy ==1.16.4
+    - pandas ==0.24.2
+    - plotly ==3.10.0
+    - scipy ==1.2.0
+    - tqdm ==4.32.1
+
+test:
+  imports:
+    - pycoQC
+  commands:
+    - pycoQC --help
+    - Fast5_to_seq_summary --help
+
+about:
+  home: "https://github.com/a-slide/pycoQC"
+  license: "GPLv3"
+  summary: "PycoQC computes metrics and generates interactive QC plots for Oxford Nanopore technologies sequencing data"
