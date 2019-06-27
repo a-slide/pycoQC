@@ -4,7 +4,7 @@
 set -e
 
 echo "Build noarch package..."
-conda build meta.yaml --python 3.6 --numpy 1.1 --output-folder conda_build
+conda build meta.yaml --python 3.6 --numpy 1.1 --output-folder conda_build --debug
 
 echo "Deploying to Anaconda.org..."
 anaconda -t $ANACONDA_TOKEN upload conda_build/**/pycoqc-*.tar.bz2
