@@ -7,6 +7,10 @@ branches:
   - devel
   - deploy
 
+# Send a notification to our Slack channel
+notifications:
+  slack: $SLACK_PW
+
 before_install:
 # Set up conda package manager
 - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
@@ -45,8 +49,6 @@ deploy:
   password: "$PYPI_PW"
   on:
     branch: master
-    tags: true
-
 # Deploy mkdoc documentation to github page
 - provider: pages
   skip_cleanup: true
@@ -62,15 +64,10 @@ deploy:
   local_dir: site
   on:
     branch: master
-    tags: true
 
 # Deploy to Anaconda.org
 - provider: script
   skip_cleanup: true
   script: bash ./deploy_anaconda.sh
   on:
-    branch: deploy
-
-# Send a notification to our Slack channel 
-notifications:
-  slack: $SLACK_PW
+    branch: master
