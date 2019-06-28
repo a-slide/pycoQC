@@ -4,8 +4,7 @@ python: 3.6
 branches:
   only:
   - master
-  - devel
-  - deploy
+  - dev
 
 # Send a notification to our Slack channel
 notifications:
@@ -42,13 +41,14 @@ deploy:
   password: "$PYPI_PW"
   server: https://test.pypi.org/legacy/
   on:
-    branch: deploy
+    branch: dev
 
 - provider: pypi
   user: aleg
   password: "$PYPI_PW"
   on:
     branch: master
+
 # Deploy mkdoc documentation to github page
 - provider: pages
   skip_cleanup: true
@@ -56,7 +56,7 @@ deploy:
   github_token: "$GH_TOKEN"
   local_dir: site
   on:
-    branch: deploy
+    branch: dev
 
 - provider: pages
   skip_cleanup: true
