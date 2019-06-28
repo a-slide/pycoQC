@@ -3,12 +3,14 @@
 [![JOSS](http://joss.theoj.org/papers/ea8e08dc950622bdd5d16a65649954aa/status.svg)](http://joss.theoj.org/papers/ea8e08dc950622bdd5d16a65649954aa)
 [![DOI](https://zenodo.org/badge/94531811.svg)](https://zenodo.org/badge/latestdoi/94531811)
 [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/pycoQC/community?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
-
 [![GitHub license](https://img.shields.io/github/license/a-slide/pycoQC.svg)](https://github.com/a-slide/pycoQC/blob/master/LICENSE)
 [![Language](https://raw.githubusercontent.com/a-slide/pycoQC/master/docs/pictures/language-Python3-brightgreen.png)](https://www.python.org/)
+
+
 [![PyPI version](https://badge.fury.io/py/pycoQC.svg)](https://badge.fury.io/py/pycoQC)
 [![Downloads](https://pepy.tech/badge/pycoqc)](https://pepy.tech/project/pycoqc)
-
+[![Anaconda Version](https://anaconda.org/aleg/pycoqc/badges/version.svg)](https://anaconda.org/aleg/pycoqc)
+[![Anaconda Downloads](https://anaconda.org/aleg/pycoqc/badges/downloads.svg)](https://anaconda.org/aleg/pycoqc)
 ---
 
 **Full documentation is available at https://a-slide.github.io/pycoQC/**
