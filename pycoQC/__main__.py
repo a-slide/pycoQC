@@ -102,7 +102,7 @@ def main_pycoQC (args=None):
     parser_filt.add_argument("--min_barcode_percent", default=0.1, type=float,
         help="Minimal percent of total reads to retain barcode label. If below the barcode value is set as `unclassified` (default: %(default)s)")
     parser_html = parser.add_argument_group('HTML report options')
-    parser_html.add_argument("--report_title", default="pycoQC report", type=str,
+    parser_html.add_argument("--report_title", default="", type=str,
         help="Title to use in the html report (default: %(default)s)")
     parser_html.add_argument("--template_file", type=str, default="",
         help="Jinja2 html template for the html report (default: %(default)s)")

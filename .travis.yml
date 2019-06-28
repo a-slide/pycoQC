@@ -1,0 +1,73 @@
+dist: xenial
+language: python
+python: 3.6
+branches:
+  only:
+  - master
+  - dev
+
+# Send a notification to our Slack channel
+notifications:
+  slack: $SLACK_PW
+
+before_install:
+# Set up conda package manager
+- wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+- bash miniconda.sh -b -p $HOME/miniconda
+- export PATH="$HOME/miniconda/bin:$PATH"
+- hash -r
+- conda config --set always_yes yes --set changeps1 no --set anaconda_upload no
+- conda update -q conda
+- conda info -a
+
+install:
+# Install conda dep for conda package deployment
+- conda install -q python=3.6 conda-build anaconda-client
+# Install other pip dependencies
+- pip install nbconvert requests jinja2 mkdocs mkdocs-material pygments pymdown-extensions
+# Install this one after or it raises an error
+- pip install mknotebooks
+
+script: true
+
+before_deploy:
+# Prebuild mkdocs site documentation
+- mkdocs build --verbose --clean
+
+deploy:
+# Deploy package to pypy
+- provider: pypi
+  user: aleg
+  password: "$PYPI_PW"
+  server: https://test.pypi.org/legacy/
+  on:
+    branch: dev
+
+- provider: pypi
+  user: aleg
+  password: "$PYPI_PW"
+  on:
+    branch: master
+
+# Deploy mkdoc documentation to github page
+- provider: pages
+  skip_cleanup: true
+  target_branch: gh-pages-test
+  github_token: "$GH_TOKEN"
+  local_dir: site
+  on:
+    branch: dev
+
+- provider: pages
+  skip_cleanup: true
+  github_token: "$GH_TOKEN"
+  local_dir: site
+  on:
+    branch: master
+
+# Deploy to Anaconda.org
+- provider: script
+  skip_cleanup: true
+  script: bash ./deploy_anaconda.sh
+  on:
+    branch: master

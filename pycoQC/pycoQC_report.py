@@ -115,7 +115,7 @@ class pycoQC_report ():
         if report_title:
             report_title+="<br>"
 
-        report_title+="Generate on {} with {} {}".format(
+        report_title+="Generated on {} with {} {}".format(
             datetime.datetime.now().strftime("%d/%m/%y"),
             package_name,
             package_version)

@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
 
-# Define self package variable
-__version__ = '2.3.0.2'
-__all__ = ["pycoQC", "common"]
-__description__="PycoQC computes metrics and generates interactive QC plots for Oxford Nanopore technologies sequencing data"
+__version__ = '2.3.1.1'
+__all__ = ["pycoQC", "Fast5_to_seq_summary", "common"]
