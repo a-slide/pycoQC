@@ -3,8 +3,9 @@
 # Standard library imports
 from os import access, R_OK, listdir, path
 import inspect
-from glob import iglob
+from glob import iglob, glob
 import sys
+import logging
 from collections import *
 
 # Third party imports
@@ -21,11 +22,33 @@ class pycoQCWarning (Warning):
 
 ##~~~~~~~ FUNCTIONS ~~~~~~~#
 
-def is_readable_file (fp, **kwargs):
+def is_readable_file (fn):
     """Verify the readability of a file or list of file"""
-    return access(fp, R_OK)
+    return path.isfile (fn) and access (fn, R_OK)
 
-def sequencing_summary_file_sample (infile, outfile=None, n_seq=10000, **kwargs):
+def check_arg (arg_name, arg_val, required_type, allow_none=True, min=None, max=None, choices=[]):
+    """Check argument values and type"""
+    if allow_none and arg_val == None:
+        return arg_val
+
+    if not isinstance(arg_val, required_type):
+        try:
+            arg_val = required_type(arg_val)
+        except:
+            raise Exception ("Argument `{}` value `{}` is not in correct type: `{}` and cannot be coerced".format(arg_name, arg_val, required_type.__name__))
+
+    if required_type in [float, int]:
+        if min and arg_val < min:
+            raise Exception ("Argument `{}` value `{}` is too low. Minimal value: {}".format(arg_name, arg_val, min))
+        if max and arg_val > max:
+            raise Exception ("Argument `{}` value `{}` is too high. Maximal value: {}".format(arg_name, arg_val, max))
+
+    if choices and arg_val not in choices:
+        raise Exception ("Argument `{}` value `{}` is not in the list of possible choices. Choices: {}".format(arg_name, arg_val, ", ".join(choices)))
+
+    return arg_val
+
+def sequencing_summary_file_sample (infile, outfile=None, n_seq=10000):
     """
     Sample a number read lines in infile and write the output_over_time in output_file
     If the file contains several runids the function will sample proportionally to the
@@ -72,7 +95,7 @@ def dict_to_str (c, prefix="\t", suffix="\n"):
             m += "{}{}: {}{}".format(prefix, i, j, suffix)
     return m
 
-def recursive_file_gen (dir, ext, **kwargs):
+def recursive_file_gen (dir, ext):
     """
     create a generator listing all files with a particular extension in a folder arborescence
     The recursivity is broken when at least 1 file with a particular extenssion is found.
@@ -92,75 +115,142 @@ def recursive_file_gen (dir, ext, **kwargs):
                 for fn in recursive_file_gen (path.join(dir, item), ext):
                     yield fn
 
-def stderr_print (*args):
-    """reproduce print with stderr.write
-    """
-    sys.stderr.write(" ".join(str(a) for a in args))
-    sys.stderr.flush()
+def get_logger (name=None, verbose=False, quiet=False):
+    """Set logger to appropriate log level"""
 
-def counter_to_str (c):
-    """Transform a counter dict to a tabulated str"""
-    m = ""
-    for i, j in c.most_common():
-        m += "\t{}: {:,}".format(i, j)
-    return m
+    logging.basicConfig(format='%(message)s')
+    logger = logging.getLogger(name)
+
+    # Define overall verbose level
+    if verbose:
+        logger.setLevel(logging.DEBUG)
+    elif quiet:
+        logger.setLevel(logging.WARNING)
+    else:
+        logger.setLevel(logging.INFO)
+
+    return logger
+
+def doc_func (func):
+    """Parse the function description string"""
+
+    docstr_list = []
+    for l in inspect.getdoc(func).split("\n"):
+        l = l.strip()
+        if l:
+            if l.startswith("*"):
+                break
+            else:
+                docstr_list.append(l)
+
+    return " ".join(docstr_list)
+
+def make_arg_dict (func):
+    """Parse the arguments default value, type and doc"""
+
+    # Init method for classes
+    if inspect.isclass(func):
+        func = func.__init__
+
+    if inspect.isfunction(func) or inspect.ismethod(func):
+        # Parse arguments default values and annotations
+        d = OrderedDict()
+        for name, p in inspect.signature(func).parameters.items():
+            if not p.name in ["self","cls"]: # Object stuff. Does not make sense to include in doc
+                d[name] = OrderedDict()
+                if not name in ["kwargs","args"]: # Include but skip default required and type
+                    # Get Annotation
+                    if p.annotation != inspect._empty:
+                        d[name]["type"] = p.annotation
+                    # Get default value if available
+                    if p.default == inspect._empty:
+                        d[name]["required"] = True
+                    else:
+                        d[name]["default"] = p.default
+
+        # Parse the docstring in a dict
+        docstr_dict = OrderedDict()
+        lab=None
+        for l in inspect.getdoc(func).split("\n"):
+            l = l.strip()
+            if l:
+                if l.startswith("*"):
+                    lab = l[1:].strip()
+                    docstr_dict[lab] = []
+                elif lab:
+                    docstr_dict[lab].append(l)
+
+        # Concatenate and copy doc in main dict
+        for name in d.keys():
+            if name in docstr_dict:
+                d[name]["help"] = " ".join(docstr_dict[name])
+        return d
+
+
+def arg_opt (func, arg, **kwargs):
+    """Get options corresponding to argumant name and deal with special cases"""
+    arg_dict = make_arg_dict(func)[arg]
+
+    if "default" in arg_dict and "help" in arg_dict:
+        arg_dict["help"] += " (default: %(default)s)"
+
+    if "type" in arg_dict and "help" in arg_dict:
+        arg_dict["help"] += " [%(type)s]"
+
+    # Special case for boolean args
+    if arg_dict["type"] == bool:
+        if arg_dict["default"] == False:
+            arg_dict["action"] = 'store_true'
+            del arg_dict["type"]
+        elif arg_dict["default"] == True:
+            arg_dict["action"] = 'store_false'
+            del arg_dict["type"]
+
+    # Special case for lists args
+    elif arg_dict["type"] == list:
+        arg_dict["nargs"]='*'
+
+    return arg_dict
 
 def jhelp (f:"python function or method"):
     """
     Display a Markdown pretty help message for functions and class methods (default __init__ is a class is passed)
     jhelp also display default values and type annotations if available.
-    Undocumented options are not displayed.
-    The docstring synthax should follow the markdown formated convention below
+    The docstring synthax should follow the same synthax as the one used for this function
     * f
         Function or method to display the help message for
     """
-    # For some reason signature is not always importable. In these cases the build-in help is called instead
-    try:
-        from IPython.core.display import display, Markdown, HTML
-    except (NameError, ImportError) as E:
-        NanocomporeWarning ("jupyter notebook is required to use this function. Please verify your dependencies")
-        return
+    # Private import as this is only needed if using jupyter
+    from IPython.core.display import display, Markdown
 
-    if inspect.isclass(f):
-        f = f.__init__
+    f_doc = doc_func(f)
+    arg_doc = make_arg_dict(f)
 
-    if inspect.isfunction(f) or inspect.ismethod(f):
+    # Signature and function documentation
+    s = "**{}** ({})\n\n{}\n\n---\n\n".format(f.__name__, ", ".join(arg_doc.keys()), f_doc)
 
-        # Parse arguments default values and annotations
-        sig_dict = OrderedDict()
-        for name, p in inspect.signature(f).parameters.items():
-            sig_dict[p.name] = []
-            # Get Annotation
-            if p.annotation != inspect._empty:
-                sig_dict[p.name].append(": {}".format(p.annotation))
-            # Get default value if available
-            if p.default == inspect._empty:
-                sig_dict[p.name].append("(required)")
+    # Args doc
+    for arg_name, arg_val in arg_doc.items():
+        # Arg signature section
+        s+= "* **{}**".format(arg_name)
+        if "default" in arg_val:
+            if arg_val["default"] == "":
+                  arg_val["default"] = "\"\""
+            s+= " (default: {})".format(arg_val["default"])
+        if "required" in arg_val:
+            s+= " (required)"
+        if "type" in arg_val:
+            if type(list) == type:
+                s+= " [{}]".format(arg_val["type"].__name__)
             else:
-                sig_dict[p.name].append("(default = {})".format(p.default))
+                s+= " [{}]".format(arg_val["type"])
+        s+="\n\n"
+        # Arg doc section
+        if "help" in arg_val:
+            s+= "{}\n\n".format(arg_val["help"])
 
-        # Parse the docstring
-        doc_dict = OrderedDict()
-        descr = []
-        lab=None
-        for l in inspect.getdoc(f).split("\n"):
-            l = l.strip()
-            if l:
-                if l.startswith("*"):
-                    lab = l[1:].strip()
-                    doc_dict[lab] = []
-                elif lab:
-                    doc_dict[lab].append(l)
-                else:
-                    descr.append(l)
-
-        # Reformat collected information in Markdown synthax
-        s = "---\n\n**{}.{}**\n\n{}\n\n---\n\n".format(f.__module__, f.__name__, " ".join(descr))
-        for k, v in doc_dict.items():
-            s+="* **{}** *{}*\n\n{}\n\n".format(k, " ".join(sig_dict[k]), " ".join(v))
-
-        # Display in Jupyter
-        display (Markdown(s))
+    # Display in Jupyter
+    display (Markdown(s))
 
 def head (fp, n=10, sep="\t", comment=None):
     """

@@ -1,25 +1,5 @@
 {
-  "Runtime_info": {
-    "package_name": "pycoQC",
-    "package_version": "2.2.3.7",
-    "timestamp": "2019-05-07 14:28:20.706734",
-    "verbose_level": 1,
-    "min_barcode_percent": 0.1,
-    "filter_calibration": false,
-    "min_pass_qual": 7,
-    "runid_list": [],
-    "barcode_summary_file": null,
-    "seq_summary_file": [
-      "data/summary/Guppy-2.1.3_basecall-1D-RNA_sequencing_summary.txt.gz"
-    ]
-  },
-  "Read_counts": {
-    "Initial reads": 10000,
-    "Reads with NA values discarded": 0,
-    "Valid reads": 10000,
-    "Valid pass reads": 8222
-  },
-  "all_reads": {
+  "All Reads": {
     "General_stats": {
       "Number of reads": 10000,
       "Number of bases": 8090452,
@@ -81,7 +61,7 @@
       }
     }
   },
-  "pass_reads": {
+  "Pass Reads": {
     "General_stats": {
       "Number of reads": 8222,
       "Number of bases": 7214516,

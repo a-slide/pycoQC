@@ -1,0 +1,114 @@
+{
+  "summary": {
+    "plot_title": "Run summary"
+  },
+  "barcode_summary": {
+    "plot_title": "Run summary by barcode"
+  },
+  "run_id_summary": {
+    "plot_title": "Run summary by Run ID"
+  },
+  "reads_len_1D": {
+    "plot_title": "Distribution of read length",
+    "color": "lightsteelblue",
+    "nbins": 200,
+    "smooth_sigma": 2
+  },
+  "reads_qual_1D": {
+    "plot_title": "Distribution of read quality",
+    "color": "salmon",
+    "nbins": 200,
+    "smooth_sigma": 2
+  },
+  "reads_len_qual_2D": {
+    "plot_title": "Mean read quality per sequence length",
+    "colorscale": [
+      [
+        0.0,
+        "rgba(255,255,255,0)"
+      ],
+      [
+        0.1,
+        "rgba(255,150,0,0)"
+      ],
+      [
+        0.25,
+        "rgb(255,100,0)"
+      ],
+      [
+        0.5,
+        "rgb(200,0,0)"
+      ],
+      [
+        0.75,
+        "rgb(120,0,0)"
+      ],
+      [
+        1.0,
+        "rgb(70,0,0)"
+      ]
+    ],
+    "len_nbins": 200,
+    "qual_nbins": 75,
+    "smooth_sigma": 2
+  },
+  "output_over_time": {
+    "plot_title": "Output over experiment time",
+    "cumulative_color": "rgb(204,226,255)",
+    "interval_color": "rgb(102,168,255)"
+  },
+  "len_over_time": {
+    "plot_title": "Read length over time",
+    "median_color": "rgb(102,168,255)",
+    "quartile_color": "rgb(153,197,255)",
+    "extreme_color": "rgba(153,197,255,0.5)",
+    "smooth_sigma": 1
+  },
+  "qual_over_time": {
+    "plot_title": "Mean read quality over time",
+    "median_color": "rgb(250,128,114)",
+    "quartile_color": "rgb(250,170,160)",
+    "extreme_color": "rgba(250,170,160,0.5)",
+    "smooth_sigma": 1
+  },
+  "barcode_counts": {
+    "plot_title": "Number of reads per barcode",
+    "colors": [
+      "#f8bc9c",
+      "#f6e9a1",
+      "#f5f8f2",
+      "#92d9f5",
+      "#4f97ba"
+    ]
+  },
+  "channels_activity": {
+    "plot_title": "Channel activity over time",
+    "colorscale": [
+      [
+        0.0,
+        "rgba(255,255,255,0)"
+      ],
+      [
+        0.01,
+        "rgb(255,255,200)"
+      ],
+      [
+        0.25,
+        "rgb(255,200,0)"
+      ],
+      [
+        0.5,
+        "rgb(200,0,0)"
+      ],
+      [
+        0.75,
+        "rgb(120,0,0)"
+      ],
+      [
+        1.0,
+        "rgb(0,0,0)"
+      ]
+    ],
+    "smooth_sigma": 1
+  }
+}

@@ -31,8 +31,6 @@ pycoQC relies on a few robustly maintained third party libraries listed below. T
 
 ## Option 1: Installation with pip from pypi
 
-Install or upgrade the package with pip from pypi
-
 ```bash
 # First installation
 pip install pycoQC
@@ -41,9 +39,21 @@ pip install pycoQC
 pip install pycoQC --upgrade
 ```
 
-## Option 2: Installation with pip from Github
+## Option 2: Installation with conda from Anacounda cloud
 
-Or from github to get the last version
+In a previously created conda environment
+
+```bash
+# First installation
+conda install -c aleg pycoqc
+
+# Update to last version
+conda update -c aleg pycoqc
+```
+
+## Option 3: Installation with pip from Github
+
+To get the last stable (master) or bleeding edge (dev) version
 
 ```bash
 # First installation
@@ -56,7 +66,7 @@ pip install git+https://github.com/a-slide/pycoQC.git@dev
 pip install git+https://github.com/a-slide/pycoQC.git --upgrade
 ```
 
-## Option 3: Clone the repository and install locally in develop mode
+## Option 4: Clone the repository and install locally in develop mode
 
 With this option, the package will be locally installed in *editable* or *develop mode*. This allows the package to be both installed and editable in project form. This is the recommended option if you wish to modify the code and/or participate to the development of the package (see [contribution guidelines](contributing.md)).
 
