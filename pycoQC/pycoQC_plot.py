@@ -176,7 +176,7 @@ class pycoQC_plot ():
 
         # Autodefine height depending on the numbers of run_ids
         if not height:
-            height:int=300+(30*self.all_df[groupby].nunique()) if groupby else 300
+            height=300+(30*self.all_df[groupby].nunique()) if groupby else 300
 
         # tweak plot layout
         layout = go.Layout (updatemenus=updatemenus, width=width, height=height, title=plot_title)
