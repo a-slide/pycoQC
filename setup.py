@@ -2,15 +2,18 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup
-import pycoQC as pqc
 
+# Define package info
+name = "pycoQC"
+version = "2.3.1.5"
+description = "PycoQC computes metrics and generates interactive QC plots for Oxford Nanopore technologies sequencing data"
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name = pqc.__name__,
-    description = "PycoQC computes metrics and generates interactive QC plots for Oxford Nanopore technologies sequencing data",
-    version = pqc.__version__,
+    name = name,
+    description = description,
+    version = version,
     long_description = long_description,
     long_description_content_type="text/markdown",
     url = "https://github.com/a-slide/pycoQC",
@@ -32,9 +35,9 @@ setup(
         'jinja2==2.10.1',
         'h5py==2.9.0',
         'tqdm==4.32.1'],
-    packages = [pqc.__name__],
-    package_dir = {pqc.__name__: pqc.__name__},
-    package_data = {pqc.__name__: ['templates/*']},
+    packages = [name],
+    package_dir = {name: name},
+    package_data = {name: ['templates/*']},
     entry_points = {
         'console_scripts': [
             'pycoQC=pycoQC.__main__:main_pycoQC',

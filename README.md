@@ -11,6 +11,7 @@
 [![Downloads](https://pepy.tech/badge/pycoqc)](https://pepy.tech/project/pycoqc)
 [![Anaconda Version](https://anaconda.org/aleg/pycoqc/badges/version.svg)](https://anaconda.org/aleg/pycoqc)
 [![Anaconda Downloads](https://anaconda.org/aleg/pycoqc/badges/downloads.svg)](https://anaconda.org/aleg/pycoqc)
+[![Build Status](https://travis-ci.com/a-slide/pycoQC.svg?branch=master)](https://travis-ci.com/a-slide/pycoQC)
 ---
 
 **Full documentation is available at https://a-slide.github.io/pycoQC/**
