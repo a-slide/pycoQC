@@ -872,7 +872,7 @@ class pycoQC_plot ():
         self.logger.info ("\tPlotting channel activity")
 
         # Define maximal number of channels
-        n_channels = 4000 if self.is_promethion else 512
+        n_channels = 3000 if self.is_promethion else 512
 
         # Prepare all data
         lab1, dd1 = args=self.__channels_activity_data(df_level="all", count_level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma, time_bins=time_bins)
