@@ -3,9 +3,9 @@
 
 from setuptools import setup
 
-# Define package info 
+# Define package info
 name = "pycoQC"
-version = "2.3.1.3"
+version = "2.3.1.4"
 description = "PycoQC computes metrics and generates interactive QC plots for Oxford Nanopore technologies sequencing data"
 with open("README.md", "r") as fh:
     long_description = fh.read()
