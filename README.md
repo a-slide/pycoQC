@@ -11,7 +11,9 @@
 [![Downloads](https://pepy.tech/badge/pycoqc)](https://pepy.tech/project/pycoqc)
 [![Anaconda Version](https://anaconda.org/aleg/pycoqc/badges/version.svg)](https://anaconda.org/aleg/pycoqc)
 [![Anaconda Downloads](https://anaconda.org/aleg/pycoqc/badges/downloads.svg)](https://anaconda.org/aleg/pycoqc)
+
 [![Build Status](https://travis-ci.com/a-slide/pycoQC.svg?branch=master)](https://travis-ci.com/a-slide/pycoQC)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/07db58961a3c4fc1b6dc34c54079b477)](https://www.codacy.com/app/a-slide/pycoQC?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=a-slide/pycoQC&amp;utm_campaign=Badge_Grade)
 ---
 
 **Full documentation is available at https://a-slide.github.io/pycoQC/**
