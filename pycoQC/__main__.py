@@ -98,7 +98,9 @@ def main_pycoQC (args=None):
     parser_filt.add_argument("--min_pass_qual", default=7, type=int,
         help="Minimum quality to consider a read as 'pass' (default: %(default)s)")
     parser_filt.add_argument("--filter_calibration", default=False, action='store_true',
-        help="If given reads flagged as calibration strand by the basecaller are removed (default: %(default)s)")
+        help="If given, reads flagged as calibration strand by the basecaller are removed (default: %(default)s)")
+    parser_filt.add_argument("--filter_duplicated", default=False, action='store_true',
+        help="If given, duplicated read_ids are removed but the first occurence is kept (Guppy sometimes outputs the same read multiple times) (default: %(default)s)")
     parser_filt.add_argument("--min_barcode_percent", default=0.1, type=float,
         help="Minimal percent of total reads to retain barcode label. If below the barcode value is set as `unclassified` (default: %(default)s)")
     parser_html = parser.add_argument_group('HTML report options')
@@ -151,6 +153,7 @@ def main_pycoQC (args=None):
         barcode_file = args.barcode_file,
         bam_file = args.bam_file,
         filter_calibration = args.filter_calibration,
+        filter_duplicated = args.filter_duplicated,
         min_barcode_percent = args.min_barcode_percent,
         min_pass_qual = args.min_pass_qual,
         sample = args.sample,

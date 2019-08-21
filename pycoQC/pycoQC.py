@@ -27,6 +27,7 @@ def pycoQC (
     bam_file:str="",
     runid_list:list=[],
     filter_calibration:bool=False,
+    filter_duplicated:bool=False,
     min_barcode_percent:float=0.1,
     min_pass_qual:int=7,
     sample:int=100000,
@@ -54,6 +55,8 @@ def pycoQC (
         all the runids in the file and uses the runid order as defined in the file.
     * filter_calibration
         If True read flagged as calibration strand by the software are removed
+    * filter_duplicated
+        If True duplicated read_ids are removed but the first occurence is kept (Guppy sometimes outputs the same read multiple times)
     * min_barcode_percent
         Minimal percent of total reads to retain barcode label. If below the barcode value is set as `unclassified`.
     * min_pass_qual
@@ -93,6 +96,7 @@ def pycoQC (
     # Save all verified values + type
     runid_list = check_arg("runid_list", runid_list, required_type=list, allow_none=True)
     filter_calibration = check_arg("filter_calibration", filter_calibration, required_type=bool, allow_none=False)
+    filter_duplicated = check_arg("filter_duplicated", filter_duplicated, required_type=bool, allow_none=False)
     min_barcode_percent = check_arg("min_barcode_percent", min_barcode_percent, required_type=float, min=0, max=100, allow_none=False)
     min_pass_qual = check_arg("min_pass_qual", min_pass_qual, required_type=float, min=0, max=60, allow_none=False)
     sample = check_arg("sample", sample, required_type=int, min=0, allow_none=True)
@@ -115,6 +119,7 @@ def pycoQC (
         bam_file=bam_file,
         runid_list=runid_list,
         filter_calibration=filter_calibration,
+        filter_duplicated=filter_duplicated,
         min_barcode_percent=min_barcode_percent,
         verbose=verbose,
         quiet=quiet)

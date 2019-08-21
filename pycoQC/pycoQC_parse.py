@@ -30,6 +30,7 @@ class pycoQC_parse ():
         bam_file:str="",
         runid_list:list=[],
         filter_calibration:bool=False,
+        filter_duplicated:bool=False,
         min_barcode_percent:float=0.1,
         verbose:bool=False,
         quiet:bool=False):
@@ -50,6 +51,8 @@ class pycoQC_parse ():
             all the runids in the file and uses the runid order as defined in the file.
         * filter_calibration
             If True read flagged as calibration strand by the software are removed
+        * filter_duplicated
+            If True duplicated read_ids are removed but the first occurence is kept (Guppy sometimes outputs the same read multiple times)
         * min_barcode_percent
             Minimal percent of total reads to retain barcode label. If below the barcode value is set as `unclassified`.
         """
@@ -195,7 +198,18 @@ class pycoQC_parse ():
             raise pycoQCError("No valid read left after zero_len filtering")
 
         # Filter out calibration strands read if the "calibration_strand_genome_template" field is available
-        if self.filter_calibration and "calibration" in df:
+        if filter_duplicated:
+            self.logger.info ("\tFiltering out duplicated reads")
+            l = len(df)
+            df = df[~df.duplicated(subset="read_id", keep='first')]
+            n=l-len(df)
+            self.logger.info ("\t\t{:,} reads discarded".format(n))
+            self.counter["Duplicated reads discarded"] = n
+            if len(df) <= 1:
+                raise pycoQCError("No valid read left after calibration strand filtering")
+
+        # Filter out calibration strands read if the "calibration_strand_genome_template" field is available
+        if filter_calibration and "calibration" in df:
             self.logger.info ("\tFiltering out calibration strand reads")
             l = len(df)
             df = df[(df["calibration"].isin(["filtered_out", "no_match", "*"]))]
