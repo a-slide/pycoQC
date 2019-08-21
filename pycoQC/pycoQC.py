@@ -123,14 +123,13 @@ def pycoQC (
         min_barcode_percent=min_barcode_percent,
         verbose=verbose,
         quiet=quiet)
-    df = parser()
 
     logger.debug("Parser stats")
     logger.debug(parser)
 
     #~~~~~~~~~~pycoQC_plot~~~~~~~~~~#
     plotter = pycoQC_plot(
-        df=df,
+        parser=parser,
         min_pass_qual=min_pass_qual,
         sample=sample,
         verbose=verbose,
