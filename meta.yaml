@@ -31,6 +31,7 @@ requirements:
     - jinja2 == 2.10.1
     - h5py == 2.9.0
     - tqdm == 4.35.0
+    - pysam == 0.15.3
 
 test:
   imports:
