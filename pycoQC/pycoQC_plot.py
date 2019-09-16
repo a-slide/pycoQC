@@ -11,9 +11,11 @@ import numpy as np
 import pandas as pd
 from scipy.ndimage import gaussian_filter, gaussian_filter1d
 import plotly.graph_objs as go
+from plotly.subplots import make_subplots
 
 # Local lib import
 from pycoQC.common import *
+from pycoQC.pycoQC_parse import pycoQC_parse
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~GLOBAL SETTINGS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
@@ -28,14 +30,14 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 class pycoQC_plot ():
 
     def __init__ (self,
-        df:pd.DataFrame,
+        parser:pycoQC_parse,
         min_pass_qual:int=7,
         sample:int=100000,
         verbose:bool=False,
         quiet:bool=False):
         """
-        * df
-            pandas dataframe obtained with pycoQC_parse
+        * parser
+            A pycoQC_parse object
         * min_pass_qual
             Minimum quality to consider a read as 'pass
         * sample
@@ -50,8 +52,18 @@ class pycoQC_plot ():
         self.min_pass_qual = min_pass_qual
         self.sample = sample
 
+        # Check that parser is a valid instance of pycoQC_parse
+        if not isinstance(parser, pycoQC_parse):
+            raise pycoQCError ("{} is not a valid pycoQC_parse object".format(parser))
+        self.parser = parser
+
+        # Extract values from parser object
+        self.all_df = parser.reads_df
+        if self.has_alignment:
+            self.ref_len_dict = parser.ref_len_dict
+            self.alignments_df = parser.alignments_df
+
         # Save df wiews and compute scaling factors
-        self.all_df = df
         if sample and len(self.all_df)>sample:
             self.all_sample_df = self.all_df.sample(n=sample, random_state=SEED)
             self.all_scaling_factor = len(self.all_df)/sample
@@ -59,7 +71,7 @@ class pycoQC_plot ():
             self.all_sample_df = self.all_df
             self.all_scaling_factor = 1
 
-        self.pass_df = df[df["mean_qscore"]>=min_pass_qual]
+        self.pass_df = self.all_df[self.all_df["mean_qscore"]>=min_pass_qual]
         if sample and len(self.pass_df)>sample:
             self.pass_sample_df = self.pass_df.sample(n=sample, random_state=SEED)
             self.pass_scaling_factor = len(self.pass_df)/sample
@@ -845,7 +857,7 @@ class pycoQC_plot ():
         label = "{} Reads".format(df_level.capitalize())
         return (label, data_dict)
 
-    #~~~~~~~BARCODE_COUNT METHODS AND HELPER~~~~~~~#
+    #~~~~~~~BARCODE_COUNT METHODS AND HELPER~~~~~~~# ################################################################################ ADD TABLE AS IN ALIGNMENTS
 
     def channels_activity (self,
         colorscale:list = [[0.0,'rgba(255,255,255,0)'], [0.01,'rgb(255,255,200)'], [0.25,'rgb(255,200,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(0,0,0)']],
@@ -939,6 +951,155 @@ class pycoQC_plot ():
 
         label = "{} {}".format(df_level.capitalize(), count_level.capitalize())
         return (label, data_dict)
+
+    #~~~~~~~ALIGNMENT_SUMMARY METHOD~~~~~~~#
+
+    def alignment_summary (self,
+        colors:list=["#f8bc9c", "#f6e9a1", "#92d9f5", "#4f97ba", "#f5f8f2"],
+        width:int= None,
+        height:int=500,
+        plot_title:str="Summary of reads alignment"):
+        """
+        Plot a basic alignment summary
+        * colors
+            List of colors (hex, rgb, rgba, hsl, hsv or any CSV named colors https://www.w3.org/TR/css-color-3/#svg-color
+        * width
+            With of the ploting area in pixel
+        * height
+            height of the ploting area in pixel
+        * plot_title
+            Title to display on top of the plot
+        """
+
+        self.logger.info ("\tPlotting alignment summary")
+
+        # Verify that barcode information are available
+        if not self.has_alignment:
+            raise pycoQCError ("No alignment information available")
+
+        df = self.alignments_df
+        # Create empty multiplot figure
+        fig = make_subplots(rows=1, cols=2, column_widths=[0.4, 0.6], specs=[[{"type": "table"},{"type": "pie"}]])
+
+        # plot Table
+        data = go.Table(
+            columnwidth = [3,2,2],
+            header = {"values":list(df.columns), "align":"center", "fill_color":["grey"], "font_size":14, "font_color":"white", "height":40},
+            cells = {"values":df.values.T , "align":"center", "fill_color":"whitesmoke", "font_size":12, "height":30})
+        fig.add_trace (data, row=1, col=1)
+
+        # plot Pie plot
+        data = go.Pie (
+            labels=df["Alignments"],
+            values=df["Counts"],
+            sort=False,
+            marker={"colors":colors},
+            name="Pie plot",
+            textinfo='label+percent')
+        fig.add_trace (data, row=1, col=2)
+
+        # Change the layout
+        fig.update_layout(
+            width = width,
+            height = height,
+            title = plot_title)
+
+        return fig
+
+    #~~~~~~~ALIGNMENT COVERAGE METHOD AND HELPER~~~~~~~# ################################### LOG OPTION
+
+    def alignment_coverage (self,
+        nbins:int=500,
+        width:int= None,
+        height:int=500,
+        plot_title:str="Coverage overview"):
+        """
+        Plot coverage over all the references
+
+        * width
+            With of the ploting area in pixel
+        * height
+            height of the ploting area in pixel
+        * plot_title
+            Title to display on top of the plot
+        """
+        rlen = self.ref_len_dict
+        ref_offset_dict = self._ref_offset(rlen, "left", ret_type="dict")
+        df = self.all_df[["ref_id", "ref_start", "ref_end", "align_len"]].dropna()
+        total_len = np.sum(list(rlen.values()))
+        steps = total_len//nbins
+        mean_cov = round(df["align_len"].sum()/total_len, 2)
+
+        l = []
+        for line in df.itertuples():
+            l.append(int(ref_offset_dict[line.ref_id]+line.ref_start))
+
+        l = np.array(l)
+        bins = np.arange(0, total_len, steps)
+
+        l = np.digitize(l,bins)
+        y = np.bincount(l, weights=df["align_len"])/steps
+        y = gaussian_filter1d (y, sigma=1)
+
+        data1 = go.Scatter (
+            x=list(range(nbins+1)),
+            y=y,
+            name="Mean coverage",
+            hoveron="points",
+            hoverinfo="y",
+            fill='tozeroy',
+            fillcolor="rgba(102,168,255,0.75)",
+            mode='none',
+            showlegend=True,
+            connectgaps=True)
+
+        data2 = go.Scatter (
+            x=[0,nbins],
+            y=[mean_cov,mean_cov],
+            name=f"Overall coverage<br>{mean_cov}X",
+            mode="lines",
+            hoverinfo="skip",
+            line= {'color':'gray','width':2,'dash': 'dot'})
+
+        x_lab_coord = np.array(self._ref_offset(rlen, coordinates="middle", ret_type="list"))*nbins/total_len
+        x_lab = list(rlen.keys())
+
+        shapes = []
+        x_shape_coord = np.array(self._ref_offset(rlen, coordinates="left", ret_type="list")[1:])*nbins/total_len
+
+        for i in range(0, 16, 2):
+            shapes.append(go.layout.Shape(type="rect",x0=x_shape_coord[i],x1=x_shape_coord[i+1], y0=0,y1=1, yref="paper", opacity=0.5, layer="below", fillcolor="white", line_width=0))
+
+        # tweak plot layout
+        layout = go.Layout (
+            shapes=shapes,
+            hovermode = "closest",
+            legend = {"x":-0.2, "y":1,"xanchor":'left',"yanchor":'top'},
+            xaxis = {"zeroline":False, "showline":True, "ticktext":x_lab, "tickvals":x_lab_coord, "tickangle":-45, "showgrid":False},
+            yaxis = {"title":"Mean Coverage", "type":"log", "zeroline":False, "fixedrange":True},
+            title = plot_title)
+
+        return go.Figure(data=[data1,data2], layout=layout)
+
+    def _ref_offset (self, rlen, coordinates="left", ret_type="dict"):
+
+        offset = [] if ret_type=="list" else OrderedDict()
+        cumsum=0
+        for ref, rlen in rlen.items ():
+            # Define return val
+            if coordinates =="left":
+                v = cumsum
+            elif coordinates =="middle":
+                v = cumsum + rlen/2
+            else:
+                v = cumsum + rlen
+            # Add to appropriate collection
+            if ret_type =="list":
+                offset.append(v)
+            else:
+                offset[ref]=v
+            cumsum+=rlen
+        return offset
 
     #~~~~~~~PRIVATE METHODS~~~~~~~#
 

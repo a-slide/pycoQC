@@ -10,6 +10,7 @@ from collections import *
 
 # Third party imports
 import pandas as pd
+import pysam as ps
 
 #~~~~~~~~~~~~~~CUSTOM EXCEPTION AND WARN CLASSES~~~~~~~~~~~~~~#
 class pycoQCError (Exception):
@@ -89,7 +90,7 @@ def dict_to_str (c, prefix="\t", suffix="\n"):
     m = ""
     if type(c) == Counter:
         for i, j in c.most_common():
-            m += "{}{}: {:,}{}}".format(prefix, i, j, suffix)
+            m += "{}{}: {:,}{}".format(prefix, i, j, suffix)
     else:
         for i, j in c.items():
             m += "{}{}: {}{}".format(prefix, i, j, suffix)
@@ -186,9 +187,8 @@ def make_arg_dict (func):
                 d[name]["help"] = " ".join(docstr_dict[name])
         return d
 
-
 def arg_opt (func, arg, **kwargs):
-    """Get options corresponding to argumant name and deal with special cases"""
+    """Get options corresponding to argument name and deal with special cases"""
     arg_dict = make_arg_dict(func)[arg]
 
     if "default" in arg_dict and "help" in arg_dict:
@@ -308,3 +308,67 @@ def head (fp, n=10, sep="\t", comment=None):
     for l in line_list:
         print (l)
     print()
+
+def ls (dir_path):
+    for f in listdir(dir_path):
+        print(f)
+
+def check_df_columns(df, required_colnames, optional_colnames):
+    """"""
+    col_found = []
+    # Verify the presence of the columns required for pycoQC
+    for col in required_colnames:
+        if col in df:
+            col_found.append(col)
+        else:
+            raise pycoQCError("Column {} not found in the provided sequence_summary file".format(col))
+    for col in optional_colnames:
+        if col in df:
+            col_found.append(col)
+    return col_found
+
+def expand_file_names(fn, bam_check=False):
+    """"""
+    # Try to expand file name to list
+    if isinstance(fn, list):
+        if len(fn) ==1:
+            fn_list=glob(fn[0])
+        else:
+            fn_list = []
+            for f in fn:
+                fn_list.extend(glob(f))
+    elif isinstance(fn, str):
+        fn_list=glob(fn)
+    else:
+        raise pycoQCError ("{} has to be either a file or a regular expression or a list of files".format(fn))
+
+    # Verify that files are readable
+    if not fn_list:
+        raise pycoQCError("No files found in {}".format(fn))
+    for f in fn_list:
+        if not is_readable_file (f):
+            raise pycoQCError("Cannot read file {}".format(f))
+        # Extra checks for bam files
+        if bam_check:
+            with ps.AlignmentFile(f, "rb") as bam:
+                if not bam.has_index():
+                    raise pycoQCError("No index found for bam file: {}. Please index with samtools index".format(f))
+                if not bam.header['HD']['SO'] == 'coordinate':
+                    raise pycoQCError("Bam file not sorted: {}. Please sort with samtools sort".format(f))
+    return fn_list
+
+def merge_files_to_df(fn_list):
+    """"""
+    if len(fn_list) == 1:
+        df =  pd.read_csv(fn_list[0], sep ="\t")
+
+    else:
+        df_list = []
+        for fn in fn_list:
+            df_list.append (pd.read_csv(fn, sep ="\t"))
+        df = pd.concat(df_list, ignore_index=True, sort=False, join="inner")
+
+    if len(df) == 0:
+        raise pycoQCError ("No valid read found in input file")
+
+    return df

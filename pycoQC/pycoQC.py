@@ -83,11 +83,8 @@ def pycoQC (
     """
 
     # Save args and init options in dict for report
-    kwargs = locals()
-    info_d = OrderedDict()
-    info_d["package_name"] = package_name
-    info_d["package_version"] = package_version
-    info_d["timestamp"] = str(datetime.datetime.now())
+    options_d = locals()
+    info_d = {"package_name":package_name, "package_version":package_version, "timestamp":str(datetime.datetime.now())}
 
     # Set logging level
     logger = get_logger (name=__name__, verbose=verbose, quiet=quiet)
@@ -107,10 +104,11 @@ def pycoQC (
     template_file = check_arg("template_file", template_file, required_type=str, allow_none=True)
     json_outfile = check_arg("json_outfile", json_outfile, required_type=str, allow_none=True)
 
+    # Print debug info
     logger.debug("General info")
     logger.debug(dict_to_str(info_d))
     logger.debug("Runtime options")
-    logger.debug(dict_to_str(kwargs))
+    logger.debug(dict_to_str(options_d))
 
     #~~~~~~~~~~pycoQC_parse~~~~~~~~~~#
     parser = pycoQC_parse (
@@ -141,8 +139,9 @@ def pycoQC (
     #~~~~~~~~~~pycoQC_report~~~~~~~~~~#
     if html_outfile or json_outfile:
         reporter = pycoQC_report (
-            pp = plotter,
-            verbose = verbose,
+            parser=parser,
+            plotter=plotter,
+            verbose=verbose,
             quiet=quiet)
 
         if html_outfile:

@@ -5,7 +5,7 @@ from setuptools import setup
 
 # Define package info
 name = "pycoQC"
-version = "2.3.1.6"
+version = "2.4.1.0"
 description = "PycoQC computes metrics and generates interactive QC plots for Oxford Nanopore technologies sequencing data"
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -28,18 +28,19 @@ setup(
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python :: 3'],
     install_requires = [
-        'numpy==1.16.4',
-        'scipy==1.2.0',
-        'pandas==0.24.2',
-        'plotly==3.10.0',
+        'numpy==1.17.1',
+        'scipy==1.3.1',
+        'pandas==0.25.1',
+        'plotly==4.1.0',
         'jinja2==2.10.1',
         'h5py==2.9.0',
-        'tqdm==4.32.1'],
+        'tqdm==4.35.0'],
     packages = [name],
     package_dir = {name: name},
     package_data = {name: ['templates/*']},
     entry_points = {
         'console_scripts': [
             'pycoQC=pycoQC.__main__:main_pycoQC',
-            'Fast5_to_seq_summary=pycoQC.__main__:main_Fast5_to_seq_summary']}
+            'Fast5_to_seq_summary=pycoQC.__main__:main_Fast5_to_seq_summary',
+            'Barcode_split=pycoQC.__main__:main_Barcode_split']}
 )
