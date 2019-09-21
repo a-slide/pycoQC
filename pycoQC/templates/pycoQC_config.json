@@ -14,9 +14,21 @@
     "nbins": 200,
     "smooth_sigma": 2
   },
+  "aligned_reads_len_1D": {
+    "plot_title": "Distribution of read alignments length",
+    "color": "mediumseagreen",
+    "nbins": 200,
+    "smooth_sigma": 2
+  },
   "reads_qual_1D": {
     "plot_title": "Distribution of read quality",
     "color": "salmon",
+    "nbins": 200,
+    "smooth_sigma": 2
+  },
+  "aligned_reads_score_1D": {
+    "plot_title": "Distribution of normalised read alignments score",
+    "color": "sandybrown",
     "nbins": 200,
     "smooth_sigma": 2
   },
@@ -48,8 +60,8 @@
         "rgb(70,0,0)"
       ]
     ],
-    "len_nbins": 200,
-    "qual_nbins": 75,
+    "x_nbins": 200,
+    "y_nbins": 75,
     "smooth_sigma": 2
   },
   "output_over_time": {
@@ -109,6 +121,37 @@
         "rgb(0,0,0)"
       ]
     ],
+    "smooth_sigma": 1
+  },
+  "alignment_summary": {
+    "plot_title": "Summary of reads alignment",
+    "colors": [
+      "#f8bc9c",
+      "#f6e9a1",
+      "#92d9f5",
+      "#4f97ba",
+      "#f5f8f2"
+    ]
+  },
+  "alignment_rate": {
+    "plot_title": "Bases alignment rate breakdown",
+    "colors": [
+      "#fcaf94",
+      "#828282",
+      "#fc8161",
+      "#828282",
+      "#f44f39",
+      "#d52221",
+      "#828282",
+      "#828282",
+      "#828282",
+      "#828282"
+    ]
+  },
+  "alignment_coverage": {
+    "plot_title": "Coverage overview",
+    "nbins": 500,
+    "color": "rgba(102,168,255,0.75)",
     "smooth_sigma": 1
   }
 }

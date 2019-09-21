@@ -313,20 +313,6 @@ def ls (dir_path):
     for f in listdir(dir_path):
         print(f)
 
-def check_df_columns(df, required_colnames, optional_colnames):
-    """"""
-    col_found = []
-    # Verify the presence of the columns required for pycoQC
-    for col in required_colnames:
-        if col in df:
-            col_found.append(col)
-        else:
-            raise pycoQCError("Column {} not found in the provided sequence_summary file".format(col))
-    for col in optional_colnames:
-        if col in df:
-            col_found.append(col)
-    return col_found
-
 def expand_file_names(fn, bam_check=False):
     """"""
     # Try to expand file name to list

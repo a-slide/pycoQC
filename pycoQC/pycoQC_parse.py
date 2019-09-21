@@ -91,15 +91,15 @@ class pycoQC_parse ():
             self.logger.debug ("\t\tBam files found: {}".format(" ".join(self.bam_file_list)))
             self.counter["Bam files found"] = len(self.bam_file_list)
         else:
-            self.barcode_files_list =[]
+            self.bam_file_list =[]
 
         self.logger.warning ("Parse data files")
         summary_reads_df = self._parse_summary()
         barcode_reads_df = self._parse_barcode()
-        bam_reads_df, self.ref_len_dict, self.alignments_df = self._parse_bam()
+        bam_reads_df, self.alignments_df, self.ref_len_dict = self._parse_bam()
 
         self.logger.warning ("Merge data")
-        reads_df = self._merge_reads_df(summary_reads_df, barcode_reads_df, bam_reads_df)
+        self.reads_df = self._merge_reads_df(summary_reads_df, barcode_reads_df, bam_reads_df)
 
         # Cleanup data
         if self.cleanup:
@@ -125,6 +125,18 @@ class pycoQC_parse ():
             rename_colmanes = {
                 "sequence_length_template":"read_len",
                 "mean_qscore_template":"mean_qscore",
+                "sequence_length_2d":"read_len",
+                "mean_qscore_2d":"mean_qscore",
+                "calibration_strand_genome_template":"calibration",
+                "barcode_arrangement":"barcode"}
+            df = df.rename(columns=rename_colmanes)
+
+            # Verify the required and optional columns, Drop unused fields
+            self.logger.debug ("\tVerifying fields and discarding unused columns")
+            df = self._select_df_columns (
+                df = df,
+                required_colnames = ["read_id", "run_id", "channel", "start_time", "read_len", "mean_qscore"],
+                optional_colnames = ["calibration", "barcode"])
 
         # Collect stats
         n = len(df)
@@ -164,7 +176,7 @@ class pycoQC_parse ():
     def _parse_bam (self):
         """"""
         if not self.bam_file_list:
-            return (pd.DataFrame(), pd.DataFrame())
+            return (pd.DataFrame(), pd.DataFrame(), OrderedDict())
 
         # Init collections
         unmapped=0
@@ -211,7 +223,7 @@ class pycoQC_parse ():
         else:
             read_df = pd.DataFrame()
 
-        return (read_df, ref_len_dict, alignments_df)
+        return (read_df, alignments_df, ref_len_dict)
 
     def _merge_reads_df(self, summary_reads_df, barcode_reads_df, bam_reads_df):
         """"""
@@ -233,7 +245,7 @@ class pycoQC_parse ():
         # Drop lines containing NA values
         self.logger.info ("\tDiscarding lines containing NA values")
         l = len(df)
-        df = df.dropna(subset=["read_id", "run_id"])
+        df = df.dropna(subset=["read_id", "run_id", "channel", "start_time", "read_len", "mean_qscore"])
         n=l-len(df)
         self.logger.info ("\t\t{:,} reads discarded".format(n))
         self.counter["Reads with NA values discarded"] = n
@@ -243,7 +255,7 @@ class pycoQC_parse ():
         # Filter out zero length reads
         self.logger.info ("\tFiltering out zero length reads")
         l = len(df)
-        df = df[(df["num_bases"] > 0)]
+        df = df[(df["read_len"] > 0)]
         n=l-len(df)
         self.logger.info ("\t\t{:,} reads discarded".format(n))
         self.counter["Zero length reads discarded"] = n
@@ -317,6 +329,10 @@ class pycoQC_parse ():
             self.logger.info ("\t\t{:,} reads with low frequency barcode unset".format(n))
             self.counter["Reads with low frequency barcode unset"] = n
 
+        # Cast values to required types
+        self.logger.info ("\tCast value to appropriate type")
+        df = df.astype({'channel':"uint16","start_time":"float32","read_len":"uint32","mean_qscore":"float32"})
+
         # Reindex final df
         self.logger.info ("\tReindexing dataframe by read_ids")
         df = df.reset_index (drop=True)
@@ -343,7 +359,7 @@ class pycoQC_parse ():
 
         # Get edit distance from NM tag if set up
         if read.has_tag("NM"):
-            d["Norm_edit_dist"] = read.get_tag("NM")/read.query_alignment_length
+            d["align_score"] = read.query_alignment_length/read.get_tag("NM")
 
         # Extract indel and soft_clip from cigar
         c_stat = read.get_cigar_stats()[0]
@@ -361,6 +377,21 @@ class pycoQC_parse ():
 
             # Manually compute edit distance MD
             if not read.has_tag("NM"):
-                d["Norm_edit_dist"] = (d["mismatch"]+d["insertion"]+d["deletion"])/read.query_alignment_length
+                d["align_score"] = read.query_alignment_length/(d["mismatch"]+d["insertion"]+d["deletion"])
 
         return d
+
+    def _select_df_columns(self, df, required_colnames, optional_colnames):
+        """"""
+        col_found = []
+        # Verify the presence of the columns required for pycoQC
+        for col in required_colnames:
+            if col in df:
+                col_found.append(col)
+            else:
+                raise pycoQCError("Column {} not found in the provided sequence_summary file".format(col))
+        for col in optional_colnames:
+            if col in df:
+                col_found.append(col)
+
+        return df[col_found].copy()

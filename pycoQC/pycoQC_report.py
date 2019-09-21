@@ -21,20 +21,6 @@ from pycoQC import __name__ as package_name
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MAIN CLASS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 class pycoQC_report ():
 
-    # List of current valid plotting methods names
-    PLOT_METHODS = [
-        "summary",
-        "barcode_summary",
-        "run_id_summary",
-        "reads_len_1D",
-        "reads_qual_1D",
-        "reads_len_qual_2D",
-        "output_over_time",
-        "len_over_time",
-        "qual_over_time",
-        "barcode_counts",
-        "channels_activity"] #############################################################################
-
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~INIT METHOD~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     def __init__ (self,
         parser:pycoQC_parse,
@@ -83,11 +69,6 @@ class pycoQC_report ():
         plots = list()
         titles = list()
         for method_name, method_args in config_dict.items ():
-
-            # Check if method exists and is callable
-            if not method_name in self.PLOT_METHODS:
-                self.logger.info("\tMethod `{}` is not defined in pycoQC".format(method_name))
-
             try:
                 self.logger.info("\tRunning method {}".format(method_name))
                 self.logger.debug ("\t{} ({})".format(method_name, method_args))
@@ -110,6 +91,10 @@ class pycoQC_report ():
 
                 plots.append(plot)
                 titles.append(plot_title)
+
+            except AttributeError as E:
+                self.logger.info("\t\t{}".format("{} is not a valid plotting method".format(method_name)))
+                self.logger.info("\t\t{}".format(E))
 
             except pycoQCError as E:
                 self.logger.info("\t\t{}".format(E))
