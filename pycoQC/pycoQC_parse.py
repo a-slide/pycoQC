@@ -32,6 +32,7 @@ class pycoQC_parse ():
         filter_calibration:bool=False,
         filter_duplicated:bool=False,
         min_barcode_percent:float=0.1,
+        cleanup:bool=True,
         verbose:bool=False,
         quiet:bool=False):
         """
@@ -65,6 +66,7 @@ class pycoQC_parse ():
         self.filter_calibration = filter_calibration
         self.filter_duplicated = filter_duplicated
         self.min_barcode_percent = min_barcode_percent
+        self.cleanup = cleanup
 
         # Init object counter
         self.counter = OrderedDict()
@@ -100,8 +102,9 @@ class pycoQC_parse ():
         reads_df = self._merge_reads_df(summary_reads_df, barcode_reads_df, bam_reads_df)
 
         # Cleanup data
-        self.logger.warning("Cleaning data")
-        self.reads_df = self._clean_reads_df(reads_df)
+        if self.cleanup:
+            self.logger.warning("Cleaning data")
+            self.reads_df = self._clean_reads_df(self.reads_df)
 
     def __str__(self):
         return dict_to_str(self.counter)
@@ -116,33 +119,12 @@ class pycoQC_parse ():
         self.logger.debug ("\tParse summary files")
         df = merge_files_to_df (self.summary_files_list)
 
-        self.logger.debug ("\tVerifying fields and discarding unused columns")
-        # Define specific parameters depending on the run_type
-        if "sequence_length_template" in df:
-            self.logger.debug ("\t\t1D Run type")
-            self.run_type = "1D"
-            required_colnames = ["read_id", "run_id", "channel", "start_time", "sequence_length_template", "mean_qscore_template"]
-            optional_colnames = ["calibration_strand_genome_template", "barcode_arrangement"]
+        if self.cleanup:
+            # Standardise col names for all types of files
+            self.logger.debug ("\tRename summary sequencing columns")
             rename_colmanes = {
-                "sequence_length_template":"num_bases", "mean_qscore_template":"mean_qscore",
-                "calibration_strand_genome_template":"calibration","barcode_arrangement":"barcode"}
-
-        elif "sequence_length_2d" in df:
-            self.logger.debug ("\t\t1D2 Run type")
-            self.run_type = "1D2"
-            required_colnames = ["read_id", "run_id", "channel", "start_time", "sequence_length_2d", "mean_qscore_2d"]
-            optional_colnames = ["calibration_strand_genome_template", "barcode_arrangement"]
-            rename_colmanes = {
-                "sequence_length_2d":"num_bases", "mean_qscore_2d":"mean_qscore",
-                "calibration_strand_genome_template":"calibration", "barcode_arrangement":"barcode"}
-        else:
-            raise pycoQCError ("Invalid sequencing summary file")
-
-        # Verify the required and optional columns, Drop unused fields and standardise field names.
-        col = check_df_columns (df=df, required_colnames=required_colnames, optional_colnames=optional_colnames)
-        self.logger.debug ("\t\tColumns found: {}".format(col))
-        df = df[col]
-        df = df.rename(columns=rename_colmanes)
+                "sequence_length_template":"read_len",
+                "mean_qscore_template":"mean_qscore",
 
         # Collect stats
         n = len(df)
