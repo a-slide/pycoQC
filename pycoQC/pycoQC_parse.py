@@ -394,4 +394,4 @@ class pycoQC_parse ():
             if col in df:
                 col_found.append(col)
 
-        return df[col_found].copy()
+        return df[col_found]
