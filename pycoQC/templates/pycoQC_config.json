@@ -8,61 +8,53 @@
   "run_id_summary": {
     "plot_title": "Run summary by Run ID"
   },
-  "reads_len_1D": {
-    "plot_title": "Distribution of read length",
+  "read_len_1D": {
+    "plot_title": "Basecalled reads length",
     "color": "lightsteelblue",
     "nbins": 200,
     "smooth_sigma": 2
   },
-  "aligned_reads_len_1D": {
-    "plot_title": "Distribution of read alignments length",
+  "align_len_1D": {
+    "plot_title": "Reads alignment length",
     "color": "mediumseagreen",
     "nbins": 200,
     "smooth_sigma": 2
   },
-  "reads_qual_1D": {
-    "plot_title": "Distribution of read quality",
+  "read_qual_1D": {
+    "plot_title": "Reads PHRED quality",
     "color": "salmon",
     "nbins": 200,
     "smooth_sigma": 2
   },
-  "aligned_reads_score_1D": {
-    "plot_title": "Distribution of normalised read alignments score",
+  "align_score_1D": {
+    "plot_title": "Reads alignment score",
     "color": "sandybrown",
     "nbins": 200,
     "smooth_sigma": 2
   },
-  "reads_len_qual_2D": {
-    "plot_title": "Mean read quality per sequence length",
-    "colorscale": [
-      [
-        0.0,
-        "rgba(255,255,255,0)"
-      ],
-      [
-        0.1,
-        "rgba(255,150,0,0)"
-      ],
-      [
-        0.25,
-        "rgb(255,100,0)"
-      ],
-      [
-        0.5,
-        "rgb(200,0,0)"
-      ],
-      [
-        0.75,
-        "rgb(120,0,0)"
-      ],
-      [
-        1.0,
-        "rgb(70,0,0)"
-      ]
-    ],
+  "read_len_read_qual_2D": {
+    "plot_title": "Basecalled reads length vs reads PHRED quality",
     "x_nbins": 200,
-    "y_nbins": 75,
+    "y_nbins": 100,
     "smooth_sigma": 2
+  },
+  "read_len_align_len_2D": {
+    "plot_title": "Basecalled reads length vs alignments length",
+    "x_nbins": 200,
+    "y_nbins": 100,
+    "smooth_sigma": 1
+  },
+  "align_len_align_score_2D": {
+    "plot_title": "Aligned reads length vs alignments score",
+    "x_nbins": 200,
+    "y_nbins": 100,
+    "smooth_sigma": 2
+  },
+  "read_qual_align_score_2D": {
+    "plot_title": "Mean read quality per sequence length",
+    "x_nbins": 200,
+    "y_nbins": 100,
+    "smooth_sigma": 1
   },
   "output_over_time": {
     "plot_title": "Output over experiment time",
@@ -95,32 +87,6 @@
   },
   "channels_activity": {
     "plot_title": "Channel activity over time",
-    "colorscale": [
-      [
-        0.0,
-        "rgba(255,255,255,0)"
-      ],
-      [
-        0.01,
-        "rgb(255,255,200)"
-      ],
-      [
-        0.25,
-        "rgb(255,200,0)"
-      ],
-      [
-        0.5,
-        "rgb(200,0,0)"
-      ],
-      [
-        0.75,
-        "rgb(120,0,0)"
-      ],
-      [
-        1.0,
-        "rgb(0,0,0)"
-      ]
-    ],
     "smooth_sigma": 1
   },
   "alignment_summary": {
