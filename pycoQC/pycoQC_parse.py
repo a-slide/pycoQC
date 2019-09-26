@@ -357,27 +357,26 @@ class pycoQC_parse ():
         d["align_len"] = read.query_alignment_length
         d["mapq"] = read.mapping_quality
 
-        # Get edit distance from NM tag if set up
-        if read.has_tag("NM"):
-            d["align_score"] = read.query_alignment_length/read.get_tag("NM")
-
         # Extract indel and soft_clip from cigar
         c_stat = read.get_cigar_stats()[0]
         d["insertion"] = c_stat[1]
         d["deletion"] = c_stat[2]
         d["soft_clip"] = c_stat[4]
 
-        # Extract mismatch from MD tag
-        if read.has_tag("MD"):
+        # Compute alignment score from NM field if available
+        if read.has_tag("NM"):
+            edit_dist = read.get_tag("NM")
+            d["mismatch"] = edit_dist-(d["deletion"]+d["insertion"])
+            d["align_score"] = d["align_len"]/edit_dist
+
+        # If not NM try to compute score from MD field
+        elif read.has_tag("MD"):
             md_err = 0
             for i in read.get_tag("MD"):
-                if i in ["A","T","C","G"]:
+                if i in ["A","T","C","G","a","t","c","g"]:
                     md_err += 1
             d["mismatch"] = md_err-d["deletion"]
-
-            # Manually compute edit distance MD
-            if not read.has_tag("NM"):
-                d["align_score"] = read.query_alignment_length/(d["mismatch"]+d["insertion"]+d["deletion"])
+            d["align_score"] = d["align_len"]/(d["mismatch"]+d["insertion"]+d["deletion"])
 
         return d
 
