@@ -5,6 +5,7 @@
 # Standard library imports
 from collections import *
 import warnings
+import datetime
 
 # Third party imports
 import numpy as np
@@ -16,6 +17,8 @@ from plotly.subplots import make_subplots
 # Local lib import
 from pycoQC.common import *
 from pycoQC.pycoQC_parse import pycoQC_parse
+from pycoQC import __name__ as package_name
+from pycoQC import __version__ as package_version
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~GLOBAL SETTINGS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # Set seed for deterministic random sampling
@@ -40,7 +43,7 @@ class pycoQC_plot ():
         * min_pass_qual
             Minimum quality to consider a read as 'pass
         * sample
-            If not None a n number of reads will be randomly selected instead of the entire dataset for ploting function (deterministic sampling)
+            If not None a n number of reads will be randomly selected instead of the entire dataset for plotting function (deterministic sampling)
         """
 
         # Set logging level
@@ -98,57 +101,68 @@ class pycoQC_plot ():
     @property
     def has_barcodes (self):
         return "barcode" in self.all_df
-
     @property
     def has_alignment (self):
         return "ref_id" in self.all_df
-
     @property
     def has_align_score (self):
         return "align_score" in self.all_df
-
     @property
     def is_promethion (self):
         return self.all_df["channel"].max() > 512
+    @property
+    def total_ref_len (self):
+        if self.has_alignment:
+            return np.sum(list(self.ref_len_dict.values()))
 
     #~~~~~~~SUMMARY_STATS_DICT METHOD AND HELPER~~~~~~~#
-    def summary_stats_dict (self,
-        barcode_split:bool=False,
-        run_id_split:bool=False):
+    def summary_stats_dict (self):
         """
         Return a dictionnary containing exhaustive information about the run.
-        * barcode_split
-            Add statistics split per barcode
-        * run_id_split
-            Add statistics split per run_id
         """
         self.logger.info ("\tCompute overall summary statistics")
         d = OrderedDict ()
+
+        d["pycoqc"] = OrderedDict ()
+        d["pycoqc"]["version"] = package_version
+        d["pycoqc"]["date"] = datetime.datetime.now().strftime("%d/%m/%y")
+
         for df, lab in ((self.all_df, "All Reads"), (self.pass_df, "Pass Reads")):
-
-            d[lab] = OrderedDict()
-            d[lab]["General_stats"] = self._compute_stats(df)
-
-            if run_id_split:
-                d[lab]["run_id_stats"] = OrderedDict ()
-                for id, sdf in df.groupby("run_id"):
-                    d[lab]["run_id_stats"][id] = self._compute_stats(sdf)
-
-            if self.has_barcodes and barcode_split:
-                d[lab]["barcode_stats"] = OrderedDict ()
-                for id, sdf in df.groupby("barcode"):
-                    d[lab]["barcode_stats"][id] = self._compute_stats(sdf)
+            d[lab] = self._compute_stats(df)
         return d
 
     def _compute_stats (self, df):
         d = OrderedDict ()
-        d["Number of reads"] = len(df)
-        d["Number of bases"] = int(df["read_len"].sum())
-        d["Quality score quantiles"] = self._compute_quantiles (df["mean_qscore"])
-        d["Read length quantiles"] = self._compute_quantiles (df["read_len"])
-        d["N50"] = int(self._compute_N50(df["read_len"]))
-        d["Run Duration"] = float(np.ptp(df["start_time"])/3600)
-        d["Active channels"] = int(df["channel"].nunique())
+
+        # run information
+        d["run"] = OrderedDict ()
+        d["run"]["run_duration"] = float(np.ptp(df["start_time"])/3600)
+        d["run"]["active_channels"] = int(df["channel"].nunique())
+        d["run"]["runid_number"] = int(df["run_id"].nunique())
+        if self.has_barcodes:
+            d["run"]["barcodes_number"] = int(df["barcode"].nunique())
+
+        # General run information = OrderedDict ()
+        d["basecall"] = OrderedDict ()
+        d["basecall"]["reads_number"] = len(df)
+        d["basecall"]["bases_number"] = int(df["read_len"].sum())
+        d["basecall"]["leng_quantiles"] = self._compute_quantiles (df["read_len"])
+        d["basecall"]["N50"] = self._compute_N50(df["read_len"])
+        d["basecall"]["qual_score"] = self._compute_quantiles (df["mean_qscore"])
+
+        if self.has_alignment:
+            d["alignment"] = OrderedDict ()
+            d["alignment"]["mean_coverage"] = df["align_len"].sum()/self.total_ref_len
+            d["alignment"]["reads_number"] = len(df["align_len"].dropna())
+            d["alignment"]["bases_number"] = int(df["align_len"].sum())
+            d["alignment"]["len_quantiles"] = self._compute_quantiles (df["align_len"])
+            d["alignment"]["N50"] = self._compute_N50(df["align_len"])
+            if self.has_align_score:
+                d["alignment"]["align_score"] = self._compute_quantiles (df["align_score"])
+                d["alignment"]["insertion_rate"] = df["insertion"].sum()/d["alignment"]["bases_number"]
+                d["alignment"]["deletion_rate"] = df["deletion"].sum()/d["alignment"]["bases_number"]
+                d["alignment"]["mismatch_rate"] = df["mismatch"].sum()/d["alignment"]["bases_number"]
+
         return d
 
     #~~~~~~~SUMMARY METHOD AND HELPER~~~~~~~#
@@ -162,16 +176,13 @@ class pycoQC_plot ():
         * groupby
             Value of field to group the data in the table
         * width
-            With of the ploting area in pixel
+            With of the plotting area in pixel
         * height
-            height of the ploting area in pixel
+            height of the plotting area in pixel
         * plot_title
             Title to display on top of the plot
         """
-        if groupby:
-            self.logger.info ("\tPlotting reads summary by {}".format(groupby))
-        else:
-            self.logger.info ("\tPlotting overall reads summary")
+        self.logger.info ("\t\tComputing plot")
 
         # Prepare all data
         lab1, dd1 = self.__summary_data (df_level="all", groupby=groupby)
@@ -270,13 +281,13 @@ class pycoQC_plot ():
         return l
 
     #~~~~~~~1D DISTRIBUTION METHODS AND HELPER~~~~~~~#
-    def reads_len_1D (self,
+    def read_len_1D (self,
         color:str="lightsteelblue",
         nbins:int=200,
         smooth_sigma:float=2,
         width:int=None,
         height:int=500,
-        plot_title:str="Distribution of read length"):
+        plot_title:str="Basecalled reads length"):
         """
         Plot a distribution of read length (log scale)
         * color
@@ -286,16 +297,16 @@ class pycoQC_plot ():
         * smooth_sigma
             standard deviation for Gaussian kernel
         * width
-            With of the ploting area in pixel
+            With of the plotting area in pixel
         * height
-            height of the ploting area in pixel
+            height of the plotting area in pixel
         * plot_title
             Title to display on top of the plot
         """
         fig = self.__1D_density_plot (
             field_name = "read_len",
             plot_title = plot_title,
-            x_lab = "Read length (log scale)",
+            x_lab = "Basecalled length",
             color = color,
             x_scale = "log",
             nbins=nbins,
@@ -304,13 +315,13 @@ class pycoQC_plot ():
             height=height)
         return fig
 
-    def reads_qual_1D (self,
+    def read_qual_1D (self,
         color:str="salmon",
         nbins:int=200,
         smooth_sigma:float=2,
         width:int=None,
         height:int=500,
-        plot_title:str="Distribution of read quality scores"):
+        plot_title:str="PHRED quality"):
         """
         Plot a distribution of quality scores
         * color
@@ -320,9 +331,9 @@ class pycoQC_plot ():
         * smooth_sigma
             standard deviation for Gaussian kernel
         * width
-            With of the ploting area in pixel
+            With of the plotting area in pixel
         * height
-            height of the ploting area in pixel
+            height of the plotting area in pixel
         * plot_title
             Title to display on top of the plot
         """
@@ -338,13 +349,13 @@ class pycoQC_plot ():
             height=height)
         return fig
 
-    def aligned_reads_len_1D (self,
+    def align_len_1D (self,
         color:str="mediumseagreen",
         nbins:int=200,
         smooth_sigma:float=2,
         width:int=None,
         height:int=500,
-        plot_title:str="Distribution of read alignments length"):
+        plot_title:str="Reads alignment length"):
         """
         Plot a distribution of read length (log scale)
         * color
@@ -354,9 +365,9 @@ class pycoQC_plot ():
         * smooth_sigma
             standard deviation for Gaussian kernel
         * width
-            With of the ploting area in pixel
+            With of the plotting area in pixel
         * height
-            height of the ploting area in pixel
+            height of the plotting area in pixel
         * plot_title
             Title to display on top of the plot
         """
@@ -367,7 +378,7 @@ class pycoQC_plot ():
         fig = self.__1D_density_plot (
             field_name = "align_len",
             plot_title = plot_title,
-            x_lab = "Alignments length (log scale)",
+            x_lab = "Alignment length",
             color = color,
             x_scale = "log",
             nbins=nbins,
@@ -376,13 +387,13 @@ class pycoQC_plot ():
             height=height)
         return fig
 
-    def aligned_reads_score_1D (self,
+    def align_score_1D (self,
         color:str="sandybrown",
         nbins:int=200,
         smooth_sigma:float=2,
         width:int=None,
         height:int=500,
-        plot_title:str="Distribution of normalised read alignments score"):
+        plot_title:str="Reads alignment score"):
         """
         Plot a distribution of normalised alignment score
         * color
@@ -392,9 +403,9 @@ class pycoQC_plot ():
         * smooth_sigma
             standard deviation for Gaussian kernel
         * width
-            With of the ploting area in pixel
+            With of the plotting area in pixel
         * height
-            height of the ploting area in pixel
+            height of the plotting area in pixel
         * plot_title
             Title to display on top of the plot
         """
@@ -405,7 +416,7 @@ class pycoQC_plot ():
         fig = self.__1D_density_plot (
             field_name = "align_score",
             plot_title = plot_title,
-            x_lab = "Normalised alignment score",
+            x_lab = "Alignment score",
             color = color,
             x_scale = "linear",
             nbins=nbins,
@@ -416,8 +427,7 @@ class pycoQC_plot ():
 
     def __1D_density_plot (self, field_name, plot_title, x_lab, color, x_scale, nbins, smooth_sigma, width, height):
         """Private function generating density plots for all 1D distribution functions"""
-
-        self.logger.info ("\tPlotting {}".format(plot_title))
+        self.logger.info ("\t\tComputing plot")
 
         # Prepare all data
         lab1, dd1, ld1 = self.__1D_density_data ("all", field_name, x_scale, nbins, smooth_sigma)
@@ -499,14 +509,14 @@ class pycoQC_plot ():
         return (label, data_dict, layout_dict)
 
     #~~~~~~~2D DISTRIBUTION METHOD AND HELPER~~~~~~~#
-    def reads_len_qual_2D (self,
+    def read_len_read_qual_2D (self,
         colorscale = [[0.0,'rgba(255,255,255,0)'], [0.1,'rgba(255,150,0,0)'], [0.25,'rgb(255,100,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(70,0,0)']],
         x_nbins:int=200,
-        y_nbins:int=75,
+        y_nbins:int=100,
         smooth_sigma:float=2,
         width:int=None,
         height:int=600,
-        plot_title:str="Mean read quality per sequence length"):
+        plot_title:str="Basecalled reads length vs reads PHRED quality"):
         """
         Plot a 2D distribution of quality scores vs length of the reads
         * colorscale
@@ -518,20 +528,153 @@ class pycoQC_plot ():
         * smooth_sigma
             standard deviation for 2D Gaussian kernel
         * width
-            With of the ploting area in pixel
+            With of the plotting area in pixel
         * height
-            height of the ploting area in pixel
+            height of the plotting area in pixel
         * plot_title
             Title to display on top of the plot
         """
-        self.logger.info ("\tPlotting read length vs read quality 2D distribution")
-
         fig = self.__2D_density_plot (
             x_field_name = "read_len",
             y_field_name = "mean_qscore",
-            x_lab = "Estimated read length (log scale)",
-            y_lab = "Read quality scores",
+            x_lab = "Basecalled length",
+            y_lab = "PHRED quality scores",
             x_scale = "log",
+            y_scale = "linear",
+            x_nbins = x_nbins,
+            y_nbins = y_nbins,
+            colorscale = colorscale,
+            smooth_sigma=smooth_sigma,
+            width=width,
+            height=height,
+            plot_title = plot_title)
+        return fig
+
+    def read_len_align_len_2D (self,
+        colorscale = [[0.0,'rgba(255,255,255,0)'], [0.1,'rgba(255,150,0,0)'], [0.25,'rgb(255,100,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(70,0,0)']],
+        x_nbins:int=200,
+        y_nbins:int=100,
+        smooth_sigma:float=1,
+        width:int=None,
+        height:int=600,
+        plot_title:str="Basecalled reads length vs alignments length"):
+        """
+        Plot a 2D distribution of length of the reads vs length of the alignments
+        * colorscale
+            a valid plotly color scale https://plot.ly/python/colorscales/ (Not recommanded to change)
+        * x_nbins
+            Number of bins to divide the read length values in (x axis)
+        * y_nbins
+            Number of bins to divide the read quality values in (y axis)
+        * smooth_sigma
+            standard deviation for 2D Gaussian kernel
+        * width
+            With of the plotting area in pixel
+        * height
+            height of the plotting area in pixel
+        * plot_title
+            Title to display on top of the plot
+        """
+        # Verify that alignemnt information are available
+        if not self.has_alignment:
+            raise pycoQCError ("No Alignment information available")
+
+        fig = self.__2D_density_plot (
+            x_field_name = "read_len",
+            y_field_name = "align_len",
+            x_lab = "Basecalled length",
+            y_lab = "Alignment length",
+            x_scale = "log",
+            y_scale = "log",
+            x_nbins = x_nbins,
+            y_nbins = y_nbins,
+            colorscale = colorscale,
+            smooth_sigma=smooth_sigma,
+            width=width,
+            height=height,
+            plot_title = plot_title)
+        return fig
+
+    def align_len_align_score_2D (self,
+        colorscale = [[0.0,'rgba(255,255,255,0)'], [0.1,'rgba(255,150,0,0)'], [0.25,'rgb(255,100,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(70,0,0)']],
+        x_nbins:int=200,
+        y_nbins:int=100,
+        smooth_sigma:float=2,
+        width:int=None,
+        height:int=600,
+        plot_title:str="Aligned reads length vs alignments score"):
+        """
+        Plot a 2D distribution of alignments length vs alignments score
+        * colorscale
+            a valid plotly color scale https://plot.ly/python/colorscales/ (Not recommanded to change)
+        * x_nbins
+            Number of bins to divide the read length values in (x axis)
+        * y_nbins
+            Number of bins to divide the read quality values in (y axis)
+        * smooth_sigma
+            standard deviation for 2D Gaussian kernel
+        * width
+            With of the plotting area in pixel
+        * height
+            height of the plotting area in pixel
+        * plot_title
+            Title to display on top of the plot
+        """
+        # Verify that alignemnt information are available
+        if not self.has_align_score:
+            raise pycoQCError ("No align score information available")
+
+        fig = self.__2D_density_plot (
+            x_field_name = "align_len",
+            y_field_name = "align_score",
+            x_lab = "Alignment length",
+            y_lab = "Alignment score",
+            x_scale = "log",
+            y_scale = "linear",
+            x_nbins = x_nbins,
+            y_nbins = y_nbins,
+            colorscale = colorscale,
+            smooth_sigma=smooth_sigma,
+            width=width,
+            height=height,
+            plot_title = plot_title)
+        return fig
+
+    def read_qual_align_score_2D (self,
+        colorscale = [[0.0,'rgba(255,255,255,0)'], [0.1,'rgba(255,150,0,0)'], [0.25,'rgb(255,100,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(70,0,0)']],
+        x_nbins:int=200,
+        y_nbins:int=100,
+        smooth_sigma:float=1,
+        width:int=None,
+        height:int=600,
+        plot_title:str="Aligned reads length vs alignments score"):
+        """
+        Plot a 2D distribution of read quality vs alignments score
+        * colorscale
+            a valid plotly color scale https://plot.ly/python/colorscales/ (Not recommanded to change)
+        * x_nbins
+            Number of bins to divide the read length values in (x axis)
+        * y_nbins
+            Number of bins to divide the read quality values in (y axis)
+        * smooth_sigma
+            standard deviation for 2D Gaussian kernel
+        * width
+            With of the plotting area in pixel
+        * height
+            height of the plotting area in pixel
+        * plot_title
+            Title to display on top of the plot
+        """
+        # Verify that alignemnt information are available
+        if not self.has_align_score:
+            raise pycoQCError ("No align score information available")
+
+        fig = self.__2D_density_plot (
+            x_field_name = "mean_qscore",
+            y_field_name = "align_score",
+            x_lab = "PHRED quality",
+            y_lab = "Alignment score",
+            x_scale = "linear",
             y_scale = "linear",
             x_nbins = x_nbins,
             y_nbins = y_nbins,
@@ -544,8 +687,7 @@ class pycoQC_plot ():
 
     def __2D_density_plot (self, x_field_name, y_field_name, x_lab, y_lab, x_scale, y_scale, x_nbins, y_nbins, colorscale, smooth_sigma, width, height, plot_title):
         """Private function generating density plots for all 2D distribution functions"""
-
-        self.logger.info ("\tPlotting {}".format(plot_title))
+        self.logger.info ("\t\tComputing plot")
 
         # Prepare all data
         lab1, dd1 = self.__2D_density_data ("all", x_field_name, y_field_name, x_nbins, y_nbins, x_scale, y_scale, smooth_sigma)
@@ -585,9 +727,10 @@ class pycoQC_plot ():
 
         # Extract data field from df
         df = self.pass_sample_df if df_level == "pass" else self.all_sample_df
+        df = df[[x_field_name, y_field_name]].dropna()
 
         # Prepare data for x
-        x_data = df[x_field_name]
+        x_data = df[x_field_name].values
         x_min, x_med, x_max = np.percentile (x_data, (0, 50, 100))
         if x_scale == "log":
             x_bins = np.logspace (start=np.log10((x_min)), stop=np.log10(x_max)+0.1, num=x_nbins, base=10)
@@ -595,7 +738,7 @@ class pycoQC_plot ():
             x_bins = np.linspace (start=x_min, stop=x_max, num=x_nbins)
 
         # Prepare data for y
-        y_data = df[y_field_name]
+        y_data = df[y_field_name].values
         y_min, y_med, y_max = np.percentile (y_data, (0, 50, 100))
         if y_scale == "log":
             y_bins = np.logspace (start=np.log10((y_min)), stop=np.log10(y_max)+0.1, num=y_nbins, base=10)
@@ -603,7 +746,7 @@ class pycoQC_plot ():
             y_bins = np.linspace (start=y_min, stop=y_max, num=y_nbins)
 
         # Compute 2D histogram
-        z, y, x = np.histogram2d (x=y_data, y=x_data, bins=[y_bins, x_bins]) ###################################################### X and Y inverted ????
+        z, y, x = np.histogram2d (x=y_data, y=x_data, bins=[y_bins, x_bins])
         if smooth_sigma:
             z = gaussian_filter(z, sigma=smooth_sigma)
         z_min, z_max = np.percentile (z, (0, 100))
@@ -633,13 +776,13 @@ class pycoQC_plot ():
         * time_bins
             Number of bins to divide the time values in (x axis)
         * width
-            With of the ploting area in pixel
+            With of the plotting area in pixel
         * height
-            height of the ploting area in pixel
+            height of the plotting area in pixel
         * plot_title
             Title to display on top of the plot
         """
-        self.logger.info ("\tPlotting sequencing output over experiment time")
+        self.logger.info ("\t\tComputing plot")
 
         # Prepare all data
         lab1, dd1, ld1 = args=self.__output_over_time_data (df_level="all", count_level="reads", time_bins=time_bins)
@@ -756,13 +899,13 @@ class pycoQC_plot ():
         * time_bins
             Number of bins to divide the time values in (x axis)
         * width
-            With of the ploting area in pixel
+            With of the plotting area in pixel
         * height
-            height of the ploting area in pixel
+            height of the plotting area in pixel
         * plot_title
             Title to display on top of the plot
         """
-        self.logger.info ("\tPlotting read length over experiment time")
+        self.logger.info ("\t\tComputing plot")
 
         # Prepare all data
         lab1, dd1 = self.__over_time_data (df_level="all", field_name="read_len", smooth_sigma=smooth_sigma, time_bins=time_bins)
@@ -817,13 +960,13 @@ class pycoQC_plot ():
         * time_bins
             Number of bins to divide the time values in (x axis)
         * width
-            With of the ploting area in pixel
+            With of the plotting area in pixel
         * height
-            height of the ploting area in pixel
+            height of the plotting area in pixel
         * plot_title
             Title to display on top of the plot
         """
-        self.logger.info ("\tPlotting read quality over experiment time")
+        self.logger.info ("\t\tComputing plot")
 
         # Prepare all data
         lab1, dd1 = self.__over_time_data (df_level="all", field_name="mean_qscore", smooth_sigma=smooth_sigma, time_bins=time_bins)
@@ -912,17 +1055,16 @@ class pycoQC_plot ():
         * colors
             List of colors (hex, rgb, rgba, hsl, hsv or any CSS named colors https://www.w3.org/TR/css-color-3/#svg-color
         * width
-            With of the ploting area in pixel
+            With of the plotting area in pixel
         * height
-            height of the ploting area in pixel
+            height of the plotting area in pixel
         * plot_title
             Title to display on top of the plot
         """
-        self.logger.info ("\tPlotting barcode distribution")
-
         # Verify that barcode information are available
         if not self.has_barcodes:
             raise pycoQCError ("No barcode information available")
+        self.logger.info ("\t\tComputing plot")
 
         # Prepare all data
         lab1, dd1 = self.__barcode_counts_data (df_level="all")
@@ -982,13 +1124,13 @@ class pycoQC_plot ():
         * time_bins
             Number of bins to divide the time values in (y axis)
         * width
-            With of the ploting area in pixel
+            With of the plotting area in pixel
         * height
-            height of the ploting area in pixel
+            height of the plotting area in pixel
         * plot_title
             Title to display on top of the plot
         """
-        self.logger.info ("\tPlotting channel activity")
+        self.logger.info ("\t\tComputing plot")
 
         # Define maximal number of channels
         n_channels = 3000 if self.is_promethion else 512
@@ -1075,17 +1217,16 @@ class pycoQC_plot ():
         * colors
             List of colors (hex, rgb, rgba, hsl, hsv or any CSS named colors https://www.w3.org/TR/css-color-3/#svg-color
         * width
-            With of the ploting area in pixel
+            With of the plotting area in pixel
         * height
-            height of the ploting area in pixel
+            height of the plotting area in pixel
         * plot_title
             Title to display on top of the plot
         """
         # Verify that alignemnt information are available
         if not self.has_alignment:
             raise pycoQCError ("No Alignment information available")
-
-        self.logger.info ("\tPlotting alignment summary")
+        self.logger.info ("\t\tComputing plot")
 
         df = self.alignments_df
         # Create empty multiplot figure
@@ -1127,43 +1268,40 @@ class pycoQC_plot ():
         * colors
             List of colors (hex, rgb, rgba, hsl, hsv or any CSS named colors https://www.w3.org/TR/css-color-3/#svg-color
         * width
-            With of the ploting area in pixel
+            With of the plotting area in pixel
         * height
-            height of the ploting area in pixel
+            height of the plotting area in pixel
         * plot_title
             Title to display on top of the plot
         """
 
         # Verify that alignemnt information are available
-        if not self.has_alignment:
-            raise pycoQCError ("No Alignment information available")
-
-        self.logger.info ("\tPlotting Bases alignment rate breakdown")
+        if not self.has_align_score:
+            raise pycoQCError ("No align score information available")
+        self.logger.info ("\t\tComputing plot")
 
         # Extract Data
-        bc_bases= self.all_df["read_len"].sum()
+        bc_bases = self.all_df["read_len"].sum()
         s = self.all_df[[ "read_len", "align_len", "insertion", "deletion", "soft_clip", "mismatch"]].dropna().sum()
         total_error = s["insertion"]+s["deletion"]+s["mismatch"]
-
-        counts_d = {
-            "Basecalled": bc_bases,
-            "Unmapped reads": bc_bases-s["read_len"],
-            "Mapped reads": s["read_len"],
-            "Softclip": s["soft_clip"],
-            "Aligned": s["align_len"],
-            "Matching": s["align_len"]-total_error,
-            "Non-matching" : total_error,
-            "Insertions": s["insertion"],
-            "Deletions": s["deletion"],
-            "Mismatches": s["mismatch"]}
+        matching = s["align_len"]-total_error
+        unmapped = bc_bases-s["read_len"]
+        ct = namedtuple("ct", ["Bases","Counts", "Total_percent", "Aligned_percent"])
+        l = [
+            ct("Basecalled", bc_bases, 100, "NA"),
+            ct("Unmapped reads", unmapped, round(unmapped/bc_bases*100, 2), "NA"),
+            ct("Mapped reads", s["read_len"], round(s["read_len"]/bc_bases*100, 2), "NA"),
+            ct("Softclip", s["soft_clip"], round(s["soft_clip"]/bc_bases*100, 2), "NA"),
+            ct("Aligned", s["align_len"], round(s["align_len"]/bc_bases*100, 2), 100),
+            ct("Matching", matching, round(matching/bc_bases*100, 2), round(matching/s["align_len"]*100, 2)),
+            ct("Non-matching", total_error, round(total_error/bc_bases*100, 2), round(total_error/s["align_len"]*100, 2)),
+            ct("Insertions", s["insertion"], round(s["insertion"]/bc_bases*100, 2), round(s["insertion"]/s["align_len"]*100, 2)),
+            ct("Deletions", s["deletion"], round(s["deletion"]/bc_bases*100, 2), round(s["deletion"]/s["align_len"]*100, 2)),
+            ct("Mismatches", s["mismatch"], round(s["mismatch"]/bc_bases*100, 2), round(s["mismatch"]/s["align_len"]*100, 2))]
 
         # Cast to df and compute percentage
-        df = pd.DataFrame.from_dict(counts_d, orient="index").astype("int32")
-        df.reset_index(inplace=True)
-        df.columns=["Bases", "Counts"]
-        df["% total"] = (df["Counts"]/bc_bases*100).round(2)
-        df["% aligned"] = (df["Counts"]/s["align_len"]*100).round(2)
-        df["% aligned"].iloc[0:4]="NA"
+        df = pd.DataFrame(l)
+        df = df.astype({"Counts":"uint32"})
 
         # Create empty multipanel figure
         fig = make_subplots(rows=1, cols=2, column_widths=[0.4, 0.6], specs=[[{"type": "table"},{"type": "sankey"}]])
@@ -1215,31 +1353,28 @@ class pycoQC_plot ():
         * smooth_sigma
             sigma parameter for the Gaussian filter line smoothing
         * width
-            With of the ploting area in pixel
+            With of the plotting area in pixel
         * height
-            height of the ploting area in pixel
+            height of the plotting area in pixel
         * plot_title
             Title to display on top of the plot
         """
         # Verify that alignemnt information are available
         if not self.has_alignment:
             raise pycoQCError ("No Alignment information available")
+        self.logger.info ("\t\tComputing plot")
 
-        self.logger.info ("\tPlotting alignment coverage")
-
-        rlen = self.ref_len_dict
-        ref_offset_dict = self._ref_offset(rlen, "left", ret_type="dict")
+        ref_offset_dict = self._ref_offset(self.ref_len_dict, "left", ret_type="dict")
         df = self.all_df[["ref_id", "ref_start", "ref_end", "align_len"]].dropna()
-        total_len = np.sum(list(rlen.values()))
-        steps = total_len//nbins
-        mean_cov = round(df["align_len"].sum()/total_len, 2)
+        steps = self.total_ref_len//nbins
+        mean_cov = round(df["align_len"].sum()/self.total_ref_len, 2)
 
         # Compute coverage by interval
         l = []
         for line in df.itertuples():
             l.append(int(ref_offset_dict[line.ref_id]+line.ref_start))
         l = np.array(l)
-        bins = np.arange(0, total_len, steps)
+        bins = np.arange(0, self.total_ref_len, steps)
         l = np.digitize(l,bins)
         y = np.bincount(l, weights=df["align_len"])/steps
 
@@ -1275,10 +1410,10 @@ class pycoQC_plot ():
                 dict (label="linear", method='relayout', args=[{"yaxis":{"title":"Mean Coverage", "type":"linear", "zeroline":False, "fixedrange":True}}])])]
 
         # Add chromosome shading and labels
-        x_lab_coord = np.array(self._ref_offset(rlen, coordinates="middle", ret_type="list"))*nbins/total_len
-        x_lab = list(rlen.keys())
+        x_lab_coord = np.array(self._ref_offset(self.ref_len_dict, coordinates="middle", ret_type="list"))*nbins/self.total_ref_len
+        x_lab = list(self.ref_len_dict.keys())
         shapes = []
-        x_shape_coord = np.array(self._ref_offset(rlen, coordinates="left", ret_type="list")[1:])*nbins/total_len
+        x_shape_coord = np.array(self._ref_offset(self.ref_len_dict, coordinates="left", ret_type="list")[1:])*nbins/self.total_ref_len
         for i in range(0, 16, 2):
             shapes.append(go.layout.Shape(type="rect",x0=x_shape_coord[i],x1=x_shape_coord[i+1], y0=0,y1=1, yref="paper", opacity=0.5, layer="below", fillcolor="lightgrey", line_width=0))
 
@@ -1321,18 +1456,18 @@ class pycoQC_plot ():
     def _compute_quantiles (data):
         d = OrderedDict ()
         quantil_lab = ("Min","C1","D1","Q1","Median","Q3","D9","C99","Max")
-        quantile_val = np.quantile(data, q=[0,0.01,0.1,0.25,0.5,0.75,0.9,0.99,1])
+        quantile_val = np.quantile(data.dropna(), q=[0,0.01,0.1,0.25,0.5,0.75,0.9,0.99,1])
         for lab, val in (zip(quantil_lab, quantile_val)):
             d[lab] = val
         return d
 
     @staticmethod
     def _compute_N50 (data):
-        data = data.values.copy()
+        data = data.dropna().values
         data.sort()
         half_sum = data.sum()/2
         cum_sum = 0
         for v in data:
             cum_sum += v
             if cum_sum >= half_sum:
-                return v
+                return int(v)
