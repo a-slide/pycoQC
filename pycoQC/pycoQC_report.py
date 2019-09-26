@@ -58,8 +58,10 @@ class pycoQC_report ():
         outfile:str,
         config_file:str="",
         template_file:str="",
-        report_title:str=""):
+        report_title:str="PycoQC report"):
         """"""
+        self.logger.info("Generating HTML report")
+
         # Parse configuration file
         self.logger.info("\tParsing html config file")
         config_dict = self._get_config(config_file)
@@ -103,14 +105,21 @@ class pycoQC_report ():
         self.logger.info("\tLoading HTML template")
         template = self._get_jinja_template(template_file)
 
-        # Set a title for the HTML report
-        if report_title:
-            report_title+="<br>"
+        # Set a subtitle for the HTML report
+        report_subtitle="Generated on {} with {} {}".format( datetime.datetime.now().strftime("%d/%m/%y"), package_name, package_version)
 
-        report_title+="Generated on {} with {} {}".format(
-            datetime.datetime.now().strftime("%d/%m/%y"),
-            package_name,
-            package_version)
+        # Define source files list
+        src_files = ""
+        for files_list, name in (
+            (self.parser.summary_files_list,"summary"),
+            (self.parser.barcode_files_list,"barcode"),
+            (self.parser.bam_file_list,"bam")):
+
+            if files_list:
+                src_files += "<h4>Source {} files</h4><ul>".format(name)
+                for f in files_list:
+                    src_files += "<li>{}</li>".format(f)
+                src_files += "</ul>"
 
         # Render plots
         self.logger.info("\tRendering plots in d3js")
@@ -118,7 +127,9 @@ class pycoQC_report ():
             plots=plots,
             titles=titles,
             plotlyjs=py.get_plotlyjs(),
-            report_title=report_title)
+            report_title=report_title,
+            report_subtitle=report_subtitle,
+            src_files=src_files)
 
         # Write to HTML file
         self.logger.info("\tWriting to HTML file")
@@ -128,8 +139,9 @@ class pycoQC_report ():
     def json_report(self,
         outfile:str):
         """"""
+        self.logger.info("Generating JSON report")
         self.logger.info("\tRunning summary_stats_dict method")
-        res_dict = self.plotter.summary_stats_dict (barcode_split=True, run_id_split=True)
+        res_dict = self.plotter.summary_stats_dict ()
 
         self.logger.info("\tWriting to JSON file")
         with open (outfile, "w") as fp:

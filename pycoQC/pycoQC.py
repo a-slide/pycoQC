@@ -32,7 +32,7 @@ def pycoQC (
     min_pass_qual:int=7,
     sample:int=100000,
     html_outfile:str="",
-    report_title:str="",
+    report_title:str="PycoQC report",
     config_file:str="",
     template_file:str="",
     json_outfile:str="",
