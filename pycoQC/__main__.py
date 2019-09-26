@@ -17,51 +17,11 @@ from jinja2 import Environment, PackageLoader, Template
 # Local imports
 from pycoQC.pycoQC import pycoQC
 from pycoQC.Fast5_to_seq_summary import Fast5_to_seq_summary
+from pycoQC.Barcode_split import Barcode_split
 from pycoQC.common import *
 from pycoQC import __version__ as package_version
 from pycoQC import __name__ as package_name
 
-#~~~~~~~~~~~~~~Fast5_to_seq_summary CLI ENTRY POINT~~~~~~~~~~~~~~#
-def main_Fast5_to_seq_summary (args=None):
-    if args is None:
-        args = sys.argv[1:]
-
-    # Define parser object
-    parser = argparse.ArgumentParser(
-        description ="Fast5_to_seq_summary generate a sequencing summary like file from a directory containing Fast5 files")
-    parser.add_argument('--version', '-v', action='version', version="{} v{}".format(package_name, package_version))
-
-    # Define arguments
-    parser.add_argument("--fast5_dir", "-f", required=True, type=str,
-        help="""Directory containing fast5 files. Can contain multiple subdirectories""")
-    parser.add_argument("--seq_summary_fn", "-s", required=True, type=str,
-        help="""path of the summary sequencing file where to write the data extracted from the fast5 files""")
-    parser.add_argument("--max_fast5", type=int, default=0,
-        help="Maximum number of file to try to parse. 0 to deactivate (default: %(default)s)")
-    parser.add_argument("--threads", "-t", type=int, default=4,
-        help="Total number of threads to use. 1 thread is used for the reader and 1 for the writer. Minimum 3 (default: %(default)s)")
-    parser.add_argument("--basecall_id", type=int, default=0,
-        help="id of the basecalling group. By default leave to 0, but if you perfome multiple basecalling on the same fast5 files, this can be used to indicate the corresponding group (1, 2 ...) (default: %(default)s)")
-    parser.add_argument("--fields", type=str, nargs="+", default=["read_id", "run_id", "channel", "start_time", "sequence_length_template", "mean_qscore_template", "calibration_strand_genome_template", "barcode_arrangement"],
-        help="list of field names corresponding to attributes to try to fetch from the fast5 files (default: %(default)s)")
-    parser.add_argument("--include_path", action='store_true', default=False,
-        help="If given, the absolute path to the corresponding file is added in an extra column (default: %(default)s)")
-    parser.add_argument("--verbose_level", type=int, default=0,
-        help="Level of verbosity, from 2 (Chatty) to 0 (Nothing) (default: %(default)s)")
-
-    # Try to parse arguments
-    args = parser.parse_args()
-
-    # Run main function
-    Fast5_to_seq_summary (
-        fast5_dir = args.fast5_dir,
-        seq_summary_fn = args.seq_summary_fn,
-        max_fast5 = args.max_fast5,
-        threads = args.threads,
-        basecall_id = args.basecall_id,
-        fields = args.fields,
-        include_path = args.include_path,
-        verbose_level = args.verbose_level)
 
 #~~~~~~~~~~~~~~pycoQC CLI ENTRY POINT~~~~~~~~~~~~~~#
 def main_pycoQC (args=None):
@@ -98,11 +58,13 @@ def main_pycoQC (args=None):
     parser_filt.add_argument("--min_pass_qual", default=7, type=int,
         help="Minimum quality to consider a read as 'pass' (default: %(default)s)")
     parser_filt.add_argument("--filter_calibration", default=False, action='store_true',
-        help="If given reads flagged as calibration strand by the basecaller are removed (default: %(default)s)")
+        help="If given, reads flagged as calibration strand by the basecaller are removed (default: %(default)s)")
+    parser_filt.add_argument("--filter_duplicated", default=False, action='store_true',
+        help="If given, duplicated read_ids are removed but the first occurence is kept (Guppy sometimes outputs the same read multiple times) (default: %(default)s)")
     parser_filt.add_argument("--min_barcode_percent", default=0.1, type=float,
-        help="Minimal percent of total reads to retain barcode label. If below the barcode value is set as `unclassified` (default: %(default)s)")
+        help="Minimal percent of total reads to retain barcode label. If below, the barcode value is set as `unclassified` (default: %(default)s)")
     parser_html = parser.add_argument_group('HTML report options')
-    parser_html.add_argument("--report_title", default="", type=str,
+    parser_html.add_argument("--report_title", default="PycoQC report", type=str,
         help="Title to use in the html report (default: %(default)s)")
     parser_html.add_argument("--template_file", type=str, default="",
         help="Jinja2 html template for the html report (default: %(default)s)")
@@ -117,10 +79,8 @@ def main_pycoQC (args=None):
     parser_other.add_argument("--default_config", "-d", action='store_true',
         help="Print default configuration file. Can be used to generate a template JSON file (default: %(default)s)")
     parser_verbosity = parser.add_mutually_exclusive_group()
-    parser_verbosity.add_argument("-v", "--verbose", action="store_true", default=False,
-        help="Increase verbosity (default: %(default)s)")
-    parser_verbosity.add_argument("-q", "--quiet", action="store_true", default=False,
-        help="Reduce verbosity (default: %(default)s)")
+    parser_verbosity.add_argument("-v", "--verbose", action="store_true", default=False, help="Increase verbosity")
+    parser_verbosity.add_argument("-q", "--quiet", action="store_true", default=False, help="Reduce verbosity")
 
     # Try to parse arguments
     args = parser.parse_args()
@@ -151,6 +111,7 @@ def main_pycoQC (args=None):
         barcode_file = args.barcode_file,
         bam_file = args.bam_file,
         filter_calibration = args.filter_calibration,
+        filter_duplicated = args.filter_duplicated,
         min_barcode_percent = args.min_barcode_percent,
         min_pass_qual = args.min_pass_qual,
         sample = args.sample,
@@ -161,3 +122,81 @@ def main_pycoQC (args=None):
         json_outfile = args.json_outfile,
         verbose = args.verbose,
         quiet = args.quiet)
+
+#~~~~~~~~~~~~~~Fast5_to_seq_summary CLI ENTRY POINT~~~~~~~~~~~~~~#
+def main_Fast5_to_seq_summary (args=None):
+    if args is None:
+        args = sys.argv[1:]
+
+    # Define parser object
+    parser = argparse.ArgumentParser(
+        description ="Fast5_to_seq_summary generate a sequencing summary like file from a directory containing Fast5 files")
+    parser.add_argument('--version', '-v', action='version', version="{} v{}".format(package_name, package_version))
+    # Define arguments
+    parser.add_argument("--fast5_dir", "-f", required=True, type=str,
+        help="""Directory containing fast5 files. Can contain multiple subdirectories""")
+    parser.add_argument("--seq_summary_fn", "-s", required=True, type=str,
+        help="""path of the summary sequencing file where to write the data extracted from the fast5 files""")
+    parser.add_argument("--max_fast5", type=int, default=0,
+        help="Maximum number of file to try to parse. 0 to deactivate (default: %(default)s)")
+    parser.add_argument("--threads", "-t", type=int, default=4,
+        help="Total number of threads to use. 1 thread is used for the reader and 1 for the writer. Minimum 3 (default: %(default)s)")
+    parser.add_argument("--basecall_id", type=int, default=0,
+        help="id of the basecalling group. By default leave to 0, but if you perfome multiple basecalling on the same fast5 files, this can be used to indicate the corresponding group (1, 2 ...) (default: %(default)s)")
+    parser.add_argument("--fields", type=str, nargs="+", default=["read_id", "run_id", "channel", "start_time", "sequence_length_template", "mean_qscore_template", "calibration_strand_genome_template", "barcode_arrangement"],
+        help="list of field names corresponding to attributes to try to fetch from the fast5 files (default: %(default)s)")
+    parser.add_argument("--include_path", action='store_true', default=False,
+        help="If given, the absolute path to the corresponding file is added in an extra column (default: %(default)s)")
+    parser.add_argument("--verbose_level", type=int, default=0,
+        help="Level of verbosity, from 2 (Chatty) to 0 (Nothing) (default: %(default)s)")
+
+    # Try to parse arguments
+    args = parser.parse_args()
+
+    # Run main function
+    Fast5_to_seq_summary (
+        fast5_dir = args.fast5_dir,
+        seq_summary_fn = args.seq_summary_fn,
+        max_fast5 = args.max_fast5,
+        threads = args.threads,
+        basecall_id = args.basecall_id,
+        fields = args.fields,
+        include_path = args.include_path,
+        verbose_level = args.verbose_level)
+
+#~~~~~~~~~~~~~~Barcode_split CLI ENTRY POINT~~~~~~~~~~~~~~#
+def main_Barcode_split (args=None):
+    if args is None:
+        args = sys.argv[1:]
+
+    # Define parser object
+    parser = argparse.ArgumentParser(
+        description ="Barcode_split is a simple tool to split sequencing summary report in per barcodes")
+    parser.add_argument('--version', action='version', version="{} v{}".format(package_name, package_version))
+    # Define arguments
+    parser.add_argument("--summary_file", "-f", required=True, nargs='*',
+        help="Path to a sequencing_summary generated by Albacore 1.0.0 + (read_fast5_basecaller.py) / Guppy 2.1.3+ (guppy_basecaller). One can also pass multiple space separated file paths or a UNIX style regex matching multiple files")
+    parser.add_argument("--barcode_file", "-b", default=[], nargs='*',
+        help="Path to the barcode_file generated by Guppy 2.1.3+ (guppy_barcoder) or Deepbinner 0.2.0+. One can also pass multiple space separated file paths or a UNIX style regex matching multiple files")
+    parser.add_argument("--output_dir", "-o", type=str, default="",
+        help="Folder where to output split barcode data (default: current dir")
+    parser.add_argument("--output_unclassified", "-u", action='store_true', default=False,
+        help="If given, unclassified barcodes are also written in a file. By default they are skiped")
+    parser.add_argument("--min_barcode_percent", "-p", default=0.1, type=float,
+        help="Minimal percent of total reads to retain barcode label. If below, the barcode value is set as `unclassified` (default: %(default)s)")
+    parser_verbosity = parser.add_mutually_exclusive_group()
+    parser_verbosity.add_argument("-v", "--verbose", action="store_true", default=False, help="Increase verbosity")
+    parser_verbosity.add_argument("-q", "--quiet", action="store_true", default=False, help="Reduce verbosity")
+
+    # Try to parse arguments
+    args = parser.parse_args()
+
+    # Run main function
+    Barcode_split (
+        summary_file=args.summary_file,
+        barcode_file=args.barcode_file,
+        output_dir=args.output_dir,
+        output_unclassified=args.output_unclassified,
+        min_barcode_percent=args.min_barcode_percent,
+        verbose=args.verbose,
+        quiet=args.quiet)

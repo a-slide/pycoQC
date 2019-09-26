@@ -27,11 +27,12 @@ def pycoQC (
     bam_file:str="",
     runid_list:list=[],
     filter_calibration:bool=False,
+    filter_duplicated:bool=False,
     min_barcode_percent:float=0.1,
     min_pass_qual:int=7,
     sample:int=100000,
     html_outfile:str="",
-    report_title:str="",
+    report_title:str="PycoQC report",
     config_file:str="",
     template_file:str="",
     json_outfile:str="",
@@ -54,6 +55,8 @@ def pycoQC (
         all the runids in the file and uses the runid order as defined in the file.
     * filter_calibration
         If True read flagged as calibration strand by the software are removed
+    * filter_duplicated
+        If True duplicated read_ids are removed but the first occurence is kept (Guppy sometimes outputs the same read multiple times)
     * min_barcode_percent
         Minimal percent of total reads to retain barcode label. If below the barcode value is set as `unclassified`.
     * min_pass_qual
@@ -80,11 +83,8 @@ def pycoQC (
     """
 
     # Save args and init options in dict for report
-    kwargs = locals()
-    info_d = OrderedDict()
-    info_d["package_name"] = package_name
-    info_d["package_version"] = package_version
-    info_d["timestamp"] = str(datetime.datetime.now())
+    options_d = locals()
+    info_d = {"package_name":package_name, "package_version":package_version, "timestamp":str(datetime.datetime.now())}
 
     # Set logging level
     logger = get_logger (name=__name__, verbose=verbose, quiet=quiet)
@@ -93,6 +93,7 @@ def pycoQC (
     # Save all verified values + type
     runid_list = check_arg("runid_list", runid_list, required_type=list, allow_none=True)
     filter_calibration = check_arg("filter_calibration", filter_calibration, required_type=bool, allow_none=False)
+    filter_duplicated = check_arg("filter_duplicated", filter_duplicated, required_type=bool, allow_none=False)
     min_barcode_percent = check_arg("min_barcode_percent", min_barcode_percent, required_type=float, min=0, max=100, allow_none=False)
     min_pass_qual = check_arg("min_pass_qual", min_pass_qual, required_type=float, min=0, max=60, allow_none=False)
     sample = check_arg("sample", sample, required_type=int, min=0, allow_none=True)
@@ -103,10 +104,11 @@ def pycoQC (
     template_file = check_arg("template_file", template_file, required_type=str, allow_none=True)
     json_outfile = check_arg("json_outfile", json_outfile, required_type=str, allow_none=True)
 
+    # Print debug info
     logger.debug("General info")
     logger.debug(dict_to_str(info_d))
     logger.debug("Runtime options")
-    logger.debug(dict_to_str(kwargs))
+    logger.debug(dict_to_str(options_d))
 
     #~~~~~~~~~~pycoQC_parse~~~~~~~~~~#
     parser = pycoQC_parse (
@@ -115,17 +117,17 @@ def pycoQC (
         bam_file=bam_file,
         runid_list=runid_list,
         filter_calibration=filter_calibration,
+        filter_duplicated=filter_duplicated,
         min_barcode_percent=min_barcode_percent,
         verbose=verbose,
         quiet=quiet)
-    df = parser()
 
     logger.debug("Parser stats")
     logger.debug(parser)
 
     #~~~~~~~~~~pycoQC_plot~~~~~~~~~~#
     plotter = pycoQC_plot(
-        df=df,
+        parser=parser,
         min_pass_qual=min_pass_qual,
         sample=sample,
         verbose=verbose,
@@ -137,8 +139,9 @@ def pycoQC (
     #~~~~~~~~~~pycoQC_report~~~~~~~~~~#
     if html_outfile or json_outfile:
         reporter = pycoQC_report (
-            pp = plotter,
-            verbose = verbose,
+            parser=parser,
+            plotter=plotter,
+            verbose=verbose,
             quiet=quiet)
 
         if html_outfile:

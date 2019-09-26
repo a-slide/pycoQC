@@ -50,9 +50,10 @@
 
 		<div class="column col-9 col-mx-auto">
 			<div class="text-center">
-				<h1>PycoQC report</h1>
+				<h1>{{ report_title }}</h1>
 				<div class="divider"></div>
-				<h4>{{ report_title }}</h4>
+				<h3>{{ report_subtitle }}</h3>
+                <div class="divider"></div>
 			</div>
 			<div class="columns">
 				{% for item in plots %}
@@ -63,6 +64,9 @@
 					</div>
 				{% endfor %}
 			</div>
+            <div class="text-left">
+                {{ src_files }}
+            </div>
 		</div>
 
 	<!-- <div class="column col-12 col-mx-auto text-center">

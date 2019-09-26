@@ -4,13 +4,13 @@
 
 # Standard library imports
 from collections import *
-from glob import glob
 import warnings
 import datetime
 
 # Third party imports
 import numpy as np
 import pandas as pd
+import pysam as ps
 
 # Local lib import
 from pycoQC.common import *
@@ -30,7 +30,9 @@ class pycoQC_parse ():
         bam_file:str="",
         runid_list:list=[],
         filter_calibration:bool=False,
+        filter_duplicated:bool=False,
         min_barcode_percent:float=0.1,
+        cleanup:bool=True,
         verbose:bool=False,
         quiet:bool=False):
         """
@@ -50,46 +52,59 @@ class pycoQC_parse ():
             all the runids in the file and uses the runid order as defined in the file.
         * filter_calibration
             If True read flagged as calibration strand by the software are removed
+        * filter_duplicated
+            If True duplicated read_ids are removed but the first occurence is kept (Guppy sometimes outputs the same read multiple times)
         * min_barcode_percent
             Minimal percent of total reads to retain barcode label. If below the barcode value is set as `unclassified`.
         """
 
         # Set logging level
-        self.logger = get_logger (name=__name__, verbose=verbose, quiet=quiet)
-        self.logger.warning ("Initialising parser")
+        self.logger = get_logger(name=__name__, verbose=verbose, quiet=quiet)
 
-        # Explicit init counter
-        self.counter = OrderedDict()
-
-        # Save args to self values
+        # Save self variables
         self.runid_list = runid_list
         self.filter_calibration = filter_calibration
+        self.filter_duplicated = filter_duplicated
         self.min_barcode_percent = min_barcode_percent
+        self.cleanup = cleanup
 
-        # Expand file names and check files readeability
-        self.summary_files_list = self._expand_file_names(summary_file)
+        # Init object counter
+        self.counter = OrderedDict()
+
+        # Check input files
+        self.logger.warning ("Check input data files")
+
+        # Expand file names and test readability
+        self.summary_files_list = expand_file_names(summary_file)
         self.logger.debug ("\t\tSequencing summary files found: {}".format(" ".join(self.summary_files_list)))
         self.counter["Summary files found"] = len(self.summary_files_list)
 
-        self.barcode_files_list = self._expand_file_names(barcode_file)
-        self.logger.debug ("\t\tBarcode summary files found: {}".format(" ".join(self.barcode_files_list)))
-        self.counter["Barcode files found"] = len(self.barcode_files_list)
+        if barcode_file:
+            self.barcode_files_list = expand_file_names(barcode_file)
+            self.logger.debug ("\t\tBarcode files found: {}".format(" ".join(self.barcode_files_list)))
+            self.counter["Barcode files found"] = len(self.barcode_files_list)
+        else:
+            self.barcode_files_list =[]
 
-        self.bam_file_list = self._expand_file_names(bam_file)
-        self.logger.debug ("\t\tBam files found: {}".format(" ".join(self.bam_file_list)))
-        self.counter["Bam files found"] = len(self.bam_file_list)
+        if bam_file:
+            self.bam_file_list = expand_file_names(bam_file, bam_check=True)
+            self.logger.debug ("\t\tBam files found: {}".format(" ".join(self.bam_file_list)))
+            self.counter["Bam files found"] = len(self.bam_file_list)
+        else:
+            self.bam_file_list =[]
 
-    def __call__ (self):
-        """Parse files and clean df"""
-        # Import summary, barcode and bam files and cleanup resulting df
-        self.logger.warning ("Parsing input files")
-        df = self._parse_summary ()
-        if self.barcode_files_list:
-            df = self._parse_barcode (df)
-        if self.bam_file_list:
-            df = self._parse_bam (df)
-        df = self._clean_df (df)
-        return df
+        self.logger.warning ("Parse data files")
+        summary_reads_df = self._parse_summary()
+        barcode_reads_df = self._parse_barcode()
+        bam_reads_df, self.alignments_df, self.ref_len_dict = self._parse_bam()
+
+        self.logger.warning ("Merge data")
+        self.reads_df = self._merge_reads_df(summary_reads_df, barcode_reads_df, bam_reads_df)
+
+        # Cleanup data
+        if self.cleanup:
+            self.logger.warning("Cleaning data")
+            self.reads_df = self._clean_reads_df(self.reads_df)
 
     def __str__(self):
         return dict_to_str(self.counter)
@@ -101,37 +116,27 @@ class pycoQC_parse ():
 
     def _parse_summary (self):
         """"""
-        self.logger.info ("\tImporting sequencing information from sequencing summary files")
-        df = self._merge_files_to_df (self.summary_files_list)
+        self.logger.debug ("\tParse summary files")
+        df = merge_files_to_df (self.summary_files_list)
 
-        # Define specific parameters depending on the run_type
-        self.logger.info ("\tVerifying fields and discarding unused columns")
-
-        if "sequence_length_template" in df:
-            self.logger.debug ("\t\t1D Run type")
-            self.run_type = "1D"
-            required_colnames = ["read_id", "run_id", "channel", "start_time", "sequence_length_template", "mean_qscore_template"]
-            optional_colnames = ["calibration_strand_genome_template", "barcode_arrangement"]
+        if self.cleanup:
+            # Standardise col names for all types of files
+            self.logger.debug ("\tRename summary sequencing columns")
             rename_colmanes = {
-                "sequence_length_template":"num_bases", "mean_qscore_template":"mean_qscore",
-                "calibration_strand_genome_template":"calibration","barcode_arrangement":"barcode"}
+                "sequence_length_template":"read_len",
+                "mean_qscore_template":"mean_qscore",
+                "sequence_length_2d":"read_len",
+                "mean_qscore_2d":"mean_qscore",
+                "calibration_strand_genome_template":"calibration",
+                "barcode_arrangement":"barcode"}
+            df = df.rename(columns=rename_colmanes)
 
-        elif "sequence_length_2d" in df:
-            self.logger.debug ("\t\t1D2 Run type")
-            self.run_type = "1D2"
-            required_colnames = ["read_id", "run_id", "channel", "start_time", "sequence_length_2d", "mean_qscore_2d"]
-            optional_colnames = ["calibration_strand_genome_template", "barcode_arrangement"]
-            rename_colmanes = {
-                "sequence_length_2d":"num_bases", "mean_qscore_2d":"mean_qscore",
-                "calibration_strand_genome_template":"calibration", "barcode_arrangement":"barcode"}
-        else:
-            raise pycoQCError ("Invalid sequencing summary file")
-
-        # Verify the required and optional columns, Drop unused fields and standardise field names.
-        col = self._check_df_columns (df=df, required_colnames=required_colnames, optional_colnames=optional_colnames)
-        self.logger.debug ("\t\tColumns found: {}".format(col))
-        df = df[col]
-        df = df.rename(columns=rename_colmanes)
+            # Verify the required and optional columns, Drop unused fields
+            self.logger.debug ("\tVerifying fields and discarding unused columns")
+            df = self._select_df_columns (
+                df = df,
+                required_colnames = ["read_id", "run_id", "channel", "start_time", "read_len", "mean_qscore"],
+                optional_colnames = ["calibration", "barcode"])
 
         # Collect stats
         n = len(df)
@@ -140,28 +145,27 @@ class pycoQC_parse ():
 
         return df
 
-    def _parse_barcode (self, df):
+    def _parse_barcode (self):
         """"""
-        self.logger.info ("\tImporting barcode information from barcode summary files")
-        df_b = self._merge_files_to_df (self.barcode_files_list)
+        if not self.barcode_files_list:
+            return pd.DataFrame()
+
+        self.logger.debug ("\tParse barcode files")
+        df = merge_files_to_df (self.barcode_files_list)
 
         # check presence of barcode details
-        if "read_id" in df_b and "barcode_arrangement" in df_b:
+        if "read_id" in df and "barcode_arrangement" in df:
             self.logger.debug ("\t\tFound valid Guppy barcode file")
-            df_b = df_b [["read_id", "barcode_arrangement"]]
-            df_b = df_b.rename(columns={"barcode_arrangement":"barcode"})
+            df = df [["read_id", "barcode_arrangement"]]
+            df = df.rename(columns={"barcode_arrangement":"barcode"})
 
-        elif "read_ID" in df_b and "barcode_call" in df_b:
+        elif "read_ID" in df and "barcode_call" in df:
             self.logger.debug ("\t\tFound valid Deepbinner barcode file")
-            df_b = df_b [["read_ID", "barcode_call"]]
-            df_b = df_b.rename(columns={"read_ID":"read_id", "barcode_call":"barcode"})
+            df = df [["read_ID", "barcode_call"]]
+            df = df.rename(columns={"read_ID":"read_id", "barcode_call":"barcode"})
+            df['barcode'].replace("none", "unclassified", inplace=True)
         else:
             raise pycoQCError ("File {} does not contain required barcode information".format(fp))
-
-        # Merge df and fill in missing barcode values
-        df = pd.merge(df, df_b, on="read_id", how="left")
-        df['barcode'].fillna('unclassified', inplace=True)
-        df['barcode'].replace("none", "unclassified", inplace=True)
 
         n = len(df[df['barcode']!="unclassified"])
         self.logger.debug ("\t\t{:,} reads with barcodes assigned".format(n))
@@ -169,15 +173,79 @@ class pycoQC_parse ():
 
         return df
 
-    def _parse_bam (self, df): ################################################# TO DO
+    def _parse_bam (self):
+        """"""
+        if not self.bam_file_list:
+            return (pd.DataFrame(), pd.DataFrame(), OrderedDict())
+
+        # Init collections
+        unmapped=0
+        ref_len_dict = OrderedDict()
+        alignments_dict = Counter()
+        read_dict = OrderedDict ()
+
+        for bam_fn in self.bam_file_list:
+            with ps.AlignmentFile(bam_fn, "rb") as bam:
+
+                # Save reference lengths information
+                for ref_id, ref_len in zip(bam.references, bam.lengths):
+                    if not ref_id in ref_len_dict:
+                        ref_len_dict[ref_id] = ref_len
+
+                # Parse reads
+                for read in bam:
+                    if read.is_unmapped:
+                        alignments_dict["Unmapped"]+=1
+                    elif read.is_secondary:
+                        alignments_dict["Secondary"]+=1
+                    elif read.is_supplementary:
+                        alignments_dict["Suplementary"]+=1
+                    elif read.query_name in read_dict:
+                        alignments_dict["Duplicated"]+=1
+                    else:
+                        alignments_dict["Primary"]+=1
+                        read_dict[read.query_name] = self._get_read_stats(read)
+
+        # Convert aligments_dict to df
+        if alignments_dict:
+            alignments_df = pd.DataFrame.from_dict(alignments_dict, orient="index")
+            alignments_df.reset_index(inplace=True)
+            alignments_df.columns=["Alignments", "Counts"]
+            alignments_df["Percents"] = (alignments_df["Counts"]/alignments_df["Counts"].sum()*100).round(2)
+        else:
+            alignments_df = pd.DataFrame()
+
+        # Convert read_dict to df
+        if read_dict:
+            read_df = pd.DataFrame.from_dict(read_dict, orient="index")
+            read_df.index.name="read_id"
+            read_df.reset_index(inplace=True)
+        else:
+            read_df = pd.DataFrame()
+
+        return (read_df, alignments_df, ref_len_dict)
+
+    def _merge_reads_df(self, summary_reads_df, barcode_reads_df, bam_reads_df):
+        """"""
+        df = summary_reads_df
+
+        # Merge df and fill in missing barcode values
+        if not barcode_reads_df.empty:
+            df = pd.merge(df, barcode_reads_df, on="read_id", how="left")
+            df['barcode'].fillna('unclassified', inplace=True)
+
+        # Merge df and fill in missing barcode values
+        if not bam_reads_df.empty:
+            df = pd.merge(df, bam_reads_df, on="read_id", how="left")
+
         return df
 
-    def _clean_df (self, df):
+    def _clean_reads_df (self, df):
         """"""
         # Drop lines containing NA values
         self.logger.info ("\tDiscarding lines containing NA values")
         l = len(df)
-        df = df.dropna()
+        df = df.dropna(subset=["read_id", "run_id", "channel", "start_time", "read_len", "mean_qscore"])
         n=l-len(df)
         self.logger.info ("\t\t{:,} reads discarded".format(n))
         self.counter["Reads with NA values discarded"] = n
@@ -187,14 +255,25 @@ class pycoQC_parse ():
         # Filter out zero length reads
         self.logger.info ("\tFiltering out zero length reads")
         l = len(df)
-        df = df[(df["num_bases"] > 0)]
+        df = df[(df["read_len"] > 0)]
         n=l-len(df)
         self.logger.info ("\t\t{:,} reads discarded".format(n))
         self.counter["Zero length reads discarded"] = n
         if len(df) <= 1:
             raise pycoQCError("No valid read left after zero_len filtering")
 
-        # Filter out calibration strands read if the "calibration_strand_genome_template" field is available
+        # Filter out reads with duplicated read_id
+        if self.filter_duplicated:
+            self.logger.info ("\tFiltering out duplicated reads")
+            l = len(df)
+            df = df[~df.duplicated(subset="read_id", keep='first')]
+            n=l-len(df)
+            self.logger.info ("\t\t{:,} reads discarded".format(n))
+            self.counter["Duplicated reads discarded"] = n
+            if len(df) <= 1:
+                raise pycoQCError("No valid read left after calibration strand filtering")
+
+        # Filter out calibration strand reads if the "calibration_strand_genome_template" field is available
         if self.filter_calibration and "calibration" in df:
             self.logger.info ("\tFiltering out calibration strand reads")
             l = len(df)
@@ -239,7 +318,7 @@ class pycoQC_parse ():
         df = df.sort_values ("start_time")
 
         #  Unset low frequency barcodes
-        if "barcode" in df:
+        if "barcode" in df and self.min_barcode_percent:
             self.logger.info ("\tCleaning up low frequency barcodes")
             l = (df["barcode"]=="unclassified").sum()
             barcode_counts = df["barcode"][df["barcode"]!="unclassified"].value_counts()
@@ -249,6 +328,10 @@ class pycoQC_parse ():
             n= int((df["barcode"]=="unclassified").sum()-l)
             self.logger.info ("\t\t{:,} reads with low frequency barcode unset".format(n))
             self.counter["Reads with low frequency barcode unset"] = n
+
+        # Cast values to required types
+        self.logger.info ("\tCast value to appropriate type")
+        df = df.astype({'channel':"uint16","start_time":"float32","read_len":"uint32","mean_qscore":"float32"})
 
         # Reindex final df
         self.logger.info ("\tReindexing dataframe by read_ids")
@@ -263,10 +346,41 @@ class pycoQC_parse ():
 
         return df
 
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~PRIVATE STATIC METHODS~~~~~~~~~~~~~~~~~~~~~~~~~~#
+    def _get_read_stats(self, read):
+        """"""
+        d = OrderedDict()
 
-    @staticmethod
-    def _check_df_columns (df, required_colnames, optional_colnames):
+        # Extract general stats
+        d["ref_id"] = read.reference_name
+        d["ref_start"] = read.reference_start
+        d["ref_end"] = read.reference_end
+        d["align_len"] = read.query_alignment_length
+        d["mapq"] = read.mapping_quality
+
+        # Extract indel and soft_clip from cigar
+        c_stat = read.get_cigar_stats()[0]
+        d["insertion"] = c_stat[1]
+        d["deletion"] = c_stat[2]
+        d["soft_clip"] = c_stat[4]
+
+        # Compute alignment score from NM field if available
+        if read.has_tag("NM"):
+            edit_dist = read.get_tag("NM")
+            d["mismatch"] = edit_dist-(d["deletion"]+d["insertion"])
+            d["align_score"] = d["align_len"]/edit_dist
+
+        # If not NM try to compute score from MD field
+        elif read.has_tag("MD"):
+            md_err = 0
+            for i in read.get_tag("MD"):
+                if i in ["A","T","C","G","a","t","c","g"]:
+                    md_err += 1
+            d["mismatch"] = md_err-d["deletion"]
+            d["align_score"] = d["align_len"]/(d["mismatch"]+d["insertion"]+d["deletion"])
+
+        return d
+
+    def _select_df_columns(self, df, required_colnames, optional_colnames):
         """"""
         col_found = []
         # Verify the presence of the columns required for pycoQC
@@ -278,47 +392,5 @@ class pycoQC_parse ():
         for col in optional_colnames:
             if col in df:
                 col_found.append(col)
-        return col_found
 
-    @staticmethod
-    def _expand_file_names (fn):
-        """"""
-        if not fn:
-            return []
-
-        # Try to expand file name to list
-        if isinstance(fn, list):
-            if len(fn) ==1:
-                fn_list=glob(fn[0])
-            else:
-                fn_list=fn
-        elif isinstance(fn, str):
-            fn_list=glob(fn)
-        else:
-            raise pycoQCError ("{} has to be either a file or a regular expression or a list of files".format(fn))
-
-        # Verify that a least 1 file was found and that files are readable
-        if len(fn_list) == 0:
-            raise pycoQCError ("{} does not correspond to any valid file".format(fn))
-        for fn in fn_list:
-            if not is_readable_file (fn):
-                raise pycoQCError("Cannot read file {}".format(fn))
-
-        return fn_list
-
-    @staticmethod
-    def _merge_files_to_df (fn_list):
-        """"""
-        if len(fn_list) == 1:
-            df =  pd.read_csv(fn_list[0], sep ="\t")
-
-        else:
-            df_list = []
-            for fn in fn_list:
-                df_list.append (pd.read_csv(fn, sep ="\t"))
-            df = pd.concat(df_list, ignore_index=True, sort=False, join="inner")
-
-        if len(df) == 0:
-            raise pycoQCError ("No valid read found in input file")
-
-        return df
+        return df[col_found]
