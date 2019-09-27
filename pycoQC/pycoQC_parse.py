@@ -367,7 +367,7 @@ class pycoQC_parse ():
         if read.has_tag("NM"):
             edit_dist = read.get_tag("NM")
             d["mismatch"] = edit_dist-(d["deletion"]+d["insertion"])
-            d["align_score"] = d["align_len"]/edit_dist
+            d["align_score"] = d["align_len"]/(edit_dist+1)
 
         # If not NM try to compute score from MD field
         elif read.has_tag("MD"):
