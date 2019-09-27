@@ -1,4 +1,4 @@
-# Contributing to pycoQCAcknowledgements
+# Contributing to pycoQC
 
 First of all, thanks for considering contributing to `pycoQC`! 👍 It's people like you that make it rewarding for us to work on `pycoQC`.
 
