@@ -376,7 +376,7 @@ class pycoQC_parse ():
                 if i in ["A","T","C","G","a","t","c","g"]:
                     md_err += 1
             d["mismatch"] = md_err-d["deletion"]
-            d["align_score"] = d["align_len"]/(d["mismatch"]+d["insertion"]+d["deletion"])
+            d["align_score"] = d["align_len"]/(d["mismatch"]+d["insertion"]+d["deletion"]+1)
 
         return d
 
