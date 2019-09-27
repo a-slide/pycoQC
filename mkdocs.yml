@@ -26,6 +26,10 @@ nav:
         - Using pycoQC: pycoQC_usage.md
         - jupyter API usage: demo/pycoQC_API_demo.ipynb
         - Command line usage: demo/pycoQC_CLI_demo.ipynb
+    - Barcode_split Usage:
+        - Using Barcode_split: demo/Barcode_split_usage.md
+        - jupyter API usage: demo/Barcode_split_API_demo.ipynb
+        - Command line usage: demo/Barcode_split_CLI_demo.ipynb
     - Fast5_to_seq_summary Usage:
         - Using Fast5_to_seq_summary: Fast5_to_seq_summary_usage.md
         - jupyter API usage: demo/Fast5_to_seq_summary_API_demo.ipynb
@@ -67,6 +71,3 @@ markdown_extensions:
 
 plugins:
   - mknotebooks
-
-
-        #- Command line usage:

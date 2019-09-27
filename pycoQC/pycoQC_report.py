@@ -13,35 +13,24 @@ import jinja2
 
 # Local imports
 from pycoQC.common import *
+from pycoQC.pycoQC_parse import pycoQC_parse
 from pycoQC.pycoQC_plot import pycoQC_plot
 from pycoQC import __version__ as package_version
 from pycoQC import __name__ as package_name
 
-
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MAIN CLASS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 class pycoQC_report ():
 
-    # List of current valid plotting methods names
-    PLOT_METHODS = [
-        "summary",
-        "barcode_summary",
-        "run_id_summary",
-        "reads_len_1D",
-        "reads_qual_1D",
-        "reads_len_qual_2D",
-        "output_over_time",
-        "len_over_time",
-        "qual_over_time",
-        "barcode_counts",
-        "channels_activity"]
-
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~INIT METHOD~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
     def __init__ (self,
-        pp:pycoQC_plot,
+        parser:pycoQC_parse,
+        plotter:pycoQC_plot,
         verbose:bool=False,
         quiet:bool=False):
         """
-        * pp
+        * parser
+            A pycoQC_parse object
+        * plotter
             A pycoQC_plot object
         * verbose
             Increase verbosity
@@ -50,12 +39,16 @@ class pycoQC_report ():
         """
         # Set logging level
         self.logger = get_logger (name=__name__, verbose=verbose, quiet=quiet)
-        #self.logger.warning ("")
 
-        # Check that pp is a valid instance of pycoQC_plot
-        if not isinstance(pp, pycoQC_plot):
-            raise pycoQCError ("{} is not a valid pycoQC_plot object".format(pp))
-        self.pp = pp
+        # Check that parser is a valid instance of pycoQC_parse
+        if not isinstance(parser, pycoQC_parse):
+            raise pycoQCError ("{} is not a valid pycoQC_parse object".format(parser)) ##################################### Use parser to get file list for report
+        self.parser = parser
+
+        # Check that plotter is a valid instance of pycoQC_plot
+        if not isinstance(plotter, pycoQC_plot):
+            raise pycoQCError ("{} is not a valid pycoQC_plot object".format(plotter))
+        self.plotter = plotter
 
     def __repr__(self):
         return "[{}]\n".format(self.__class__.__name__)
@@ -65,8 +58,10 @@ class pycoQC_report ():
         outfile:str,
         config_file:str="",
         template_file:str="",
-        report_title:str=""):
+        report_title:str="PycoQC report"):
         """"""
+        self.logger.info("Generating HTML report")
+
         # Parse configuration file
         self.logger.info("\tParsing html config file")
         config_dict = self._get_config(config_file)
@@ -76,11 +71,6 @@ class pycoQC_report ():
         plots = list()
         titles = list()
         for method_name, method_args in config_dict.items ():
-
-            # Check if method exists and is callable
-            if not method_name in self.PLOT_METHODS:
-                self.logger.info("\tMethod `{}` is not defined in pycoQC".format(method_name))
-
             try:
                 self.logger.info("\tRunning method {}".format(method_name))
                 self.logger.debug ("\t{} ({})".format(method_name, method_args))
@@ -90,7 +80,7 @@ class pycoQC_report ():
                 method_args["plot_title"]=""
 
                 # Get method and generate plot
-                method = getattr(self.pp, method_name)
+                method = getattr(self.plotter, method_name)
                 fig = method(**method_args)
                 plot = py.plot(
                     fig,
@@ -104,6 +94,10 @@ class pycoQC_report ():
                 plots.append(plot)
                 titles.append(plot_title)
 
+            except AttributeError as E:
+                self.logger.info("\t\t{}".format("{} is not a valid plotting method".format(method_name)))
+                self.logger.info("\t\t{}".format(E))
+
             except pycoQCError as E:
                 self.logger.info("\t\t{}".format(E))
 
@@ -111,14 +105,21 @@ class pycoQC_report ():
         self.logger.info("\tLoading HTML template")
         template = self._get_jinja_template(template_file)
 
-        # Set a title for the HTML report
-        if report_title:
-            report_title+="<br>"
+        # Set a subtitle for the HTML report
+        report_subtitle="Generated on {} with {} {}".format( datetime.datetime.now().strftime("%d/%m/%y"), package_name, package_version)
 
-        report_title+="Generated on {} with {} {}".format(
-            datetime.datetime.now().strftime("%d/%m/%y"),
-            package_name,
-            package_version)
+        # Define source files list
+        src_files = ""
+        for files_list, name in (
+            (self.parser.summary_files_list,"summary"),
+            (self.parser.barcode_files_list,"barcode"),
+            (self.parser.bam_file_list,"bam")):
+
+            if files_list:
+                src_files += "<h4>Source {} files</h4><ul>".format(name)
+                for f in files_list:
+                    src_files += "<li>{}</li>".format(f)
+                src_files += "</ul>"
 
         # Render plots
         self.logger.info("\tRendering plots in d3js")
@@ -126,7 +127,9 @@ class pycoQC_report ():
             plots=plots,
             titles=titles,
             plotlyjs=py.get_plotlyjs(),
-            report_title=report_title)
+            report_title=report_title,
+            report_subtitle=report_subtitle,
+            src_files=src_files)
 
         # Write to HTML file
         self.logger.info("\tWriting to HTML file")
@@ -136,8 +139,9 @@ class pycoQC_report ():
     def json_report(self,
         outfile:str):
         """"""
+        self.logger.info("Generating JSON report")
         self.logger.info("\tRunning summary_stats_dict method")
-        res_dict = self.pp.summary_stats_dict (barcode_split=True, run_id_split=True)
+        res_dict = self.plotter.summary_stats_dict ()
 
         self.logger.info("\tWriting to JSON file")
         with open (outfile, "w") as fp:
