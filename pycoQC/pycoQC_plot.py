@@ -1286,32 +1286,27 @@ class pycoQC_plot ():
         total_error = s["insertion"]+s["deletion"]+s["mismatch"]
         matching = s["align_len"]-total_error
         unmapped = bc_bases-s["read_len"]
-        ct = namedtuple("ct", ["Bases","Counts", "Total_percent", "Aligned_percent"])
+        ct = namedtuple("ct", ["Bases","Counts","Total_freq","Aligned_freq"])
         l = [
-            ct("Basecalled", bc_bases, 100, "NA"),
-            ct("Unmapped reads", unmapped, round(unmapped/bc_bases*100, 2), "NA"),
-            ct("Mapped reads", s["read_len"], round(s["read_len"]/bc_bases*100, 2), "NA"),
-            ct("Softclip", s["soft_clip"], round(s["soft_clip"]/bc_bases*100, 2), "NA"),
-            ct("Aligned", s["align_len"], round(s["align_len"]/bc_bases*100, 2), 100),
-            ct("Matching", matching, round(matching/bc_bases*100, 2), round(matching/s["align_len"]*100, 2)),
-            ct("Non-matching", total_error, round(total_error/bc_bases*100, 2), round(total_error/s["align_len"]*100, 2)),
-            ct("Insertions", s["insertion"], round(s["insertion"]/bc_bases*100, 2), round(s["insertion"]/s["align_len"]*100, 2)),
-            ct("Deletions", s["deletion"], round(s["deletion"]/bc_bases*100, 2), round(s["deletion"]/s["align_len"]*100, 2)),
-            ct("Mismatches", s["mismatch"], round(s["mismatch"]/bc_bases*100, 2), round(s["mismatch"]/s["align_len"]*100, 2))]
+            ct("Basecalled", bc_bases, 1, 1),
+            ct("Unmapped reads", unmapped, unmapped/bc_bases, 1),
+            ct("Mapped reads", s["read_len"], s["read_len"]/bc_bases, 1),
+            ct("Softclip", s["soft_clip"], s["soft_clip"]/bc_bases, 1),
+            ct("Aligned", s["align_len"], s["align_len"]/bc_bases, 1),
+            ct("Matching", matching, matching/bc_bases, matching/s["align_len"]),
+            ct("Non-matching", total_error, total_error/bc_bases, total_error/s["align_len"]),
+            ct("Insertions", s["insertion"], s["insertion"]/bc_bases, s["insertion"]/s["align_len"]),
+            ct("Deletions", s["deletion"], s["deletion"]/bc_bases, s["deletion"]/s["align_len"]),
+            ct("Mismatches", s["mismatch"], s["mismatch"]/bc_bases, s["mismatch"]/s["align_len"])]
 
         # Cast to df and compute percentage
         df = pd.DataFrame(l)
-        df = df.astype({"Counts":"uint32"})
-
-        # Create empty multipanel figure
-        fig = make_subplots(rows=1, cols=2, column_widths=[0.4, 0.6], specs=[[{"type": "table"},{"type": "sankey"}]])
 
         # plot Table
         data1 = go.Table(
             columnwidth = [3,2,2,2],
-            header = {"values":list(df.columns), "align":"center", "fill_color":["grey"], "font_size":14, "font_color":"white", "height":40},
-            cells = {"values":df.values.T , "align":"center", "fill_color":"whitesmoke", "font_size":12, "height":30})
-        fig.add_trace (data1, row=1, col=1)
+            header = {"values":["Bases","Bases Count","% Total","% Aligned"], "align":"center", "fill_color":["grey"], "font_size":14, "font_color":"white", "height":40},
+            cells = {"values":df.values.T , "format":["", ".3e", ".3p", ".3p"], "align":"center", "fill_color":"whitesmoke", "font_size":12, "height":30})
 
         data2 = go.Sankey(
             arrangement = "freeform",
@@ -1328,9 +1323,11 @@ class pycoQC_plot ():
                 target = [1, 2, 3, 4, 5, 6, 7, 8, 9],
                 value = df["Counts"].values[1:],
                 hoverinfo = "none"))
-        fig.add_trace (data2, row=1, col=2)
 
-        # Change the layout
+        # Create multipanel figure
+        fig = make_subplots(rows=1, cols=2, column_widths=[0.4, 0.6], specs=[[{"type": "table"},{"type": "sankey"}]])
+        fig.add_trace (data1, row=1, col=1)
+        fig.add_trace (data2, row=1, col=2)
         fig.update_layout(
             width = width,
             height = height,
