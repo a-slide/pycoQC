@@ -146,19 +146,19 @@ class pycoQC_plot ():
         d["basecall"] = OrderedDict ()
         d["basecall"]["reads_number"] = len(df)
         d["basecall"]["bases_number"] = int(df["read_len"].sum())
-        d["basecall"]["len_quantiles"] = self._compute_quantiles (df["read_len"])
         d["basecall"]["N50"] = self._compute_N50(df["read_len"])
-        d["basecall"]["qual_score"] = self._compute_quantiles (df["mean_qscore"])
+        d["basecall"]["len_percentiles"] = self._compute_percentiles (df["read_len"])
+        d["basecall"]["qual_score_percentiles"] = self._compute_percentiles (df["mean_qscore"])
 
         if self.has_alignment:
             d["alignment"] = OrderedDict ()
             d["alignment"]["mean_coverage"] = df["align_len"].sum()/self.total_ref_len
             d["alignment"]["reads_number"] = len(df["align_len"].dropna())
             d["alignment"]["bases_number"] = int(df["align_len"].sum())
-            d["alignment"]["len_quantiles"] = self._compute_quantiles (df["align_len"])
             d["alignment"]["N50"] = self._compute_N50(df["align_len"])
+            d["alignment"]["len_percentiles"] = self._compute_percentiles (df["align_len"])
             if self.has_align_score:
-                d["alignment"]["align_score"] = self._compute_quantiles (df["align_score"])
+                d["alignment"]["align_score_percentiles"] = self._compute_percentiles (df["align_score"])
                 d["alignment"]["insertion_rate"] = df["insertion"].sum()/d["alignment"]["bases_number"]
                 d["alignment"]["deletion_rate"] = df["deletion"].sum()/d["alignment"]["bases_number"]
                 d["alignment"]["mismatch_rate"] = df["mismatch"].sum()/d["alignment"]["bases_number"]
@@ -1450,13 +1450,8 @@ class pycoQC_plot ():
 
     #~~~~~~~PRIVATE METHODS~~~~~~~#
     @staticmethod
-    def _compute_quantiles (data):
-        d = OrderedDict ()
-        quantil_lab = ("Min","C1","D1","Q1","Median","Q3","D9","C99","Max")
-        quantile_val = np.quantile(data.dropna(), q=[0,0.01,0.1,0.25,0.5,0.75,0.9,0.99,1])
-        for lab, val in (zip(quantil_lab, quantile_val)):
-            d[lab] = val
-        return d
+    def _compute_percentiles (data):
+        return list(np.quantile(data.dropna(), q=np.linspace(0,1,101)))
 
     @staticmethod
     def _compute_N50 (data):
