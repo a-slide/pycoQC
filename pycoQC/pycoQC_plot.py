@@ -146,7 +146,7 @@ class pycoQC_plot ():
         d["basecall"] = OrderedDict ()
         d["basecall"]["reads_number"] = len(df)
         d["basecall"]["bases_number"] = int(df["read_len"].sum())
-        d["basecall"]["leng_quantiles"] = self._compute_quantiles (df["read_len"])
+        d["basecall"]["len_quantiles"] = self._compute_quantiles (df["read_len"])
         d["basecall"]["N50"] = self._compute_N50(df["read_len"])
         d["basecall"]["qual_score"] = self._compute_quantiles (df["mean_qscore"])
 
