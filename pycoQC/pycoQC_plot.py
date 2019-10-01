@@ -1411,7 +1411,7 @@ class pycoQC_plot ():
         x_lab = list(self.ref_len_dict.keys())
         shapes = []
         x_shape_coord = np.array(self._ref_offset(self.ref_len_dict, coordinates="left", ret_type="list")[1:])*nbins/self.total_ref_len
-        for i in range(0, len(self.ref_len_dic), 2):
+        for i in range(0, len(self.ref_len_dict)-1, 2):
             shapes.append(go.layout.Shape(type="rect",x0=x_shape_coord[i],x1=x_shape_coord[i+1], y0=0,y1=1, yref="paper", opacity=0.5, layer="below", fillcolor="lightgrey", line_width=0))
 
         # Tweak plot layout
