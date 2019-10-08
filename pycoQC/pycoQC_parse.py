@@ -124,8 +124,9 @@ class pycoQC_parse ():
             self.logger.debug ("\tRename summary sequencing columns")
             rename_colmanes = {
                 "sequence_length_template":"read_len",
-                "mean_qscore_template":"mean_qscore",
                 "sequence_length_2d":"read_len",
+                "sequence_length":"read_len",
+                "mean_qscore_template":"mean_qscore",
                 "mean_qscore_2d":"mean_qscore",
                 "calibration_strand_genome_template":"calibration",
                 "barcode_arrangement":"barcode"}
