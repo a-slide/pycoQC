@@ -23,23 +23,24 @@ nav:
     - Home: index.md
     - Installation instructions: installation.md
     - pycoQC Usage:
-        - Using pycoQC: pycoQC_usage.md
-        - jupyter API usage: demo/pycoQC_API_demo.ipynb
-        - Command line usage: demo/pycoQC_CLI_demo.ipynb
+        - Using pycoQC: pycoQC/usage.md
+        - jupyter API usage: pycoQC/API_usage.ipynb
+        - Command line usage: pycoQC/CLI_usage.ipynb
     - Barcode_split Usage:
-        - Using Barcode_split: Barcode_split_usage.md
-        - jupyter API usage: demo/Barcode_split_API_demo.ipynb
-        - Command line usage: demo/Barcode_split_CLI_demo.ipynb
+        - Using Barcode_split: Barcode_split/usage.md
+        - jupyter API usage: Barcode_split/API_usage.ipynb
+        - Command line usage: Barcode_split/CLI_usage.ipynb
     - Fast5_to_seq_summary Usage:
-        - Using Fast5_to_seq_summary: Fast5_to_seq_summary_usage.md
-        - jupyter API usage: demo/Fast5_to_seq_summary_API_demo.ipynb
-        - Command line usage: demo/Fast5_to_seq_summary_CLI_demo.ipynb
+        - Using Fast5_to_seq_summary: Fast5_to_seq_summary/usage.md
+        - jupyter API usage: Fast5_to_seq_summary/API_usage.ipynb
+        - Command line usage: Fast5_to_seq_summary/CLI_usage.ipynb
     - Citing pycoQC: citing.md
     - Acknowledgements: acknowledgements.md
     - Alternative and complementary packages: alternative.md
     - Contributing Guidelines: contributing.md
     - Code of conduct: code_of_conduct.md
     - Licence: licence.md
+    - Changelog: changelog.md
 
 # Theme customization
 theme:
