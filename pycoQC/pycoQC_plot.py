@@ -105,8 +105,8 @@ class pycoQC_plot ():
     def has_alignment (self):
         return "ref_id" in self.all_df
     @property
-    def has_align_score (self):
-        return "align_score" in self.all_df
+    def has_identity_freq (self):
+        return "identity_freq" in self.all_df
     @property
     def is_promethion (self):
         return self.all_df["channel"].max() > 512
@@ -157,8 +157,8 @@ class pycoQC_plot ():
             d["alignment"]["bases_number"] = int(df["align_len"].sum())
             d["alignment"]["N50"] = self._compute_N50(df["align_len"])
             d["alignment"]["len_percentiles"] = self._compute_percentiles (df["align_len"])
-            if self.has_align_score:
-                d["alignment"]["align_score_percentiles"] = self._compute_percentiles (df["align_score"])
+            if self.has_identity_freq:
+                d["alignment"]["identity_freq_percentiles"] = self._compute_percentiles (df["identity_freq"])
                 d["alignment"]["insertion_rate"] = df["insertion"].sum()/d["alignment"]["bases_number"]
                 d["alignment"]["deletion_rate"] = df["deletion"].sum()/d["alignment"]["bases_number"]
                 d["alignment"]["mismatch_rate"] = df["mismatch"].sum()/d["alignment"]["bases_number"]
@@ -321,7 +321,7 @@ class pycoQC_plot ():
         smooth_sigma:float=2,
         width:int=None,
         height:int=500,
-        plot_title:str="PHRED quality"):
+        plot_title:str="Basecalled reads PHRED quality"):
         """
         Plot a distribution of quality scores
         * color
@@ -355,7 +355,7 @@ class pycoQC_plot ():
         smooth_sigma:float=2,
         width:int=None,
         height:int=500,
-        plot_title:str="Reads alignment length"):
+        plot_title:str="Aligned reads length"):
         """
         Plot a distribution of read length (log scale)
         * color
@@ -387,15 +387,15 @@ class pycoQC_plot ():
             height=height)
         return fig
 
-    def align_score_1D (self,
+    def identity_freq_1D (self,
         color:str="sandybrown",
         nbins:int=200,
         smooth_sigma:float=2,
         width:int=None,
         height:int=500,
-        plot_title:str="Reads alignment score"):
+        plot_title:str="Aligned reads identity"):
         """
-        Plot a distribution of normalised alignment score
+        Plot a distribution of alignments identity
         * color
             Color of the area (hex, rgb, rgba, hsl, hsv or any CSS named colors https://www.w3.org/TR/css-color-3/#svg-color
         * nbins
@@ -410,13 +410,13 @@ class pycoQC_plot ():
             Title to display on top of the plot
         """
         # Verify that alignemnt information are available
-        if not self.has_align_score:
-            raise pycoQCError ("No align score information available")
+        if not self.has_identity_freq:
+            raise pycoQCError ("No identity frequency information available")
 
         fig = self.__1D_density_plot (
-            field_name = "align_score",
+            field_name = "identity_freq",
             plot_title = plot_title,
-            x_lab = "Alignment score",
+            x_lab = "Identity frequency",
             color = color,
             x_scale = "linear",
             nbins=nbins,
@@ -595,16 +595,16 @@ class pycoQC_plot ():
             plot_title = plot_title)
         return fig
 
-    def align_len_align_score_2D (self,
+    def align_len_identity_freq_2D (self,
         colorscale = [[0.0,'rgba(255,255,255,0)'], [0.1,'rgba(255,150,0,0)'], [0.25,'rgb(255,100,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(70,0,0)']],
         x_nbins:int=200,
         y_nbins:int=100,
         smooth_sigma:float=2,
         width:int=None,
         height:int=600,
-        plot_title:str="Aligned reads length vs alignments score"):
+        plot_title:str="Aligned reads length vs alignments identity"):
         """
-        Plot a 2D distribution of alignments length vs alignments score
+        Plot a 2D distribution of alignments length vs alignments identity
         * colorscale
             a valid plotly color scale https://plot.ly/python/colorscales/ (Not recommanded to change)
         * x_nbins
@@ -621,14 +621,14 @@ class pycoQC_plot ():
             Title to display on top of the plot
         """
         # Verify that alignemnt information are available
-        if not self.has_align_score:
-            raise pycoQCError ("No align score information available")
+        if not self.has_identity_freq:
+            raise pycoQCError ("No identity frequency information available")
 
         fig = self.__2D_density_plot (
             x_field_name = "align_len",
-            y_field_name = "align_score",
+            y_field_name = "identity_freq",
             x_lab = "Alignment length",
-            y_lab = "Alignment score",
+            y_lab = "Identity frequency",
             x_scale = "log",
             y_scale = "linear",
             x_nbins = x_nbins,
@@ -640,16 +640,16 @@ class pycoQC_plot ():
             plot_title = plot_title)
         return fig
 
-    def read_qual_align_score_2D (self,
+    def read_qual_identity_freq_2D (self,
         colorscale = [[0.0,'rgba(255,255,255,0)'], [0.1,'rgba(255,150,0,0)'], [0.25,'rgb(255,100,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(70,0,0)']],
         x_nbins:int=200,
         y_nbins:int=100,
         smooth_sigma:float=1,
         width:int=None,
         height:int=600,
-        plot_title:str="Aligned reads length vs alignments score"):
+        plot_title:str="Reads PHRED quality vs alignments identity"):
         """
-        Plot a 2D distribution of read quality vs alignments score
+        Plot a 2D distribution of read quality vs alignments identity
         * colorscale
             a valid plotly color scale https://plot.ly/python/colorscales/ (Not recommanded to change)
         * x_nbins
@@ -666,14 +666,14 @@ class pycoQC_plot ():
             Title to display on top of the plot
         """
         # Verify that alignemnt information are available
-        if not self.has_align_score:
-            raise pycoQCError ("No align score information available")
+        if not self.has_identity_freq:
+            raise pycoQCError ("No identity frequency information available")
 
         fig = self.__2D_density_plot (
             x_field_name = "mean_qscore",
-            y_field_name = "align_score",
+            y_field_name = "identity_freq",
             x_lab = "PHRED quality",
-            y_lab = "Alignment score",
+            y_lab = "Identity frequency",
             x_scale = "linear",
             y_scale = "linear",
             x_nbins = x_nbins,
@@ -1262,7 +1262,7 @@ class pycoQC_plot ():
             colors:list=["#fcaf94","#828282","#fc8161","#828282","#f44f39","#d52221","#828282","#828282","#828282","#828282"],
             width:int=None,
             height:int=600,
-            plot_title:str="Bases alignment rate breakdown"):
+            plot_title:str="Bases alignment rate"):
         """
         Plot a basic alignment summary
         * colors
@@ -1276,8 +1276,8 @@ class pycoQC_plot ():
         """
 
         # Verify that alignemnt information are available
-        if not self.has_align_score:
-            raise pycoQCError ("No align score information available")
+        if not self.has_identity_freq:
+            raise pycoQCError ("No identity frequency information available")
         self.logger.info ("\t\tComputing plot")
 
         # Extract Data
