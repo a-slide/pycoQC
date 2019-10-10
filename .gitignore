@@ -103,4 +103,4 @@ ENV/
 
 # data
 tests/
-docs/demo/large_data/
+docs/*/large_data/

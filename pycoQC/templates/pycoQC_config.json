@@ -15,19 +15,19 @@
     "smooth_sigma": 2
   },
   "align_len_1D": {
-    "plot_title": "Reads alignment length",
+    "plot_title": "Aligned reads length",
     "color": "mediumseagreen",
     "nbins": 200,
     "smooth_sigma": 2
   },
   "read_qual_1D": {
-    "plot_title": "Reads PHRED quality",
+    "plot_title": "Basecalled reads PHRED quality",
     "color": "salmon",
     "nbins": 200,
     "smooth_sigma": 2
   },
-  "align_score_1D": {
-    "plot_title": "Reads alignment score",
+  "identity_freq_1D": {
+    "plot_title": "Aligned reads identity",
     "color": "sandybrown",
     "nbins": 200,
     "smooth_sigma": 2
@@ -44,14 +44,14 @@
     "y_nbins": 100,
     "smooth_sigma": 1
   },
-  "align_len_align_score_2D": {
-    "plot_title": "Aligned reads length vs alignments score",
+  "align_len_identity_freq_2D": {
+    "plot_title": "Aligned reads length vs alignments identity",
     "x_nbins": 200,
     "y_nbins": 100,
     "smooth_sigma": 2
   },
-  "read_qual_align_score_2D": {
-    "plot_title": "Mean read quality per sequence length",
+  "read_qual_identity_freq_2D": {
+    "plot_title": "Reads PHRED quality vs alignments identity",
     "x_nbins": 200,
     "y_nbins": 100,
     "smooth_sigma": 1
@@ -100,7 +100,7 @@
     ]
   },
   "alignment_rate": {
-    "plot_title": "Bases alignment rate breakdown",
+    "plot_title": "Bases alignment rate",
     "colors": [
       "#fcaf94",
       "#828282",

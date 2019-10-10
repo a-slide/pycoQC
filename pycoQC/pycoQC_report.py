@@ -6,6 +6,7 @@
 import json
 from pkg_resources import resource_filename
 import datetime
+import os
 
 # Third party imports
 import plotly.offline as py
@@ -118,6 +119,7 @@ class pycoQC_report ():
             if files_list:
                 src_files += "<h4>Source {} files</h4><ul>".format(name)
                 for f in files_list:
+                    f = os.path.abspath(f)
                     src_files += "<li>{}</li>".format(f)
                 src_files += "</ul>"
 

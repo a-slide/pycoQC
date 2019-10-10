@@ -124,8 +124,9 @@ class pycoQC_parse ():
             self.logger.debug ("\tRename summary sequencing columns")
             rename_colmanes = {
                 "sequence_length_template":"read_len",
-                "mean_qscore_template":"mean_qscore",
                 "sequence_length_2d":"read_len",
+                "sequence_length":"read_len",
+                "mean_qscore_template":"mean_qscore",
                 "mean_qscore_2d":"mean_qscore",
                 "calibration_strand_genome_template":"calibration",
                 "barcode_arrangement":"barcode"}
@@ -367,7 +368,10 @@ class pycoQC_parse ():
         if read.has_tag("NM"):
             edit_dist = read.get_tag("NM")
             d["mismatch"] = edit_dist-(d["deletion"]+d["insertion"])
-            d["align_score"] = d["align_len"]/(edit_dist+1)
+            try:
+                d["identity_freq"] = (d["align_len"]-edit_dist)/d["align_len"]
+            except ZeroDivisionError:
+                d["identity_freq"] = 0
 
         # If not NM try to compute score from MD field
         elif read.has_tag("MD"):
@@ -376,7 +380,11 @@ class pycoQC_parse ():
                 if i in ["A","T","C","G","a","t","c","g"]:
                     md_err += 1
             d["mismatch"] = md_err-d["deletion"]
-            d["align_score"] = d["align_len"]/(d["mismatch"]+d["insertion"]+d["deletion"]+1)
+            edit_dist = d["mismatch"]+d["insertion"]+d["deletion"]
+            try:
+                d["identity_freq"] = (d["align_len"]-edit_dist)/d["align_len"]
+            except ZeroDivisionError:
+                d["identity_freq"] = 0
 
         return d
 
