@@ -69,14 +69,14 @@ class Fast5_to_seq_summary ():
     }
 
     def __init__ (self,
-        fast5_dir:"str",
-        seq_summary_fn:"str",
-        max_fast5:"int"=0,
-        threads:"int"=4,
-        basecall_id:"int"=0,
-        verbose_level:"int {0,1,2}"=0,
-        include_path:"bool"=False,
-        fields:"list of str"=[
+        fast5_dir:str,
+        seq_summary_fn:str,
+        max_fast5:int=0,
+        threads:int=4,
+        basecall_id:int=0,
+        verbose_level:int=0,
+        include_path:bool=False,
+        fields:list=[
             "read_id", "run_id", "channel", "start_time",
             "sequence_length_template", "mean_qscore_template",
             "calibration_strand_genome_template", "barcode_arrangement"]):
@@ -285,9 +285,9 @@ class Fast5_to_seq_summary ():
                     for k2, v2 in v.items():
                         c[k][k2] += v2
 
-            logger.info ("Overall counts {}".format(counter_to_str(c["overall"])))
-            logger.info ("fields found {}".format(counter_to_str(c["fields_found"])))
-            logger.info ("fields not found {}".format(counter_to_str(c["fields_not_found"])))
+            logger.info ("Overall counts {}".format(dict_to_str(c["overall"])))
+            logger.info ("fields found {}".format(dict_to_str(c["fields_found"])))
+            logger.info ("fields not found {}".format(dict_to_str(c["fields_not_found"])))
 
             # Print final
             logger.warning ("Total reads: {} / Average speed: {} reads/s\n".format(len(df), round (len(df)/(time()-t), 2)))
