@@ -55,8 +55,10 @@ def main_pycoQC (args=None):
     parser_io.add_argument("--json_outfile", "-j", default="", type=str,
         help="Path to an output json file report (required if html_outfile not given)")
     parser_filt = parser.add_argument_group('Filtering options')
-    parser_filt.add_argument("--min_pass_qual", default=7, type=int,
+    parser_filt.add_argument("--min_pass_qual", default=7, type=float,
         help="Minimum quality to consider a read as 'pass' (default: %(default)s)")
+    parser_filt.add_argument("--min_pass_len", default=0, type=int,
+        help="Minimum read length to consider a read as 'pass' (default: %(default)s)")
     parser_filt.add_argument("--filter_calibration", default=False, action='store_true',
         help="If given, reads flagged as calibration strand by the basecaller are removed (default: %(default)s)")
     parser_filt.add_argument("--filter_duplicated", default=False, action='store_true',
@@ -114,6 +116,7 @@ def main_pycoQC (args=None):
         filter_duplicated = args.filter_duplicated,
         min_barcode_percent = args.min_barcode_percent,
         min_pass_qual = args.min_pass_qual,
+        min_pass_len = args.min_pass_len,
         sample = args.sample,
         html_outfile = args.html_outfile,
         report_title = args.report_title,
