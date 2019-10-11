@@ -10,18 +10,17 @@ The [Jupyter Notebook](https://jupyter.org/) is a fantastic tool that can be use
 
 One of the specificity of pycoQC is to have a rich python API meant to be used directly inside a Jupyter notebook. The pycoQC API for Jupyter is very flexible and allows you to explore your nanopore data interactively and in more depth than with the command line interface.
 
-* [pycoQC API usage notebook](https://a-slide.github.io/pycoQC/demo/pycoQC_API_demo/)
+* [pycoQC API usage notebook](pycoQC/API_usage)
 
 An online live version of the usage notebook served by MyBinder is also available to familiarize with the package API:
 
-[![nb](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/a-slide/pycoQC/dev?filepath=docs%2Fdemo%2FpycoQC_API_demo.ipynb)
+[![nb](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/a-slide/pycoQC/master?filepath=docs%2FpycoQC%2FAPI_usage.ipynb)
 
 ### Shell CLI
 
 On top of the jupyter interface, pycoQC also comes with a command line interface that can generate a beautiful HTML formatted report containing interactive D3.js plots.
 
-* [pycoQC CLI usage notebook](https://a-slide.github.io/pycoQC/demo/pycoQC_CLI_demo/)
-
+* [pycoQC CLI usage notebook](pycoQC/CLI_usage)
 
 ## Input files and options
 

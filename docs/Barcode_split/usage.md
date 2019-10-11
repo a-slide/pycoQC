@@ -8,11 +8,11 @@
 
 ### Jupyter API
 
-* [Barcode_split API usage notebook](https://a-slide.github.io/pycoQC/demo/Barcode_split_API_demo/)
+* [Barcode_split API usage notebook](Barcode_split/API_usage)
 
 ### Shell CLI
 
-* [Barcode_split CLI usage notebook](https://a-slide.github.io/pycoQC/demo/Barcode_split_CLI_demo/)
+* [Barcode_split CLI usage notebook](Barcode_split/CLI_usage)
 
 
 ## IO and options
