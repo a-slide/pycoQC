@@ -34,6 +34,7 @@ class pycoQC_plot ():
     def __init__ (self,
         parser:pycoQC_parse,
         min_pass_qual:int=7,
+        min_pass_len:int=0,
         sample:int=100000,
         verbose:bool=False,
         quiet:bool=False):
@@ -41,7 +42,9 @@ class pycoQC_plot ():
         * parser
             A pycoQC_parse object
         * min_pass_qual
-            Minimum quality to consider a read as 'pass
+            Minimum quality to consider a read as 'pass'
+        * min_pass_len
+            Minimum read length to consider a read as 'pass'
         * sample
             If not None a n number of reads will be randomly selected instead of the entire dataset for plotting function (deterministic sampling)
         """
@@ -64,6 +67,7 @@ class pycoQC_plot ():
         if self.has_alignment:
             self.ref_len_dict = parser.ref_len_dict
             self.alignments_df = parser.alignments_df
+        self.logger.info ("\tFound {:,} total reads".format(len(self.all_df)))
 
         # Save df wiews and compute scaling factors
         if sample and len(self.all_df)>sample:
@@ -73,13 +77,14 @@ class pycoQC_plot ():
             self.all_sample_df = self.all_df
             self.all_scaling_factor = 1
 
-        self.pass_df = self.all_df[self.all_df["mean_qscore"]>=min_pass_qual]
+        self.pass_df = self.all_df.query ("mean_qscore>={} and read_len>={}".format(min_pass_qual, min_pass_len))
         if sample and len(self.pass_df)>sample:
             self.pass_sample_df = self.pass_df.sample(n=sample, random_state=SEED)
             self.pass_scaling_factor = len(self.pass_df)/sample
         else:
             self.pass_sample_df = self.pass_df
             self.pass_scaling_factor = 1
+        self.logger.info ("\tFound {:,} pass reads (qual >= {} and length >= {})".format(len(self.pass_df), min_pass_qual, min_pass_len))
 
     def __str__(self):
         m = ""

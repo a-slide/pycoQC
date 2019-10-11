@@ -29,7 +29,8 @@ def pycoQC (
     filter_calibration:bool=False,
     filter_duplicated:bool=False,
     min_barcode_percent:float=0.1,
-    min_pass_qual:int=7,
+    min_pass_qual:float=7,
+    min_pass_len:int=0,
     sample:int=100000,
     html_outfile:str="",
     report_title:str="PycoQC report",
@@ -60,7 +61,9 @@ def pycoQC (
     * min_barcode_percent
         Minimal percent of total reads to retain barcode label. If below the barcode value is set as `unclassified`.
     * min_pass_qual
-        Minimum quality to consider a read as 'pass
+        Minimum quality to consider a read as 'pass'
+    * min_pass_len
+        Minimum read length to consider a read as 'pass'
     * sample
         If not None a n number of reads will be randomly selected instead of the entire dataset for ploting function (deterministic sampling)
     * html_outfile
@@ -96,6 +99,7 @@ def pycoQC (
     filter_duplicated = check_arg("filter_duplicated", filter_duplicated, required_type=bool, allow_none=False)
     min_barcode_percent = check_arg("min_barcode_percent", min_barcode_percent, required_type=float, min=0, max=100, allow_none=False)
     min_pass_qual = check_arg("min_pass_qual", min_pass_qual, required_type=float, min=0, max=60, allow_none=False)
+    min_pass_len = check_arg("min_pass_len", min_pass_len, required_type=int, min=0, allow_none=False)
     sample = check_arg("sample", sample, required_type=int, min=0, allow_none=True)
     html_outfile = check_arg("html_outfile", html_outfile, required_type=str, allow_none=True)
     html_outfile = check_arg("html_outfile", html_outfile, required_type=str, allow_none=True)
@@ -129,6 +133,7 @@ def pycoQC (
     plotter = pycoQC_plot(
         parser=parser,
         min_pass_qual=min_pass_qual,
+        min_pass_len=min_pass_len,
         sample=sample,
         verbose=verbose,
         quiet=quiet)
