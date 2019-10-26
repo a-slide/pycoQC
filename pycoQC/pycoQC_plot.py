@@ -882,7 +882,7 @@ class pycoQC_plot ():
         return (label, data_dict, layout_dict)
 
     #~~~~~~~QUAL_OVER_TIME METHODS AND HELPER~~~~~~~#
-    def len_over_time (self,
+    def read_len_over_time (self,
         median_color:str="rgb(102,168,255)",
         quartile_color:str="rgb(153,197,255)",
         extreme_color:str="rgba(153,197,255,0.5)",
@@ -910,40 +910,23 @@ class pycoQC_plot ():
         * plot_title
             Title to display on top of the plot
         """
-        self.logger.info ("\t\tComputing plot")
-
-        # Prepare all data
-        lab1, dd1 = self.__over_time_data (df_level="all", field_name="read_len", smooth_sigma=smooth_sigma, time_bins=time_bins)
-        lab2, dd2 = self.__over_time_data (df_level="pass", field_name="read_len", smooth_sigma=smooth_sigma, time_bins=time_bins)
-
-        # Plot initial data
-        data= [
-            go.Scatter(x=dd1["x"][0], y=dd1["y"][0], name=dd1["name"][0], mode="lines", line={"color":extreme_color}, connectgaps=True, legendgroup="Extreme"),
-            go.Scatter(x=dd1["x"][1], y=dd1["y"][1], name=dd1["name"][1], mode="lines", fill="tonexty", line={"color":extreme_color}, connectgaps=True, legendgroup="Extreme"),
-            go.Scatter(x=dd1["x"][2], y=dd1["y"][2], name=dd1["name"][2], mode="lines", line={"color":quartile_color}, connectgaps=True, legendgroup="Quartiles"),
-            go.Scatter(x=dd1["x"][3], y=dd1["y"][3], name=dd1["name"][3], mode="lines", fill="tonexty", line={"color":quartile_color}, connectgaps=True, legendgroup="Quartiles"),
-            go.Scatter(x=dd1["x"][4], y=dd1["y"][4], name=dd1["name"][4], mode="lines", line={"color":median_color}, connectgaps=True)]
-
-        # Create update buttons
-        updatemenus = [
-            go.layout.Updatemenu (type="buttons", active=0, x=-0.07, y=0, xanchor='right', yanchor='bottom', buttons = [
-                go.layout.updatemenu.Button (label=lab1, method='restyle', args=[dd1]),
-                go.layout.updatemenu.Button (label=lab2, method='restyle', args=[dd2])])]
-
-        # tweak plot layout
-        layout = go.Layout (
-            plot_bgcolor="whitesmoke",
+        fig = self.__over_time_plot (
+            field_name = "read_len",
+            plot_title = plot_title,
+            y_lab = "Alignment length",
+            y_scale = "log",
+            median_color = median_color,
+            quartile_color = quartile_color,
+            extreme_color = extreme_color,
+            smooth_sigma = smooth_sigma,
+            time_bins = time_bins,
             width = width,
-            height = height,
-            updatemenus = updatemenus,
-            legend = {"x":-0.07, "y":1,"xanchor":'right',"yanchor":'top'},
-            title = {"text":plot_title, "xref":"paper" ,"x":0.5, "xanchor":"center"},
-            yaxis = {"title":"Read length (log scale)", "type":"log", "zeroline":False, "showline":True, "rangemode":'nonnegative', "fixedrange":True},
-            xaxis = {"title":"Experiment time (h)", "zeroline":False, "showline":True, "rangemode":'nonnegative'})
+            height = height)
+        return fig
 
         return go.Figure (data=data, layout=layout)
 
-    def qual_over_time (self,
+    def read_qual_over_time (self,
         median_color:str="rgb(250,128,114)",
         quartile_color:str="rgb(250,170,160)",
         extreme_color:str="rgba(250,170,160,0.5)",
@@ -971,11 +954,131 @@ class pycoQC_plot ():
         * plot_title
             Title to display on top of the plot
         """
+
+        fig = self.__over_time_plot (
+            field_name = "mean_qscore",
+            plot_title = plot_title,
+            y_lab = "Mean read PHRED quality",
+            y_scale = "linear",
+            median_color = median_color,
+            quartile_color = quartile_color,
+            extreme_color = extreme_color,
+            smooth_sigma = smooth_sigma,
+            time_bins = time_bins,
+            width = width,
+            height = height)
+        return fig
+
+    def align_len_over_time (self,
+        median_color:str="rgb(102,168,255)",
+        quartile_color:str="rgb(153,197,255)",
+        extreme_color:str="rgba(153,197,255,0.5)",
+        smooth_sigma:float=1,
+        time_bins:int=500,
+        width:int=None,
+        height:int=500,
+        plot_title:str="Aligned reads length over experiment time"):
+        """
+        Plot a aligned reads length over time
+        * median_color
+            Color of median line color (hex, rgb, rgba, hsl, hsv or any CSS named colors https://www.w3.org/TR/css-color-3/#svg-color
+        * quartile_color
+            Color of inter quartile area and lines (hex, rgb, rgba, hsl, hsv or any CSS named colors https://www.w3.org/TR/css-color-3/#svg-color
+        * extreme_color
+            Color of inter extreme area and lines (hex, rgb, rgba, hsl, hsv or any CSS named colors https://www.w3.org/TR/css-color-3/#svg-col
+        * smooth_sigma
+            sigma parameter for the Gaussian filter line smoothing
+        * time_bins
+            Number of bins to divide the time values in (x axis)
+        * width
+            With of the plotting area in pixel
+        * height
+            height of the plotting area in pixel
+        * plot_title
+            Title to display on top of the plot
+        """
+        # Verify that alignemnt information are available
+        if not self.has_alignment:
+            raise pycoQCError ("No Alignment information available")
+
+        fig = self.__over_time_plot (
+            field_name = "align_len",
+            plot_title = plot_title,
+            y_lab = "Aligned reads length",
+            y_scale = "log",
+            median_color = median_color,
+            quartile_color = quartile_color,
+            extreme_color = extreme_color,
+            smooth_sigma = smooth_sigma,
+            time_bins = time_bins,
+            width = width,
+            height = height)
+        return fig
+
+    def identity_freq_over_time (self,
+        median_color:str="rgb(250,128,114)",
+        quartile_color:str="rgb(250,170,160)",
+        extreme_color:str="rgba(250,170,160,0.5)",
+        smooth_sigma:float=1,
+        time_bins:int=500,
+        width:int=None,
+        height:int=500,
+        plot_title:str="Aligned reads identity over experiment time"):
+        """
+        Plot the alignment identity scores over time
+        * median_color
+            Color of median line color (hex, rgb, rgba, hsl, hsv or any CSS named colors https://www.w3.org/TR/css-color-3/#svg-color
+        * quartile_color
+            Color of inter quartile area and lines (hex, rgb, rgba, hsl, hsv or any CSS named colors https://www.w3.org/TR/css-color-3/#svg-color
+        * extreme_color
+            Color of inter extreme area and lines (hex, rgb, rgba, hsl, hsv or any CSS named colors https://www.w3.org/TR/css-color-3/#svg-col
+        * smooth_sigma
+            sigma parameter for the Gaussian filter line smoothing
+        * time_bins
+            Number of bins to divide the time values in (x axis)
+        * width
+            With of the plotting area in pixel
+        * height
+            height of the plotting area in pixel
+        * plot_title
+            Title to display on top of the plot
+        """
+
+        # Verify that alignemnt information are available
+        if not self.has_identity_freq:
+            raise pycoQCError ("No identity frequency information available")
+
+        fig = self.__over_time_plot (
+            field_name = "identity_freq",
+            plot_title = plot_title,
+            y_lab = "Identity frequency",
+            y_scale = "linear",
+            median_color = median_color,
+            quartile_color = quartile_color,
+            extreme_color = extreme_color,
+            smooth_sigma = smooth_sigma,
+            time_bins = time_bins,
+            width = width,
+            height = height)
+        return fig
+
+    def __over_time_plot (self,
+        field_name,
+        plot_title,
+        y_lab,
+        y_scale,
+        median_color,
+        quartile_color,
+        extreme_color,
+        smooth_sigma,
+        time_bins,
+        width,
+        height):
+        """Private function generating density plots for all over_time functions"""
         self.logger.info ("\t\tComputing plot")
 
-        # Prepare all data
-        lab1, dd1 = self.__over_time_data (df_level="all", field_name="mean_qscore", smooth_sigma=smooth_sigma, time_bins=time_bins)
-        lab2, dd2 = self.__over_time_data (df_level="pass", field_name="mean_qscore", smooth_sigma=smooth_sigma, time_bins=time_bins)
+        lab1, dd1 = self.__over_time_data (df_level="all", field_name=field_name, smooth_sigma=smooth_sigma, time_bins=time_bins)
+        lab2, dd2 = self.__over_time_data (df_level="pass", field_name=field_name, smooth_sigma=smooth_sigma, time_bins=time_bins)
 
         # Plot initial data
         data= [
@@ -1001,17 +1104,18 @@ class pycoQC_plot ():
             updatemenus = updatemenus,
             legend = {"x":-0.07, "y":1,"xanchor":'right',"yanchor":'top'},
             title = {"text":plot_title, "xref":"paper" ,"x":0.5, "xanchor":"center"},
-            yaxis = {"title":"Mean quality", "zeroline":False, "showline":True, "rangemode":'nonnegative', "fixedrange":True},
+            yaxis = {"title":y_lab, "zeroline":False, "type":y_scale, "showline":True, "rangemode":'nonnegative', "fixedrange":True},
             xaxis = {"title":"Experiment time (h)", "zeroline":False, "showline":True, "rangemode":'nonnegative'})
 
         return go.Figure (data=data, layout=layout)
 
-    def __over_time_data (self, df_level, field_name="read_len", smooth_sigma=1.5, time_bins=500, sample=100000):
+    def __over_time_data (self, df_level, field_name="read_len", smooth_sigma=1.5, time_bins=500):
         """Private function preparing data for qual_over_time"""
         self.logger.debug ("\t\tPreparing data for {} reads and {}".format(df_level, field_name))
 
         # get data
         df = self.pass_sample_df if df_level == "pass" else self.all_sample_df
+        data = df[field_name].dropna().values
 
         # Bin data in categories
         t = (df["start_time"]/3600).values
@@ -1020,7 +1124,7 @@ class pycoQC_plot ():
 
         # List quality value per categories
         bin_dict = defaultdict (list)
-        for bin_idx, val in zip (t, df[field_name].values) :
+        for bin_idx, val in zip (t, data) :
             bin = x[bin_idx]
             bin_dict[bin].append(val)
 
@@ -1169,7 +1273,7 @@ class pycoQC_plot ():
 
         return go.Figure (data=data, layout=layout)
 
-    def __channels_activity_data (self, df_level, count_level="bases", n_channels=512, smooth_sigma=2, time_bins=150, sample=100000):
+    def __channels_activity_data (self, df_level, count_level="bases", n_channels=512, smooth_sigma=2, time_bins=150):
         """Private function preparing data for channels_activity"""
         self.logger.debug ("\t\tPreparing data for {} {}".format(df_level, count_level))
 

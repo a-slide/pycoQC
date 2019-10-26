@@ -61,21 +61,35 @@
     "cumulative_color": "rgb(204,226,255)",
     "interval_color": "rgb(102,168,255)"
   },
-  "len_over_time": {
-    "plot_title": "Read length over time",
+  "read_len_over_time": {
+    "plot_title": "Read length over experiment time",
     "median_color": "rgb(102,168,255)",
     "quartile_color": "rgb(153,197,255)",
     "extreme_color": "rgba(153,197,255,0.5)",
     "smooth_sigma": 1
   },
-  "qual_over_time": {
-    "plot_title": "Mean read quality over time",
+  "read_qual_over_time": {
+    "plot_title": "Read quality over experiment time",
     "median_color": "rgb(250,128,114)",
     "quartile_color": "rgb(250,170,160)",
     "extreme_color": "rgba(250,170,160,0.5)",
     "smooth_sigma": 1
   },
-  "barcode_counts": {
+  "align_len_over_time": {
+    "plot_title": "Aligned reads length over experiment time",
+    "median_color": "rgb(102,168,255)",
+    "quartile_color": "rgb(153,197,255)",
+    "extreme_color": "rgba(153,197,255,0.5)",
+    "smooth_sigma": 1
+  },
+  "identity_freq_over_time": {
+    "plot_title": "Aligned reads identity over experiment time",
+    "median_color": "rgb(250,128,114)",
+    "quartile_color": "rgb(250,170,160)",
+    "extreme_color": "rgba(250,170,160,0.5)",
+    "smooth_sigma": 1
+  },
+ "barcode_counts": {
     "plot_title": "Number of reads per barcode",
     "colors": [
       "#f8bc9c",
