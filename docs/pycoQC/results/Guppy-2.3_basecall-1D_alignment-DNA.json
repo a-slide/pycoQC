@@ -1,13 +1,14 @@
 {
   "pycoqc": {
-    "version": "2.5.0.14",
-    "date": "26/10/19"
+    "version": "2.5.0.15",
+    "date": "07/11/19"
   },
   "All Reads": {
     "run": {
       "run_duration": 0.24848622639973958,
       "active_channels": 453,
-      "runid_number": 1
+      "runid_number": 1,
+      "barcodes_number": 0
     },
     "basecall": {
       "reads_number": 12000,
@@ -221,9 +222,9 @@
       ]
     },
     "alignment": {
-      "mean_coverage": 2.4663713935184406,
       "reads_number": 10584,
       "bases_number": 29983936,
+      "mean_coverage": 2.4663713935184406,
       "N50": 7870,
       "len_percentiles": [
         74.0,
@@ -440,7 +441,8 @@
     "run": {
       "run_duration": 0.248411865234375,
       "active_channels": 427,
-      "runid_number": 1
+      "runid_number": 1,
+      "barcodes_number": 0
     },
     "basecall": {
       "reads_number": 10021,
@@ -654,9 +656,9 @@
       ]
     },
     "alignment": {
-      "mean_coverage": 2.3299260802633524,
       "reads_number": 9872,
       "bases_number": 28325156,
+      "mean_coverage": 2.3299260802633524,
       "N50": 8184,
       "len_percentiles": [
         74.0,

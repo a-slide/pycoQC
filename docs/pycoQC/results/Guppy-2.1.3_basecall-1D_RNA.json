@@ -1,13 +1,14 @@
 {
   "pycoqc": {
-    "version": "2.5.0.14",
-    "date": "26/10/19"
+    "version": "2.5.0.15",
+    "date": "07/11/19"
   },
   "All Reads": {
     "run": {
       "run_duration": 46.59075086805556,
       "active_channels": 455,
-      "runid_number": 1
+      "runid_number": 1,
+      "barcodes_number": 0
     },
     "basecall": {
       "reads_number": 10000,
@@ -225,7 +226,8 @@
     "run": {
       "run_duration": 44.38827690972222,
       "active_channels": 449,
-      "runid_number": 1
+      "runid_number": 1,
+      "barcodes_number": 0
     },
     "basecall": {
       "reads_number": 8222,
