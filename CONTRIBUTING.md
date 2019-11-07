@@ -7,10 +7,8 @@ First of all, thanks for considering contributing to `pycoQC`! 👍 It's people 
 [repo]: https://github.com/a-slide/pycoQC
 [issues]: https://github.com/a-slide/pycoQC/issues
 [new_issue]: https://github.com/a-slide/pycoQC/issues/new
-[citation]: https://zenodo.org/record/2540931
 [email]: aleg@ebi.ac.uk
 [code_of_conduct]: https://github.com/a-slide/pycoQC/blob/master/CODE_OF_CONDUCT.md
-[demo_notebook]: https://a-slide.github.io/pycoQC/pycoQC_usage.html
 
 ## Code of conduct
 
@@ -77,8 +75,6 @@ We try to follow the [GitHub flow](https://guides.github.com/introduction/flow/)
 4. Commit and push your changes.
 
 5. Submit a [pull request](https://guides.github.com/activities/forking/#making-a-pull-request).
-
-
 
 ---
 

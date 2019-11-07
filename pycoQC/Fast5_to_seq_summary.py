@@ -244,7 +244,7 @@ class Fast5_to_seq_summary ():
                     out_q.put(d)
                     c["overall"]["valid files"] += 1
                 else:
-                    c["overall"]["invalid files"]
+                    c["overall"]["invalid files"] += 1
 
             # Put counter in counter queue
             counter_q.put(c)

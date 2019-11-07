@@ -1,12 +1,12 @@
 {
-  "summary": {
-    "plot_title": "Run summary"
+  "run_summary": {
+    "plot_title": "General run summary"
   },
-  "barcode_summary": {
-    "plot_title": "Run summary by barcode"
+  "basecall_summary": {
+    "plot_title": "Basecall summary"
   },
-  "run_id_summary": {
-    "plot_title": "Run summary by Run ID"
+  "alignment_summary": {
+    "plot_title": "Alignment summary"
   },
   "read_len_1D": {
     "plot_title": "Basecalled reads length",
@@ -103,7 +103,7 @@
     "plot_title": "Channel activity over time",
     "smooth_sigma": 1
   },
-  "alignment_summary": {
+  "alignment_reads_status": {
     "plot_title": "Summary of reads alignment",
     "colors": [
       "#f8bc9c",
