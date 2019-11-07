@@ -106,21 +106,80 @@ class pycoQC_plot ():
     @property
     def has_barcodes (self):
         return "barcode" in self.all_df
+
     @property
     def has_alignment (self):
         return "ref_id" in self.all_df
+
     @property
     def has_identity_freq (self):
         return "identity_freq" in self.all_df
+
     @property
     def is_promethion (self):
         return self.all_df["channel"].max() > 512
+
     @property
     def total_ref_len (self):
         if self.has_alignment:
             return np.sum(list(self.ref_len_dict.values()))
 
+    def _run_duration(self, df):
+        return float(np.ptp(df["start_time"])/3600)
+
+    def _active_channels(self, df):
+        return int(df["channel"].nunique())
+
+    def _runid_number(self, df):
+        return int(df["run_id"].nunique())
+
+    def _barcodes_number(self, df):
+        return int(df["barcode"].nunique()) if self.has_barcodes else 0
+
+    def _basecalled_reads(self, df):
+        return len(df)
+
+    def _basecalled_bases(self, df):
+        return int(df["read_len"].sum())
+
+    def _basecall_N50(self, df):
+        return self._compute_N50(df["read_len"])
+
+    def _basecall_median_read_len(self, df):
+        return np.median(df["read_len"])
+
+    def _basecall_median_read_qscore(self, df):
+        return np.median(df["mean_qscore"])
+
+    def _alignment_mean_coverage(self, df):
+        return df["align_len"].dropna().sum()/self.total_ref_len if self.has_alignment else np.nan
+
+    def _aligned_reads(self, df):
+        return len(df["align_len"].dropna()) if self.has_alignment else np.nan
+
+    def _aligned_bases(self, df):
+        return int(df["align_len"].dropna().sum()) if self.has_alignment else np.nan
+
+    def _alignment_N50(self, df):
+        return self._compute_N50(df["align_len"]) if self.has_alignment else np.nan
+
+    def _alignment_median_read_len(self, df):
+        return np.median(df["align_len"].dropna()) if self.has_alignment else np.nan
+
+    def _alignment_median_identity(self, df):
+        return np.median(df["identity_freq"].dropna()) if self.has_identity_freq else np.nan
+
+    def _alignment_insertion_rate(self, df):
+        return df["insertion"].dropna().sum()/self._aligned_bases(df) if self.has_identity_freq else np.nan
+
+    def _alignment_deletion_rate(self, df):
+        return df["deletion"].dropna().sum()/self._aligned_bases(df) if self.has_identity_freq else np.nan
+
+    def _alignment_mismatch_rate(self, df):
+        return df["mismatch"].dropna().sum()/self._aligned_bases(df) if self.has_identity_freq else np.nan
+
     #~~~~~~~SUMMARY_STATS_DICT METHOD AND HELPER~~~~~~~#
+
     def summary_stats_dict (self):
         """
         Return a dictionnary containing exhaustive information about the run.
@@ -137,47 +196,43 @@ class pycoQC_plot ():
         return d
 
     def _compute_stats (self, df):
-        d = OrderedDict ()
 
+        d = OrderedDict ()
         # run information
         d["run"] = OrderedDict ()
-        d["run"]["run_duration"] = float(np.ptp(df["start_time"])/3600)
-        d["run"]["active_channels"] = int(df["channel"].nunique())
-        d["run"]["runid_number"] = int(df["run_id"].nunique())
-        if self.has_barcodes:
-            d["run"]["barcodes_number"] = int(df["barcode"].nunique())
-
-        # General run information = OrderedDict ()
+        d["run"]["run_duration"] = self._run_duration(df)
+        d["run"]["active_channels"] = self._active_channels(df)
+        d["run"]["runid_number"] = self._runid_number(df)
+        d["run"]["barcodes_number"] = self._barcodes_number(df)
         d["basecall"] = OrderedDict ()
-        d["basecall"]["reads_number"] = len(df)
-        d["basecall"]["bases_number"] = int(df["read_len"].sum())
-        d["basecall"]["N50"] = self._compute_N50(df["read_len"])
+        d["basecall"]["reads_number"] = self._basecalled_reads(df)
+        d["basecall"]["bases_number"] = self._basecalled_bases(df)
+        d["basecall"]["N50"] = self._basecall_N50(df)
         d["basecall"]["len_percentiles"] = self._compute_percentiles (df["read_len"])
         d["basecall"]["qual_score_percentiles"] = self._compute_percentiles (df["mean_qscore"])
-
         if self.has_alignment:
             d["alignment"] = OrderedDict ()
-            d["alignment"]["mean_coverage"] = df["align_len"].sum()/self.total_ref_len
-            d["alignment"]["reads_number"] = len(df["align_len"].dropna())
-            d["alignment"]["bases_number"] = int(df["align_len"].sum())
-            d["alignment"]["N50"] = self._compute_N50(df["align_len"])
+            d["alignment"]["reads_number"] = self._aligned_reads(df)
+            d["alignment"]["bases_number"] = self._aligned_bases(df)
+            d["alignment"]["mean_coverage"] = self._alignment_mean_coverage(df)
+            d["alignment"]["N50"] = self._alignment_N50(df)
             d["alignment"]["len_percentiles"] = self._compute_percentiles (df["align_len"])
             if self.has_identity_freq:
                 d["alignment"]["identity_freq_percentiles"] = self._compute_percentiles (df["identity_freq"])
-                d["alignment"]["insertion_rate"] = df["insertion"].sum()/d["alignment"]["bases_number"]
-                d["alignment"]["deletion_rate"] = df["deletion"].sum()/d["alignment"]["bases_number"]
-                d["alignment"]["mismatch_rate"] = df["mismatch"].sum()/d["alignment"]["bases_number"]
+                d["alignment"]["insertion_rate"] = self._alignment_insertion_rate(df)
+                d["alignment"]["deletion_rate"] = self._alignment_deletion_rate(df)
+                d["alignment"]["mismatch_rate"] = self._alignment_mismatch_rate(df)
 
         return d
 
-    #~~~~~~~SUMMARY METHOD AND HELPER~~~~~~~#
-    def summary (self,
-        groupby:str = None,
+    #~~~~~~~SUMMARY METHODS AND HELPER~~~~~~~#
+
+    def run_summary (self,
         width:int = None,
-        height:int = None,
-        plot_title:str="Run summary"):
+        height:int = 300,
+        plot_title:str="General run summary"):
         """
-        Plot an interactive summary table per runid
+        Plot an interactive overall summary table
         * groupby
             Value of field to group the data in the table
         * width
@@ -187,103 +242,139 @@ class pycoQC_plot ():
         * plot_title
             Title to display on top of the plot
         """
+        # Extract data
+        data = []
+        for status, df in (("All Reads", self.all_df), ("Pass Reads", self.pass_df)):
+            data.append([
+                status,
+                self._run_duration(df),
+                self._active_channels(df),
+                self._runid_number(df),
+                self._barcodes_number(df)])
+
+        fig = self.__summary_plot (
+            width = width,
+            height = height,
+            plot_title = plot_title,
+            header=["Status", "Run Duration (h)", "Active Channels", "Number of Runids", "Number of Barcodes"],
+            data_format=["", ".2f", "", "", ""],
+            data=[*zip(*data)])
+
+        return fig
+
+    def basecall_summary (self,
+        width:int = None,
+        height:int = 300,
+        plot_title:str="Basecall summary"):
+        """
+        Plot an interactive basecall summary table
+        * groupby
+            Value of field to group the data in the table
+        * width
+            With of the plotting area in pixel
+        * height
+            height of the plotting area in pixel
+        * plot_title
+            Title to display on top of the plot
+        """
+        # Extract data
+        data = []
+        for status, df in (("All Reads", self.all_df), ("Pass Reads", self.pass_df)):
+            data.append([
+                status,
+                self._basecalled_reads(df),
+                self._basecalled_bases(df),
+                self._basecall_N50(df),
+                self._basecall_median_read_len(df),
+                self._basecall_median_read_qscore(df)])
+
+        fig = self.__summary_plot (
+            width = width,
+            height = height,
+            plot_title = plot_title,
+            header=["Status", "Reads", "Bases", "N50", "Median Read Length", "Median PHRED score"],
+            data_format=["", ".6e", ".6e", ".3r", ".3r", ".3f"],
+            data=[*zip(*data)])
+
+        return fig
+
+
+    def alignment_summary (self,
+        width:int = None,
+        height:int = 300,
+        plot_title:str="Alignment summary"):
+        """
+        Plot an interactive alignment summary table
+        * groupby
+            Value of field to group the data in the table
+        * width
+            With of the plotting area in pixel
+        * height
+            height of the plotting area in pixel
+        * plot_title
+            Title to display on top of the plot
+        """
+        # Verify that alignemnt information are available
+        if not self.has_alignment:
+            raise pycoQCError ("No Alignment information available")
+
+        data = []
+        for status, df in (("All Reads", self.all_df), ("Pass Reads", self.pass_df)):
+            data.append([
+                status,
+                self._aligned_reads(df),
+                self._aligned_bases(df),
+                self._alignment_mean_coverage(df),
+                self._alignment_N50(df),
+                self._alignment_median_read_len(df),
+                self._alignment_median_identity(df)])
+
+        fig = self.__summary_plot (
+            width = width,
+            height = height,
+            plot_title = plot_title,
+            header=["Status", "Reads", "Bases", "Mean Coverage", "N50", "Median Read Length", "Median Identity Freq"],
+            data_format=["", ".6e", ".6e", ".3r", ".3r", ".3r", ".3f"],
+            data=[*zip(*data)])
+
+        return fig
+
+    def __summary_plot (self, width, height, plot_title, header, data_format, data):
+        """Private function generating summary table plots"""
         self.logger.info ("\t\tComputing plot")
 
-        # Prepare all data
-        lab1, dd1 = self.__summary_data (df_level="all", groupby=groupby)
-        lab2, dd2 = self.__summary_data (df_level="pass", groupby=groupby)
-
-        # Plot initial data
+        # Plot data
         data = [go.Table(
-            header = dd1["header"][0],
-            cells = dd1["cells"][0])]
-
-        # Create update buttons
-        updatemenus = [
-            dict (type="buttons", active=0, x=-0.05, y=1, xanchor='right', yanchor='top', buttons = [
-                dict (label=lab1, method='restyle', args=[dd1]),
-                dict (label=lab2, method='restyle', args=[dd2])])]
-
-        # Autodefine height depending on the numbers of run_ids
-        if not height:
-            height=300+(30*self.all_df[groupby].nunique()) if groupby else 300
+            header = {
+                "values":header,
+                "align":"center", "fill":{"color":"grey"},
+                "font":{"size":14, "color":"white"},
+                "height":40},
+            cells = {
+                "values":data,
+                "format": data_format,
+                "align":"center",
+                "fill":{"color":"whitesmoke"},
+                "font":{"size":12}, "height":30})]
 
         # tweak plot layout
         layout = go.Layout (
-            updatemenus = updatemenus,
             width = width,
             height = height,
             title = {"text":plot_title, "xref":"paper" ,"x":0.5, "xanchor":"center"})
 
         return go.Figure (data=data, layout=layout)
 
-    def barcode_summary (self,
-        width:int = None,
-        height:int = None,
-        plot_title:str="Run summary by barcode"):
-        """
-        Plot an interactive summary table per barcode (if available)
-        """
-        # Verify that barcode information are available
-        if not self.has_barcodes:
-            raise pycoQCError ("No barcode information available")
-
-        return self.summary(groupby="barcode", width=width, height=height, plot_title=plot_title)
-
-    def run_id_summary (self,
-        width:int = None,
-        height:int = None,
-        plot_title:str="Run summary by Run ID"):
-        """
-        Plot an interactive summary table per run_id
-        """
-        if self.all_df["run_id"].nunique() == 1:
-            raise pycoQCError ("There is only one run_id")
-
-        return self.summary(groupby="run_id", width=width, height=height, plot_title=plot_title)
-
-    def __summary_data (self, df_level, groupby=None):
-        """
-        Private function preparing data for summary
-        """
-        self.logger.debug ("\t\tPreparing data for {} reads".format(df_level))
-
-        # Get data
-        df = self.pass_df if df_level == "pass" else self.all_df
-
-        # Group by barcode if required. Otherwise fall back to runid
-        cells = []
-        if groupby:
-            header=[groupby.capitalize(), "Reads", "Bases", "Med Read Length", "N50 Length", "Med Read Quality", "Active Channels", "Run Duration (h)"]
-            for id, sdf in df.groupby (groupby):
-                cells.append (self.__df_to_cell(sdf, id))
-        else:
-            header=["Reads", "Bases", "Med Read Length", "N50 Length", "Med Read Quality", "Active Channels", "Run Duration (h)"]
-            cells.append (self.__df_to_cell(df))
-
-        # Transpose list of list
-        cells = [*zip(*cells)]
-
-        data_dict = dict (
-            header = [{"values":header, "align":"center", "fill":{"color":"grey"}, "font":{"size":14, "color":"white"}, "height":40}],
-            cells  = [{"values":cells, "align":"center", "fill":{"color":"whitesmoke"}, "font":{"size":12}, "height":30}])
-
-        label = "{} Reads".format(df_level.capitalize())
-        return (label, data_dict)
-
-    def __df_to_cell (self, df, id=None):
-        """Extract information from sub-dataframes and return a list of values"""
-        l = []
-        if id:
-            l.append (id)
-        l.append ("{:,}".format(len(df)))
-        l.append ("{:,}".format(df["read_len"].sum()))
-        l.append ("{:,.2f}".format(df["read_len"].median()))
-        l.append ("{:,.2f}".format(self._compute_N50(df["read_len"])))
-        l.append ("{:,.2f}".format(df["mean_qscore"].median()))
-        l.append ("{:,}".format(df["channel"].nunique()))
-        l.append ("{:,.2f}".format(np.ptp(df["start_time"])/3600))
-        return l
+    # def __summary_data (self, type):
+    #     """
+    #     Private function preparing data for summary
+    #     """
+    #     self.logger.debug ("\t\tPreparing data")
+    #
+    #
+    #
+    #     label = "{} Reads".format(df_level.capitalize())
+    #     return (data_dict)
 
     #~~~~~~~1D DISTRIBUTION METHODS AND HELPER~~~~~~~#
     def read_len_1D (self,
@@ -1316,11 +1407,11 @@ class pycoQC_plot ():
         return (label, data_dict)
 
     #~~~~~~~ALIGNMENT_SUMMARY METHOD~~~~~~~#
-    def alignment_summary (self,
+    def alignment_reads_status (self,
         colors:list=["#f44f39","#fc8161","#fcaf94","#828282"],
         width:int= None,
         height:int=500,
-        plot_title:str="Summary of reads alignment"):
+        plot_title:str="Summary of reads alignment status"):
         """
         Plot a basic alignment summary
         * colors
