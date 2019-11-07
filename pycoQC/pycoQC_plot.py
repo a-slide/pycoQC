@@ -365,17 +365,6 @@ class pycoQC_plot ():
 
         return go.Figure (data=data, layout=layout)
 
-    # def __summary_data (self, type):
-    #     """
-    #     Private function preparing data for summary
-    #     """
-    #     self.logger.debug ("\t\tPreparing data")
-    #
-    #
-    #
-    #     label = "{} Reads".format(df_level.capitalize())
-    #     return (data_dict)
-
     #~~~~~~~1D DISTRIBUTION METHODS AND HELPER~~~~~~~#
     def read_len_1D (self,
         color:str="lightsteelblue",
@@ -881,10 +870,10 @@ class pycoQC_plot ():
         self.logger.info ("\t\tComputing plot")
 
         # Prepare all data
-        lab1, dd1, ld1 = args=self.__output_over_time_data (df_level="all", count_level="reads", time_bins=time_bins)
-        lab2, dd2, ld2 = args=self.__output_over_time_data (df_level="pass", count_level="reads", time_bins=time_bins)
-        lab3, dd3, ld3 = args=self.__output_over_time_data (df_level="all", count_level="bases", time_bins=time_bins)
-        lab4, dd4, ld4 = args=self.__output_over_time_data (df_level="pass", count_level="bases", time_bins=time_bins)
+        lab1, dd1, ld1 = self.__output_over_time_data (df_level="all", count_level="reads", time_bins=time_bins)
+        lab2, dd2, ld2 = self.__output_over_time_data (df_level="pass", count_level="reads", time_bins=time_bins)
+        lab3, dd3, ld3 = self.__output_over_time_data (df_level="all", count_level="bases", time_bins=time_bins)
+        lab4, dd4, ld4 = self.__output_over_time_data (df_level="pass", count_level="bases", time_bins=time_bins)
 
         # Plot initial data
         line_style = {'color':'gray','width':1,'dash':'dot'}
@@ -1014,8 +1003,6 @@ class pycoQC_plot ():
             width = width,
             height = height)
         return fig
-
-        return go.Figure (data=data, layout=layout)
 
     def read_qual_over_time (self,
         median_color:str="rgb(250,128,114)",
@@ -1336,10 +1323,10 @@ class pycoQC_plot ():
         n_channels = 3000 if self.is_promethion else 512
 
         # Prepare all data
-        lab1, dd1 = args=self.__channels_activity_data(df_level="all", count_level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma, time_bins=time_bins)
-        lab2, dd2 = args=self.__channels_activity_data(df_level="pass", count_level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma, time_bins=time_bins)
-        lab3, dd3 = args=self.__channels_activity_data(df_level="all", count_level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma, time_bins=time_bins)
-        lab4, dd4 = args=self.__channels_activity_data(df_level="pass", count_level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma, time_bins=time_bins)
+        lab1, dd1 = self.__channels_activity_data(df_level="all", count_level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma, time_bins=time_bins)
+        lab2, dd2 = self.__channels_activity_data(df_level="pass", count_level="reads", n_channels=n_channels, smooth_sigma=smooth_sigma, time_bins=time_bins)
+        lab3, dd3 = self.__channels_activity_data(df_level="all", count_level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma, time_bins=time_bins)
+        lab4, dd4 = self.__channels_activity_data(df_level="pass", count_level="bases", n_channels=n_channels, smooth_sigma=smooth_sigma, time_bins=time_bins)
 
         # Plot initial data
         data = [go.Heatmap(x=dd1["x"][0], y=dd1["y"][0], z=dd1["z"][0], xgap=0.5, colorscale=colorscale, hoverinfo="x+y+z")]

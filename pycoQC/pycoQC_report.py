@@ -182,6 +182,8 @@ class pycoQC_report ():
 
         # Last use the default harcoded config_dict
         self.logger.debug ("\tRead default jinja template")
-        env = jinja2.Environment (loader=jinja2.PackageLoader('pycoQC', 'templates'), autoescape=False)
+        env = jinja2.Environment (
+            loader=jinja2.PackageLoader('pycoQC', 'templates'),
+            autoescape=jinja2.select_autoescape(["html"]))
         template = env.get_template('spectre.html.j2')
         return template

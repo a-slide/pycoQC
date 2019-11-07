@@ -5,7 +5,6 @@
 # Standard library imports
 from collections import *
 import warnings
-import datetime
 
 # Third party imports
 import numpy as np
@@ -180,7 +179,6 @@ class pycoQC_parse ():
             return (pd.DataFrame(), pd.DataFrame(), OrderedDict())
 
         # Init collections
-        unmapped=0
         ref_len_dict = OrderedDict()
         alignments_dict = Counter()
         read_dict = OrderedDict ()

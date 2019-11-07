@@ -1,5 +1,10 @@
 # pycoQC Changelog
 
+### 11/10/2019 v-2.5.0.17
+
+* Style update to comply with codacity
+* Update summary table functions and split into 3 Run, Basecall and align
+
 ### 11/10/2019 v-2.5.0.14
 
 * Add min_pass_len option to specify a minimal read length to be "pass"

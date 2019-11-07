@@ -67,8 +67,6 @@ def Barcode_split (
 
     # Process data
     logger.warning ("Import data from sequencing summary file(s) and cleanup")
-    logger.info ("\tExpand file names list")
-    fn_list = expand_file_names(summary_file)
     logger.info ("\tRead files and import in a dataframe")
     pps = pycoQC_parse(summary_file=summary_file, barcode_file=barcode_file, cleanup=False, verbose=verbose, quiet=quiet)
     df = pps.reads_df
