@@ -43,7 +43,7 @@ class pycoQC_report ():
 
         # Check that parser is a valid instance of pycoQC_parse
         if not isinstance(parser, pycoQC_parse):
-            raise pycoQCError ("{} is not a valid pycoQC_parse object".format(parser)) ##################################### Use parser to get file list for report
+            raise pycoQCError ("{} is not a valid pycoQC_parse object".format(parser))
         self.parser = parser
 
         # Check that plotter is a valid instance of pycoQC_plot
@@ -135,6 +135,7 @@ class pycoQC_report ():
 
         # Write to HTML file
         self.logger.info("\tWriting to HTML file")
+        mkbasedir(outfile, exist_ok=True)
         with open(outfile, "w") as fp:
             fp.write(rendering)
 
@@ -146,6 +147,7 @@ class pycoQC_report ():
         res_dict = self.plotter.summary_stats_dict ()
 
         self.logger.info("\tWriting to JSON file")
+        mkbasedir(outfile, exist_ok=True)
         with open (outfile, "w") as fp:
             json.dump(res_dict, fp, indent=2)
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Standard library imports
-from os import access, R_OK, listdir, path
+from os import access, R_OK, listdir, path, makedirs
 import inspect
 from glob import iglob, glob
 import sys
@@ -29,7 +29,7 @@ def is_readable_file (fn):
 
 def check_arg (arg_name, arg_val, required_type, allow_none=True, min=None, max=None, choices=[]):
     """Check argument values and type"""
-    if allow_none and arg_val == None:
+    if allow_none and arg_val is None:
         return arg_val
 
     if not isinstance(arg_val, required_type):
@@ -157,9 +157,9 @@ def make_arg_dict (func):
         # Parse arguments default values and annotations
         d = OrderedDict()
         for name, p in inspect.signature(func).parameters.items():
-            if not p.name in ["self","cls"]: # Object stuff. Does not make sense to include in doc
+            if p.name not in ["self","cls"]: # Object stuff. Does not make sense to include in doc
                 d[name] = OrderedDict()
-                if not name in ["kwargs","args"]: # Include but skip default required and type
+                if name not in ["kwargs","args"]: # Include but skip default required and type
                     # Get Annotation
                     if p.annotation != inspect._empty:
                         d[name]["type"] = p.annotation
@@ -199,10 +199,10 @@ def arg_opt (func, arg, **kwargs):
 
     # Special case for boolean args
     if arg_dict["type"] == bool:
-        if arg_dict["default"] == False:
+        if arg_dict["default"] is False:
             arg_dict["action"] = 'store_true'
             del arg_dict["type"]
-        elif arg_dict["default"] == True:
+        elif arg_dict["default"] is True:
             arg_dict["action"] = 'store_false'
             del arg_dict["type"]
 
@@ -358,3 +358,16 @@ def merge_files_to_df(fn_list):
         raise pycoQCError ("No valid read found in input file")
 
     return df
+
+def mkdir (fn, exist_ok=False):
+    """ Create directory recursivelly. Raise IO error if path exist or if error at creation """
+    try:
+        makedirs (fn, exist_ok=exist_ok)
+    except:
+        raise pycoMethError ("Error creating output folder `{}`".format(fn))
+
+def mkbasedir (fn, exist_ok=False):
+    """ Create directory for a given file recursivelly. Raise IO error if path exist or if error at creation """
+    dir_fn = path.dirname(fn)
+    if dir_fn:
+        mkdir (dir_fn, exist_ok=True)
