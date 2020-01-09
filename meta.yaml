@@ -1,4 +1,4 @@
-{% set version = "2.5.0.18" %}
+{% set version = "2.5.0.19" %}
 {% set name = "pycoQC" %}
 
 package:
