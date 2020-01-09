@@ -519,14 +519,18 @@ class pycoQC_plot ():
         lab2, dd2, ld2 = self.__1D_density_data ("pass" ,field_name, x_scale, nbins, smooth_sigma)
 
         # Plot initial data
-        line_style = {'color':'gray','width':1,'dash': 'dot'}
+        common = {
+            "mode": "lines+text",
+            "hoverinfo": "skip",
+            "textposition": 'top center',
+            "line":  {'color':'gray','width':1,'dash': 'dot'}}
         data = [
             go.Scatter (x=dd1["x"][0], y=dd1["y"][0], name=dd1["name"][0], fill='tozeroy', fillcolor=color, mode='none', showlegend=True),
-            go.Scatter (x=dd1["x"][1], y=dd1["y"][1], name=dd1["name"][1], text=dd1["text"][1], mode="lines+text", hoverinfo="skip", textposition='top center', line= line_style),
-            go.Scatter (x=dd1["x"][2], y=dd1["y"][2], name=dd1["name"][2], text=dd1["text"][2], mode="lines+text", hoverinfo="skip", textposition='top center', line= line_style),
-            go.Scatter (x=dd1["x"][3], y=dd1["y"][3], name=dd1["name"][3], text=dd1["text"][3], mode="lines+text", hoverinfo="skip", textposition='top center', line= line_style),
-            go.Scatter (x=dd1["x"][4], y=dd1["y"][4], name=dd1["name"][4], text=dd1["text"][4], mode="lines+text", hoverinfo="skip", textposition='top center', line= line_style),
-            go.Scatter (x=dd1["x"][5], y=dd1["y"][5], name=dd1["name"][5], text=dd1["text"][5], mode="lines+text", hoverinfo="skip", textposition='top center', line= line_style)]
+            go.Scatter (x=dd1["x"][1], y=dd1["y"][1], name=dd1["name"][1], text=dd1["text"][1], **common),
+            go.Scatter (x=dd1["x"][2], y=dd1["y"][2], name=dd1["name"][2], text=dd1["text"][2], **common),
+            go.Scatter (x=dd1["x"][3], y=dd1["y"][3], name=dd1["name"][3], text=dd1["text"][3], **common),
+            go.Scatter (x=dd1["x"][4], y=dd1["y"][4], name=dd1["name"][4], text=dd1["text"][4], **common),
+            go.Scatter (x=dd1["x"][5], y=dd1["y"][5], name=dd1["name"][5], text=dd1["text"][5], **common)]
 
         # Create update buttons
         updatemenus = [
@@ -595,7 +599,13 @@ class pycoQC_plot ():
 
     #~~~~~~~2D DISTRIBUTION METHOD AND HELPER~~~~~~~#
     def read_len_read_qual_2D (self,
-        colorscale = [[0.0,'rgba(255,255,255,0)'], [0.1,'rgba(255,150,0,0)'], [0.25,'rgb(255,100,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(70,0,0)']],
+        colorscale = [
+            [0.0,'rgba(255,255,255,0)'],
+            [0.1,'rgba(255,150,0,0)'],
+            [0.25,'rgb(255,100,0)'],
+            [0.5,'rgb(200,0,0)'],
+            [0.75,'rgb(120,0,0)'],
+            [1.0,'rgb(70,0,0)']],
         x_nbins:int=200,
         y_nbins:int=100,
         smooth_sigma:float=2,
@@ -636,7 +646,13 @@ class pycoQC_plot ():
         return fig
 
     def read_len_align_len_2D (self,
-        colorscale = [[0.0,'rgba(255,255,255,0)'], [0.1,'rgba(255,150,0,0)'], [0.25,'rgb(255,100,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(70,0,0)']],
+        colorscale = [
+            [0.0,'rgba(255,255,255,0)'],
+            [0.1,'rgba(255,150,0,0)'],
+            [0.25,'rgb(255,100,0)'],
+            [0.5,'rgb(200,0,0)'],
+            [0.75,'rgb(120,0,0)'],
+            [1.0,'rgb(70,0,0)']],
         x_nbins:int=200,
         y_nbins:int=100,
         smooth_sigma:float=1,
@@ -681,7 +697,12 @@ class pycoQC_plot ():
         return fig
 
     def align_len_identity_freq_2D (self,
-        colorscale = [[0.0,'rgba(255,255,255,0)'], [0.1,'rgba(255,150,0,0)'], [0.25,'rgb(255,100,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(70,0,0)']],
+        colorscale = [
+            [0.0,'rgba(255,255,255,0)'],
+            [0.1,'rgba(255,150,0,0)'],
+            [0.25,'rgb(255,100,0)'],
+            [0.5,'rgb(200,0,0)'],
+            [0.75,'rgb(120,0,0)'], [1.0,'rgb(70,0,0)']],
         x_nbins:int=200,
         y_nbins:int=100,
         smooth_sigma:float=2,
@@ -726,7 +747,13 @@ class pycoQC_plot ():
         return fig
 
     def read_qual_identity_freq_2D (self,
-        colorscale = [[0.0,'rgba(255,255,255,0)'], [0.1,'rgba(255,150,0,0)'], [0.25,'rgb(255,100,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(70,0,0)']],
+        colorscale = [
+            [0.0,'rgba(255,255,255,0)'],
+            [0.1,'rgba(255,150,0,0)'],
+            [0.25,'rgb(255,100,0)'],
+            [0.5,'rgb(200,0,0)'],
+            [0.75,'rgb(120,0,0)'],
+            [1.0,'rgb(70,0,0)']],
         x_nbins:int=200,
         y_nbins:int=100,
         smooth_sigma:float=1,
@@ -770,7 +797,9 @@ class pycoQC_plot ():
             plot_title = plot_title)
         return fig
 
-    def __2D_density_plot (self, x_field_name, y_field_name, x_lab, y_lab, x_scale, y_scale, x_nbins, y_nbins, colorscale, smooth_sigma, width, height, plot_title):
+    def __2D_density_plot (self,
+        x_field_name, y_field_name, x_lab, y_lab, x_scale, y_scale, x_nbins, y_nbins,
+        colorscale, smooth_sigma, width, height, plot_title):
         """Private function generating density plots for all 2D distribution functions"""
         self.logger.info ("\t\tComputing plot")
 
@@ -876,15 +905,19 @@ class pycoQC_plot ():
         lab4, dd4, ld4 = self.__output_over_time_data (df_level="pass", count_level="bases", time_bins=time_bins)
 
         # Plot initial data
-        line_style = {'color':'gray','width':1,'dash':'dot'}
+        common = {
+            "mode": "lines+text",
+            "hoverinfo": "skip",
+            "textposition": 'top center',
+            "line":  {'color':'gray','width':1,'dash': 'dot'}}
         data = [
             go.Scatter (x=dd1["x"][0], y=dd1["y"][0], name=dd1["name"][0], fill='tozeroy', fillcolor=cumulative_color, mode='none'),
             go.Scatter (x=dd1["x"][1], y=dd1["y"][1], name=dd1["name"][1], mode='lines', line={'color':interval_color,'width':2}),
-            go.Scatter (x=dd1["x"][2], y=dd1["y"][2], name=dd1["name"][2], text=dd1["text"][2], mode="lines+text", hoverinfo="skip", textposition='top center', line=line_style),
-            go.Scatter (x=dd1["x"][3], y=dd1["y"][3], name=dd1["name"][3], text=dd1["text"][3], mode="lines+text", hoverinfo="skip", textposition='top center', line=line_style),
-            go.Scatter (x=dd1["x"][4], y=dd1["y"][4], name=dd1["name"][4], text=dd1["text"][4], mode="lines+text", hoverinfo="skip", textposition='top center', line=line_style),
-            go.Scatter (x=dd1["x"][5], y=dd1["y"][5], name=dd1["name"][5], text=dd1["text"][5], mode="lines+text", hoverinfo="skip", textposition='top center', line=line_style),
-            go.Scatter (x=dd1["x"][6], y=dd1["y"][6], name=dd1["name"][6], text=dd1["text"][6], mode="lines+text", hoverinfo="skip", textposition='top center', line=line_style)]
+            go.Scatter (x=dd1["x"][2], y=dd1["y"][2], name=dd1["name"][2], text=dd1["text"][2], **common),
+            go.Scatter (x=dd1["x"][3], y=dd1["y"][3], name=dd1["name"][3], text=dd1["text"][3], **common),
+            go.Scatter (x=dd1["x"][4], y=dd1["y"][4], name=dd1["name"][4], text=dd1["text"][4], **common),
+            go.Scatter (x=dd1["x"][5], y=dd1["y"][5], name=dd1["name"][5], text=dd1["text"][5], **common),
+            go.Scatter (x=dd1["x"][6], y=dd1["y"][6], name=dd1["name"][6], text=dd1["text"][6], **common)]
 
         # Create update buttons
         updatemenus = [
@@ -1159,12 +1192,15 @@ class pycoQC_plot ():
         lab2, dd2 = self.__over_time_data (df_level="pass", field_name=field_name, smooth_sigma=smooth_sigma, time_bins=time_bins)
 
         # Plot initial data
+        common = {
+            "mode": "lines",
+            "connectgaps": True}
         data= [
-            go.Scatter(x=dd1["x"][0], y=dd1["y"][0], name=dd1["name"][0], mode="lines", line={"color":extreme_color}, connectgaps=True, legendgroup="Extreme"),
-            go.Scatter(x=dd1["x"][1], y=dd1["y"][1], name=dd1["name"][1], mode="lines", fill="tonexty", line={"color":extreme_color}, connectgaps=True, legendgroup="Extreme"),
-            go.Scatter(x=dd1["x"][2], y=dd1["y"][2], name=dd1["name"][2], mode="lines", line={"color":quartile_color}, connectgaps=True, legendgroup="Quartiles"),
-            go.Scatter(x=dd1["x"][3], y=dd1["y"][3], name=dd1["name"][3], mode="lines", fill="tonexty", line={"color":quartile_color}, connectgaps=True, legendgroup="Quartiles"),
-            go.Scatter(x=dd1["x"][4], y=dd1["y"][4], name=dd1["name"][4], mode="lines", line={"color":median_color}, connectgaps=True)]
+            go.Scatter(x=dd1["x"][0], y=dd1["y"][0], name=dd1["name"][0], line={"color":extreme_color}, legendgroup="Extreme", **common),
+            go.Scatter(x=dd1["x"][1], y=dd1["y"][1], name=dd1["name"][1], fill="tonexty", line={"color":extreme_color}, legendgroup="Extreme", **common),
+            go.Scatter(x=dd1["x"][2], y=dd1["y"][2], name=dd1["name"][2], line={"color":quartile_color}, legendgroup="Quartiles", **common),
+            go.Scatter(x=dd1["x"][3], y=dd1["y"][3], name=dd1["name"][3], fill="tonexty", line={"color":quartile_color}, legendgroup="Quartiles", **common),
+            go.Scatter(x=dd1["x"][4], y=dd1["y"][4], name=dd1["name"][4], line={"color":median_color}, **common)]
 
         # Create update buttons
         updatemenus = [
@@ -1294,9 +1330,15 @@ class pycoQC_plot ():
         label = "{} Reads".format(df_level.capitalize())
         return (label, data_dict)
 
-    #~~~~~~~BARCODE_COUNT METHODS AND HELPER~~~~~~~# ################################################################################ ADD TABLE AS IN ALIGNMENTS
+    #~~~~~~~BARCODE_COUNT METHODS AND HELPER~~~~~~~# ############################################################################# ADD TABLE AS IN ALIGNMENTS
     def channels_activity (self,
-        colorscale:list = [[0.0,'rgba(255,255,255,0)'], [0.01,'rgb(255,255,200)'], [0.25,'rgb(255,200,0)'], [0.5,'rgb(200,0,0)'], [0.75,'rgb(120,0,0)'], [1.0,'rgb(0,0,0)']],
+        colorscale:list = [
+            [0.0,'rgba(255,255,255,0)'],
+            [0.01,'rgb(255,255,200)'],
+            [0.25,'rgb(255,200,0)'],
+            [0.5,'rgb(200,0,0)'],
+            [0.75,'rgb(120,0,0)'],
+            [1.0,'rgb(0,0,0)']],
         smooth_sigma:float=1,
         time_bins:int=100,
         width:int=None,
@@ -1492,8 +1534,12 @@ class pycoQC_plot ():
         # plot Table
         data1 = go.Table(
             columnwidth = [3,2,2,2],
-            header = {"values":["Bases","Bases Count","% Total","% Aligned"], "align":"center", "fill_color":["grey"], "font_size":14, "font_color":"white", "height":40},
-            cells = {"values":df.values.T , "format":["", ".3e", ".3p", ".3p"], "align":"center", "fill_color":"whitesmoke", "font_size":12, "height":30})
+            header = {
+                "values":["Bases","Bases Count","% Total","% Aligned"],
+                "align":"center", "fill_color":["grey"], "font_size":14, "font_color":"white", "height":40},
+            cells = {
+                "values":df.values.T , "format":["", ".3e", ".3p", ".3p"],
+                "align":"center", "fill_color":"whitesmoke", "font_size":12, "height":30})
 
         data2 = go.Sankey(
             arrangement = "freeform",
@@ -1599,7 +1645,10 @@ class pycoQC_plot ():
         shapes = []
         x_shape_coord = np.array(self._ref_offset(self.ref_len_dict, coordinates="left", ret_type="list")[1:])*nbins/self.total_ref_len
         for i in range(0, len(self.ref_len_dict)-2, 2):
-            shapes.append(go.layout.Shape(type="rect",x0=x_shape_coord[i],x1=x_shape_coord[i+1], y0=0,y1=1, yref="paper", opacity=0.5, layer="below", fillcolor="lightgrey", line_width=0))
+            shapes.append(
+                go.layout.Shape(
+                    type="rect",x0=x_shape_coord[i],x1=x_shape_coord[i+1],
+                    y0=0,y1=1, yref="paper", opacity=0.5, layer="below", fillcolor="lightgrey", line_width=0))
 
         # Tweak plot layout
         layout = go.Layout (
