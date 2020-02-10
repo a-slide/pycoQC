@@ -196,32 +196,50 @@ class pycoQC_plot ():
         return d
 
     def _compute_stats (self, df):
-
         d = OrderedDict ()
         # run information
-        d["run"] = OrderedDict ()
+        d["run"] = OrderedDict()
         d["run"]["run_duration"] = self._run_duration(df)
         d["run"]["active_channels"] = self._active_channels(df)
         d["run"]["runid_number"] = self._runid_number(df)
         d["run"]["barcodes_number"] = self._barcodes_number(df)
-        d["basecall"] = OrderedDict ()
+        d["basecall"] = OrderedDict()
         d["basecall"]["reads_number"] = self._basecalled_reads(df)
         d["basecall"]["bases_number"] = self._basecalled_bases(df)
         d["basecall"]["N50"] = self._basecall_N50(df)
         d["basecall"]["len_percentiles"] = self._compute_percentiles (df["read_len"])
         d["basecall"]["qual_score_percentiles"] = self._compute_percentiles (df["mean_qscore"])
+
+        x,y = self._compute_hist(data=df["read_len"],x_scale="log",smooth_sigma=2,nbins=100)
+        d["basecall"]["len_hist"] = OrderedDict ()
+        d["basecall"]["len_hist"]["x"] = x
+        d["basecall"]["len_hist"]["y"] = y
+        x,y = self._compute_hist(data=df["mean_qscore"],x_scale="linear",smooth_sigma=2,nbins=100)
+        d["basecall"]["qual_score_hist"] = OrderedDict ()
+        d["basecall"]["qual_score_hist"]["x"] = x
+        d["basecall"]["qual_score_hist"]["y"] = y
+
         if self.has_alignment:
-            d["alignment"] = OrderedDict ()
+            d["alignment"] = OrderedDict()
             d["alignment"]["reads_number"] = self._aligned_reads(df)
             d["alignment"]["bases_number"] = self._aligned_bases(df)
             d["alignment"]["mean_coverage"] = self._alignment_mean_coverage(df)
             d["alignment"]["N50"] = self._alignment_N50(df)
             d["alignment"]["len_percentiles"] = self._compute_percentiles (df["align_len"])
+            x,y = self._compute_hist(data=df["align_len"],x_scale="log",smooth_sigma=2,nbins=100)
+            d["alignment"]["len_hist"] = OrderedDict ()
+            d["alignment"]["len_hist"]["x"] = x
+            d["alignment"]["len_hist"]["y"] = y
+
             if self.has_identity_freq:
                 d["alignment"]["identity_freq_percentiles"] = self._compute_percentiles (df["identity_freq"])
                 d["alignment"]["insertion_rate"] = self._alignment_insertion_rate(df)
                 d["alignment"]["deletion_rate"] = self._alignment_deletion_rate(df)
                 d["alignment"]["mismatch_rate"] = self._alignment_mismatch_rate(df)
+                x,y = self._compute_hist(data=df["identity_freq"],x_scale="linear",smooth_sigma=2,nbins=100)
+                d["alignment"]["identity_freq_hist"] = OrderedDict ()
+                d["alignment"]["identity_freq_hist"]["x"] = x
+                d["alignment"]["identity_freq_hist"]["y"] = y
 
         return d
 
@@ -297,7 +315,6 @@ class pycoQC_plot ():
             data=[*zip(*data)])
 
         return fig
-
 
     def alignment_summary (self,
         width:int = None,
@@ -572,7 +589,7 @@ class pycoQC_plot ():
         # Remove last bin from labels
         count_x = bins[1:]
 
-        # Smooth results with a savgol filter
+        # Smooth results with a gaussian filter
         if smooth_sigma:
             count_y = gaussian_filter1d (count_y, sigma=smooth_sigma)
 
@@ -1699,3 +1716,28 @@ class pycoQC_plot ():
             cum_sum += v
             if cum_sum >= half_sum:
                 return int(v)
+
+    @staticmethod
+    def _compute_hist (data, x_scale="linear", smooth_sigma=2, nbins=200):
+
+        # Count each categories in log or linear space
+        min = np.nanmin(data)
+        max = np.nanmax(data)
+
+        if x_scale == "log":
+            count_y, bins = np.histogram (a=data, bins=np.logspace (np.log10(min), np.log10(max)+0.1, nbins))
+        elif x_scale == "linear":
+            count_y, bins = np.histogram (a=data, bins= np.linspace (min, max, nbins))
+
+        # Remove last bin from labels
+        count_x = bins[1:]
+
+        # Smooth results with a gaussian filter
+        if smooth_sigma:
+            count_y = gaussian_filter1d (count_y, sigma=smooth_sigma)
+
+        # Convert to python list
+        count_x = [float(i) for i in count_x]
+        count_y = [float(i) for i in count_y]
+
+        return (count_x, count_y)
