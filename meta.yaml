@@ -1,4 +1,4 @@
-{% set version = "2.5.0.20" %}
+{% set version = "2.5.0.21" %}
 {% set name = "pycoQC" %}
 
 package:
@@ -19,9 +19,9 @@ build:
 
 requirements:
   build:
-    - python=3.6
+    - python>=3.6
     - pip>=19.2.1
-    - ripgrep=11.0.1
+    - ripgrep>=11.0.1
   run:
     - python=3.6
     - numpy=1.17.1
