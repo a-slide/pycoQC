@@ -1,20 +1,23 @@
 # Installation
 
-## Create a clean virtual environment
+## Create a clean virtual environment (optional but recommended)
 
-Ideally, before installation, create a clean **python3.5+** virtual environment to deploy the package. **Python 2 is not supported**.
+Ideally, before installation, create a clean **python3.6+** virtual environment to deploy the package.
+Earlier version of Python3 should also work but **Python 2 is not supported**.
 For example one can use conda or virtualenvwrapper.
 
 With [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/install.html):
 
 ```bash
 mkvirtualenv pycoQC -p python3.6
+workon pycoQC
 ```
 
 With [conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html):
 
 ```bash
 conda create -n pycoQC python=3.6
+conda activate pycoQC
 ```
 
 ## Dependencies
@@ -31,24 +34,31 @@ pycoQC relies on a few robustly maintained third party libraries listed below. T
 
 ## Option 1: Installation with pip from pypi
 
-```bash
-# First installation
-pip install pycoQC
+Install or upgrade the package with pip from pypi
 
-# Update to last version
-pip install pycoQC --upgrade
+```bash
+pip install pycoQC
+```
+
+You can also update to **unstable** development version from test.pypi repository
+
+```bash
+pip install --index-url https://test.pypi.org/simple/ pycoQC -U
 ```
 
 ## Option 2: Installation with conda from Anacounda cloud
 
-In a previously created conda environment
+**If you want to be sure to get the last version don't forget to add my channel and to specify the last version number**
 
 ```bash
 # First installation
-conda install -c aleg pycoqc
+conda install -c aleg pycoqc=[VERSION]
+```
 
-# Update to last version
-conda update -c aleg pycoqc
+You can also get the **unstable** development version from my dev channel
+
+```bash
+conda update -c aleg_dev pycoqc=[VERSION]
 ```
 
 ## Option 3: Installation with pip from Github

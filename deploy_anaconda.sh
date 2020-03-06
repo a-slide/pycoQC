@@ -21,7 +21,7 @@ echo "Build noarch package..."
 conda build meta.yaml --python 3.6 --numpy 1.1 --output-folder conda_build  -c bioconda -c conda-forge
 
 echo "Deploying to Anaconda.org..."
-anaconda -t $ANACONDA_TOKEN upload conda_build/**/*.tar.bz2
+anaconda -v -t $1 upload conda_build/**/*.tar.bz2
 
 echo "Successfully deployed to Anaconda.org."
 exit 0
