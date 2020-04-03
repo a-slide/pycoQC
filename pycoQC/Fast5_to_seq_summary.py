@@ -197,54 +197,73 @@ class Fast5_to_seq_summary ():
 
             for fast5_fn in iter(in_q.get, None):
 
-                # Try to extract data from the fast5 file
-                d = OrderedDict()
                 with h5py.File(fast5_fn, "r") as h5_fp:
 
-                    # Define group names for current read
-                    grp_dict = {
-                        "raw_read" : "/Raw/Reads/{}/".format(list(h5_fp["/Raw/Reads"].keys())[0]),
-                        "summary_basecall" : "/Analyses/Basecall_1D_{:03}/Summary/basecall_1d_template/".format(self.basecall_id),
-                        "summary_calibration" : "/Analyses/Calibration_Strand_Detection_{:03}/Summary/calibration_strand_template/".format(self.basecall_id),
-                        "summary_barcoding" : "/Analyses/Barcoding_{:03}/Summary/barcoding/".format(self.basecall_id),
-                        "tracking_id" : "UniqueGlobalKey/tracking_id",
-                        "channel_id" : "UniqueGlobalKey/channel_id"}
+                    multi_read = 'file_type' in h5_fp.attrs.keys() and h5_fp.attrs['file_type'] == b'multi-read'
 
-                    # Fetch required fields is available
-                    for field in self.fields:
+                    if multi_read:
+                        read_ids =  list(h5_fp["/"].keys())
+                    else: 
+                        read_ids = list(h5_fp["/Raw/Reads"].keys())
 
-                        # Special case for start time
-                        if field == "start_time":
-                            start_time = self._get_h5_attrs (fp=h5_fp,
-                                grp=grp_dict[self.attrs_grp_dict["start_time"]["grp"]],
-                                attrs=self.attrs_grp_dict["start_time"]["attrs"])
-                            sampling_rate = self._get_h5_attrs (fp=h5_fp,
-                                grp=grp_dict[self.attrs_grp_dict["channel_sampling_rate"]["grp"]],
-                                attrs=self.attrs_grp_dict["channel_sampling_rate"]["attrs"])
-                            if start_time and sampling_rate:
-                                d[field] = int(start_time/sampling_rate)
-                                c["fields_found"][field] +=1
-                            else:
-                                c["fields_not_found"][field] +=1
-                        # Everything else
+                    for read_id in read_ids:
+                        # Try to extract data from the fast5 file
+                        d = OrderedDict()
+
+                        if multi_read:
+                            grp_dict = {
+                                "raw_read" : "/{}/Raw/".format(read_id),
+                                "summary_basecall" : "/{read_id}/Analyses/Basecall_1D_{bc_id:03}/Summary/basecall_1d_template/".format(read_id=read_id, bc_id=self.basecall_id),
+                                "summary_calibration" : "/{read_id}/Analyses/Calibration_Strand_Detection_{bc_id:03}/Summary/calibration_strand_template/".format(read_id=read_id, bc_id=self.basecall_id),
+                                "summary_barcoding" : "/{read_id}/Analyses/Barcoding_{bc_id:03}/Summary/barcoding/".format(read_id=read_id, bc_id=self.basecall_id),
+                                "tracking_id" : "/{}/tracking_id".format(read_id),
+                                "channel_id" : "/{}/channel_id".format(read_id)}
+
                         else:
-                            v = self._get_h5_attrs (
-                                fp=h5_fp, grp=grp_dict[self.attrs_grp_dict[field]["grp"]], attrs=self.attrs_grp_dict[field]["attrs"])
-                            if v:
-                                d[field] = v
-                                c["fields_found"][field] +=1
+                            # Define group names for current read
+                            grp_dict = {
+                                "raw_read" : "/Raw/Reads/{}/".format(read_id),
+                                "summary_basecall" : "/Analyses/Basecall_1D_{:03}/Summary/basecall_1d_template/".format(self.basecall_id),
+                                "summary_calibration" : "/Analyses/Calibration_Strand_Detection_{:03}/Summary/calibration_strand_template/".format(self.basecall_id),
+                                "summary_barcoding" : "/Analyses/Barcoding_{:03}/Summary/barcoding/".format(self.basecall_id),
+                                "tracking_id" : "UniqueGlobalKey/tracking_id",
+                                "channel_id" : "UniqueGlobalKey/channel_id"}
+
+                        # Fetch required fields is available
+                        for field in self.fields:
+
+                            # Special case for start time
+                            if field == "start_time":
+                                start_time = self._get_h5_attrs (fp=h5_fp,
+                                    grp=grp_dict[self.attrs_grp_dict["start_time"]["grp"]],
+                                    attrs=self.attrs_grp_dict["start_time"]["attrs"])
+                                sampling_rate = self._get_h5_attrs (fp=h5_fp,
+                                    grp=grp_dict[self.attrs_grp_dict["channel_sampling_rate"]["grp"]],
+                                    attrs=self.attrs_grp_dict["channel_sampling_rate"]["attrs"])
+                                if start_time and sampling_rate:
+                                    d[field] = int(start_time/sampling_rate)
+                                    c["fields_found"][field] +=1
+                                else:
+                                    c["fields_not_found"][field] +=1
+                            # Everything else
                             else:
-                                c["fields_not_found"][field] +=1
+                                v = self._get_h5_attrs (
+                                    fp=h5_fp, grp=grp_dict[self.attrs_grp_dict[field]["grp"]], attrs=self.attrs_grp_dict[field]["attrs"])
+                                if v:
+                                    d[field] = v
+                                    c["fields_found"][field] +=1
+                                else:
+                                    c["fields_not_found"][field] +=1
 
-                if self.include_path:
-                    d["path"] = os.path.abspath(fast5_fn)
+                        if self.include_path:
+                            d["path"] = os.path.abspath(fast5_fn)
 
-                # Put read data in queue
-                if d:
-                    out_q.put(d)
-                    c["overall"]["valid files"] += 1
-                else:
-                    c["overall"]["invalid files"] += 1
+                        # Put read data in queue
+                        if d:
+                            out_q.put(d)
+                            c["overall"]["valid files"] += 1
+                        else:
+                            c["overall"]["invalid files"] += 1
 
             # Put counter in counter queue
             counter_q.put(c)
