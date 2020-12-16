@@ -1,4 +1,4 @@
-{% set version = "2.5.1" %}
+{% set version = "2.5.1.dev5" %}
 {% set name = "pycoQC" %}
 
 package:
@@ -26,7 +26,7 @@ requirements:
     - numpy>=1.19
     - scipy>=1.5
     - pandas>=1.1
-    - plotly=4.1.0
+    - plotly==4.1.0
     - jinja2>=2.10
     - h5py>=3.1
     - tqdm>=4.54
@@ -43,10 +43,13 @@ test:
     - Barcode_split --help
 
 about:
-  home: "https://github.com/a-slide/pycoQC"
-  license: "GNU General Public v3 (GPLv3)"
-  license_file: LICENSE
-  license_family: GPL
-  summary: "PycoQC computes metrics and generates interactive QC plots for Oxford Nanopore technologies sequencing data"
-  doc_url: "https://a-slide.github.io/pycoQC/"
-  dev_url: ""
+  home: https://github.com/a-slide/pycoQC
+  doc_url: https://adrienleger.com/pycoQC
+  license: GPLv3
+  licence_url: https://www.gnu.org/licenses/gpl-3.0.en.html
+  summary: PycoQC computes metrics and generates interactive QC plots for Oxford Nanopore technologies sequencing data
+
+extra:
+  author: Adrien Leger & Tommaso Leonardi
+  author_email: aleg@ebi.ac.uk
+  author_url: https://adrienleger.com

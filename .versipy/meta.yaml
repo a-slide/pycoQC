@@ -1,0 +1,55 @@
+{% set version = "__package_version__" %}
+{% set name = "__package_name__" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  path: dist/{{ name }}-{{ version }}.tar.gz
+
+build:
+  number: 0
+  script: "pip install {{ name }}-{{ version }}.tar.gz --no-deps --ignore-installed -vv "
+  entry_points:
+    - __entry_point_1__
+    - __entry_point_2__
+    - __entry_point_3__
+  noarch: "python"
+
+requirements:
+  build:
+    - python__minimal_python__
+    - pip>=19.2.1
+    - ripgrep>=11.0.1
+  run:
+    - __dependency_1__
+    - __dependency_2__
+    - __dependency_3__
+    - __dependency_4__
+    - __dependency_5__
+    - __dependency_6__
+    - __dependency_7__
+    - __dependency_8__
+
+test:
+  imports:
+    - pycoQC.pycoQC
+    - pycoQC.Fast5_to_seq_summary
+    - pycoQC.Barcode_split
+  commands:
+    - pycoQC --help
+    - Fast5_to_seq_summary --help
+    - Barcode_split --help
+
+about:
+  home: __package_url__
+  doc_url: __package_doc_url__
+  license: __package_licence__
+  licence_url: __package_licence_url__
+  summary: __package_description__
+
+extra:
+  author: __author_name__
+  author_email: __author_email__
+  author_url: __author_url__

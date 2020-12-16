@@ -1,15 +1,15 @@
 # Project information
-site_name: pycoQC
-site_description: PycoQC computes metrics and generates interactive QC plots for Oxford Nanopore technologies sequencing data
-site_author: Adrien Leger & Tommaso Leonardi
-site_url: https://adrienleger.com/pycoQC
+site_name: __package_name__
+site_description: __package_description__
+site_author: __author_name__
+site_url: __package_doc_url__
 
 # Repository
 repo_name: 'a-slide/pycoQC'
-repo_url: https://github.com/a-slide/pycoQC
+repo_url: __package_url__
 
 # Copyright
-copyright: Copyright © 2020 Adrien Leger & Tommaso Leonardi
+copyright: Copyright © 2020 __author_name__
 
 # Navigation menu
 nav:
