@@ -1,0 +1,137 @@
+{
+  "run_summary": {
+    "plot_title": "General run summary"
+  },
+  "basecall_summary": {
+    "plot_title": "Basecall summary"
+  },
+  "alignment_summary": {
+    "plot_title": "Alignment summary"
+  },
+  "read_len_1D": {
+    "plot_title": "Basecalled reads length",
+    "color": "lightsteelblue",
+    "nbins": 200,
+    "smooth_sigma": 2
+  },
+  "align_len_1D": {
+    "plot_title": "Aligned reads length",
+    "color": "mediumseagreen",
+    "nbins": 200,
+    "smooth_sigma": 2
+  },
+  "read_qual_1D": {
+    "plot_title": "Basecalled reads PHRED quality",
+    "color": "salmon",
+    "nbins": 200,
+    "smooth_sigma": 2
+  },
+  "identity_freq_1D": {
+    "plot_title": "Aligned reads identity",
+    "color": "sandybrown",
+    "nbins": 200,
+    "smooth_sigma": 2
+  },
+  "read_len_read_qual_2D": {
+    "plot_title": "Basecalled reads length vs reads PHRED quality",
+    "x_nbins": 200,
+    "y_nbins": 100,
+    "smooth_sigma": 2
+  },
+  "read_len_align_len_2D": {
+    "plot_title": "Basecalled reads length vs alignments length",
+    "x_nbins": 200,
+    "y_nbins": 100,
+    "smooth_sigma": 1
+  },
+  "align_len_identity_freq_2D": {
+    "plot_title": "Aligned reads length vs alignments identity",
+    "x_nbins": 200,
+    "y_nbins": 100,
+    "smooth_sigma": 2
+  },
+  "read_qual_identity_freq_2D": {
+    "plot_title": "Reads PHRED quality vs alignments identity",
+    "x_nbins": 200,
+    "y_nbins": 100,
+    "smooth_sigma": 1
+  },
+  "output_over_time": {
+    "plot_title": "Output over experiment time",
+    "cumulative_color": "rgb(204,226,255)",
+    "interval_color": "rgb(102,168,255)"
+  },
+  "read_len_over_time": {
+    "plot_title": "Read length over experiment time",
+    "median_color": "rgb(102,168,255)",
+    "quartile_color": "rgb(153,197,255)",
+    "extreme_color": "rgba(153,197,255,0.5)",
+    "smooth_sigma": 1
+  },
+  "read_qual_over_time": {
+    "plot_title": "Read quality over experiment time",
+    "median_color": "rgb(250,128,114)",
+    "quartile_color": "rgb(250,170,160)",
+    "extreme_color": "rgba(250,170,160,0.5)",
+    "smooth_sigma": 1
+  },
+  "align_len_over_time": {
+    "plot_title": "Aligned reads length over experiment time",
+    "median_color": "rgb(102,168,255)",
+    "quartile_color": "rgb(153,197,255)",
+    "extreme_color": "rgba(153,197,255,0.5)",
+    "smooth_sigma": 1
+  },
+  "identity_freq_over_time": {
+    "plot_title": "Aligned reads identity over experiment time",
+    "median_color": "rgb(250,128,114)",
+    "quartile_color": "rgb(250,170,160)",
+    "extreme_color": "rgba(250,170,160,0.5)",
+    "smooth_sigma": 1
+  },
+ "barcode_counts": {
+    "plot_title": "Number of reads per barcode",
+    "colors": [
+      "#f8bc9c",
+      "#f6e9a1",
+      "#f5f8f2",
+      "#92d9f5",
+      "#4f97ba"
+    ]
+  },
+  "channels_activity": {
+    "plot_title": "Channel activity over time",
+    "smooth_sigma": 1
+  },
+  "alignment_reads_status": {
+    "plot_title": "Summary of reads alignment",
+    "colors": [
+      "#f8bc9c",
+      "#f6e9a1",
+      "#92d9f5",
+      "#4f97ba",
+      "#f5f8f2"
+    ]
+  },
+  "alignment_rate": {
+    "plot_title": "Bases alignment rate",
+    "colors": [
+      "#fcaf94",
+      "#828282",
+      "#fc8161",
+      "#828282",
+      "#f44f39",
+      "#d52221",
+      "#828282",
+      "#828282",
+      "#828282",
+      "#828282"
+    ]
+  },
+  "alignment_coverage": {
+    "plot_title": "Coverage overview",
+    "nbins": 500,
+    "color": "rgba(102,168,255,0.75)",
+    "smooth_sigma": 1
+  }
+}
