@@ -6,7 +6,7 @@ version:
   b: null
   rc: null
   post: null
-  dev: 5
+  dev: 6
 managed_values:
   __package_name__: pycoQC
   __package_description__: PycoQC computes metrics and generates interactive QC plots

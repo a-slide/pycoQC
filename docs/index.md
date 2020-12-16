@@ -1,4 +1,4 @@
-# Welcome to pycoQC v2.5.1.dev5 documentation
+# Welcome to pycoQC v2.5.1.dev6 documentation
 
 ![logo](pictures/pycoQC_long.svg)
 
