@@ -52,13 +52,13 @@ pip install --index-url https://test.pypi.org/simple/ pycoQC -U
 
 ```bash
 # First installation
-conda install -c aleg pycoqc=[VERSION]
+conda install -c aleg -c anaconda -c bioconda -c conda-forge pycoqc=[VERSION]
 ```
 
 You can also get the **unstable** development version from my dev channel
 
 ```bash
-conda update -c aleg_dev pycoqc=[VERSION]
+conda install -c aleg_dev -c anaconda -c bioconda -c conda-forge pycoqc=[VERSION]
 ```
 
 ## Option 3: Installation with pip from Github
