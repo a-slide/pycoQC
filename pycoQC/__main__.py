@@ -125,6 +125,7 @@ def main_pycoQC (args=None):
         html_outfile = args.html_outfile,
         report_title = args.report_title,
         config_file = args.config_file,
+        skip_coverage_plot = args.skip_coverage_plot,
         template_file = args.template_file,
         json_outfile = args.json_outfile,
         verbose = args.verbose,
