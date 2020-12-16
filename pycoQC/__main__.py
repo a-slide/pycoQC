@@ -76,6 +76,8 @@ def main_pycoQC (args=None):
             If not provided, looks for it in ~/.pycoQC and ~/.config/pycoQC/config. If it's still not found, falls back to default parameters.
             The first level keys are the names of the plots to be included.
             The second level keys are the parameters to pass to each plotting function (default: %(default)s)")"""))
+    parser_html.add_argument("--skip_coverage_plot", default=False, action='store_true',
+        help="Skip the coverage plot in HTML report. Useful when using a reference file containing many sequences, i.e. transcriptome (default: %(default)s)")
     parser_other = parser.add_argument_group('Other options')
     parser_other.add_argument("--sample", default=100000, type=int,
         help=textwrap.dedent("""If not None a n number of reads will be randomly selected instead of the entire dataset for ploting function

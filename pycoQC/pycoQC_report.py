@@ -59,7 +59,8 @@ class pycoQC_report ():
         outfile:str,
         config_file:str="",
         template_file:str="",
-        report_title:str="PycoQC report"):
+        report_title:str="PycoQC report",
+        skip_coverage_plot:bool=False):
         """"""
         self.logger.info("Generating HTML report")
 
@@ -72,6 +73,9 @@ class pycoQC_report ():
         plots = list()
         titles = list()
         for method_name, method_args in config_dict.items ():
+            if skip_coverage_plot and method_name == "alignment_coverage":
+                self.logger.info("\tSkipping method {}".format(method_name))
+                continue
             try:
                 self.logger.info("\tRunning method {}".format(method_name))
                 self.logger.debug ("\t{} ({})".format(method_name, method_args))
@@ -96,7 +100,7 @@ class pycoQC_report ():
                 titles.append(plot_title)
 
             except AttributeError as E:
-                self.logger.info("\t\t{}".format("{} is not a valid plotting method".format(method_name)))
+                self.logger.info("\t\t{} is not a valid plotting method".format(method_name))
                 self.logger.info("\t\t{}".format(E))
 
             except pycoQCError as E:

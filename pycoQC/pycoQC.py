@@ -37,6 +37,7 @@ def pycoQC (
     config_file:str="",
     template_file:str="",
     json_outfile:str="",
+    skip_coverage_plot:bool=False,
     verbose:bool=False,
     quiet:bool=False):
     """
@@ -107,6 +108,7 @@ def pycoQC (
     config_file = check_arg("config_file", config_file, required_type=str, allow_none=True)
     template_file = check_arg("template_file", template_file, required_type=str, allow_none=True)
     json_outfile = check_arg("json_outfile", json_outfile, required_type=str, allow_none=True)
+    skip_coverage_plot = check_arg("skip_coverage_plot", skip_coverage_plot, required_type=bool, allow_none=False)
 
     # Print debug info
     logger.debug("General info")
@@ -154,7 +156,8 @@ def pycoQC (
                 outfile=html_outfile,
                 config_file=config_file,
                 template_file=template_file,
-                report_title=report_title)
+                report_title=report_title,
+                skip_coverage_plot=skip_coverage_plot)
 
         # Run json output function
         if json_outfile:
