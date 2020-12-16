@@ -18,7 +18,7 @@ echo "compile package from setup.py"
 python setup.py sdist
 
 echo "Build noarch package..."
-conda build meta.yaml --python 3.6 --numpy 1.1 --output-folder conda_build  -c bioconda -c conda-forge
+conda build meta.yaml --python 3.6 --numpy 1.1 --output-folder conda_build  -c bioconda -c conda-forge --no-include-recipe
 
 echo "Deploying to Anaconda.org..."
 anaconda -v -t $1 upload conda_build/**/*.tar.bz2
