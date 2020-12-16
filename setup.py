@@ -10,7 +10,7 @@ with open('README.md', 'r') as fh:
 setup(
     name = 'pycoQC',
     description = 'PycoQC computes metrics and generates interactive QC plots for Oxford Nanopore technologies sequencing data',
-    version = '2.5.1.dev6',
+    version = '2.5.2',
     long_description = long_description,
     long_description_content_type='text/markdown',
     url = 'https://github.com/a-slide/pycoQC',

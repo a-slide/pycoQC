@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 __name__ = "pycoQC"
-__version__ = "2.5.1.dev6"
+__version__ = "2.5.2"
 __description__ = "PycoQC computes metrics and generates interactive QC plots for Oxford Nanopore technologies sequencing data"
 __url__ = "https://github.com/a-slide/pycoQC"
 __licence__ = "GPLv3"

@@ -1,4 +1,4 @@
-# pycoQC v2.5.1.dev6
+# pycoQC v2.5.2
 
 ![pycoQC](https://raw.githubusercontent.com/a-slide/pycoQC/master/docs/pictures/pycoQC_long.png)
 

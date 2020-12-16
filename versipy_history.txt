@@ -5,3 +5,4 @@
 2020-12-16 16:40:09.668703	2.5.1.dev4	Versipy auto bump-up
 2020-12-16 16:41:15.013385	2.5.1.dev5	Versipy auto bump-up
 2020-12-16 16:50:47.571875	2.5.1.dev6	Versipyify package and expose skip_coverage_plot option to CLI
+2020-12-16 16:58:52.524915	2.5.2	Versipyify package and expose skip_coverage_plot option to CLI

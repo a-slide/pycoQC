@@ -1,12 +1,12 @@
 version:
   major: 2
   minor: 5
-  micro: 1
+  micro: 2
   a: null
   b: null
   rc: null
   post: null
-  dev: 6
+  dev: null
 managed_values:
   __package_name__: pycoQC
   __package_description__: PycoQC computes metrics and generates interactive QC plots
