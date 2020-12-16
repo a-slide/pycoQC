@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="116"
+   height="20"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="language-Python3-brightgreen.svg"
+   inkscape:export-filename="/home/aleg/Programming/pycoQC/docs/pictures/language-Python3-brightgreen.png"
+   inkscape:export-xdpi="99.699997"
+   inkscape:export-ydpi="99.699997">
+  <metadata
+     id="metadata34">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs32" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="930"
+     inkscape:window-height="517"
+     id="namedview30"
+     showgrid="false"
+     inkscape:zoom="2.6206897"
+     inkscape:cx="58.763158"
+     inkscape:cy="10"
+     inkscape:window-x="1152"
+     inkscape:window-y="166"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2" />
+  <linearGradient
+     id="b"
+     x2="0"
+     y2="100%">
+    <stop
+       offset="0"
+       stop-color="#bbb"
+       stop-opacity=".1"
+       id="stop5" />
+    <stop
+       offset="1"
+       stop-opacity=".1"
+       id="stop7" />
+  </linearGradient>
+  <clipPath
+     id="a">
+    <rect
+       width="116"
+       height="20"
+       rx="3"
+       fill="#fff"
+       id="rect10" />
+  </clipPath>
+  <g
+     clip-path="url(#a)"
+     id="g12">
+    <path
+       fill="#555"
+       d="M0 0h61v20H0z"
+       id="path14" />
+    <path
+       fill="#4c1"
+       d="M61 0h55v20H61z"
+       id="path16" />
+    <path
+       fill="url(#b)"
+       d="M0 0h116v20H0z"
+       id="path18" />
+  </g>
+  <g
+     fill="#fff"
+     text-anchor="middle"
+     font-family="DejaVu Sans,Verdana,Geneva,sans-serif"
+     font-size="110"
+     id="g20">
+    <text
+       x="315"
+       y="150"
+       fill="#010101"
+       fill-opacity=".3"
+       transform="scale(.1)"
+       textLength="510"
+       id="text22">language</text>
+    <text
+       x="315"
+       y="140"
+       transform="scale(.1)"
+       textLength="510"
+       id="text24">language</text>
+    <text
+       x="875"
+       y="150"
+       fill="#010101"
+       fill-opacity=".3"
+       transform="scale(.1)"
+       textLength="450"
+       id="text26">Python3</text>
+    <text
+       x="875"
+       y="140"
+       transform="scale(.1)"
+       textLength="450"
+       id="text28">Python3</text>
+  </g>
+</svg>

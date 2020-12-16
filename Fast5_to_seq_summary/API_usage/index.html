@@ -1,0 +1,1124 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="PycoQC computes metrics and generates interactive QC plots for Oxford Nanopore technologies sequencing data">
+      
+      
+      
+        <link rel="canonical" href="https://a-slide.github.io/pycoQC/Fast5_to_seq_summary/API_usage/">
+      
+      
+        <meta name="author" content="Adrien Leger & Tommaso Leonardi">
+      
+      <link rel="shortcut icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-6.1.7">
+    
+    
+      
+        <title>jupyter API usage - pycoQC</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.19753c6b.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.196e0c26.min.css">
+        
+      
+    
+    
+    
+      
+    
+    
+    
+      <link rel="stylesheet" href="../../css/ansi-colours.css">
+    
+      <link rel="stylesheet" href="../../css/jupyter-cells.css">
+    
+      <link rel="stylesheet" href="../../css/pandas-dataframe.css">
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+      
+  
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#fast5_to_seq_summary-api-usage" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid" aria-label="Header">
+    <a href="https://a-slide.github.io/pycoQC/" title="pycoQC" class="md-header-nav__button md-logo" aria-label="pycoQC">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header-nav__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header-nav__title" data-md-component="header-title">
+      
+        <div class="md-header-nav__ellipsis">
+          <span class="md-header-nav__topic md-ellipsis">
+            pycoQC
+          </span>
+          <span class="md-header-nav__topic md-ellipsis">
+            
+              jupyter API usage
+            
+          </span>
+        </div>
+      
+    </div>
+    
+    
+      <div class="md-header-nav__source">
+        
+<a href="https://github.com/a-slide/pycoQC/" title="Go to repository" class="md-source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    a-slide/pycoQC
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="https://a-slide.github.io/pycoQC/" title="pycoQC" class="md-nav__button md-logo" aria-label="pycoQC">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    pycoQC
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/a-slide/pycoQC/" title="Go to repository" class="md-source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    a-slide/pycoQC
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../.." class="md-nav__link">
+      Home
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../installation/" class="md-nav__link">
+      Installation instructions
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3" >
+    <label class="md-nav__link" for="nav-3">
+      pycoQC Usage
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="pycoQC Usage" data-md-level="1">
+      <label class="md-nav__title" for="nav-3">
+        <span class="md-nav__icon md-icon"></span>
+        pycoQC Usage
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../pycoQC/usage/" class="md-nav__link">
+      Using pycoQC
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../pycoQC/API_usage/" class="md-nav__link">
+      jupyter API usage
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../pycoQC/CLI_usage/" class="md-nav__link">
+      Command line usage
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4" >
+    <label class="md-nav__link" for="nav-4">
+      Barcode_split Usage
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="Barcode_split Usage" data-md-level="1">
+      <label class="md-nav__title" for="nav-4">
+        <span class="md-nav__icon md-icon"></span>
+        Barcode_split Usage
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../Barcode_split/usage/" class="md-nav__link">
+      Using Barcode_split
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../Barcode_split/API_usage/" class="md-nav__link">
+      jupyter API usage
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../Barcode_split/CLI_usage/" class="md-nav__link">
+      Command line usage
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="nav-5" type="checkbox" id="nav-5" checked>
+    <label class="md-nav__link" for="nav-5">
+      Fast5_to_seq_summary Usage
+      <span class="md-nav__icon md-icon"></span>
+    </label>
+    <nav class="md-nav" aria-label="Fast5_to_seq_summary Usage" data-md-level="1">
+      <label class="md-nav__title" for="nav-5">
+        <span class="md-nav__icon md-icon"></span>
+        Fast5_to_seq_summary Usage
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../usage/" class="md-nav__link">
+      Using Fast5_to_seq_summary
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        jupyter API usage
+        <span class="md-nav__icon md-icon"></span>
+      </label>
+    
+    <a href="./" class="md-nav__link md-nav__link--active">
+      jupyter API usage
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#running-jupyter-notebook" class="md-nav__link">
+    Running Jupyter notebook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#imports" class="md-nav__link">
+    Imports
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-fast5_to_seq_summary" class="md-nav__link">
+    Running Fast5_to_seq_summary
+  </a>
+  
+    <nav class="md-nav" aria-label="Running Fast5_to_seq_summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    Basic usage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multi-threading-support" class="md-nav__link">
+    Multi-threading support
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customize-fields-of-the-summary-file" class="md-nav__link">
+    Customize fields of the summary file
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-file-path" class="md-nav__link">
+    Add file path
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../CLI_usage/" class="md-nav__link">
+      Command line usage
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../citing/" class="md-nav__link">
+      Citing pycoQC
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../acknowledgements/" class="md-nav__link">
+      Acknowledgements
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../alternative/" class="md-nav__link">
+      Alternative and complementary packages
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../contributing/" class="md-nav__link">
+      Contributing Guidelines
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../code_of_conduct/" class="md-nav__link">
+      Code of conduct
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../licence/" class="md-nav__link">
+      Licence
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../changelog/" class="md-nav__link">
+      Changelog
+    </a>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#running-jupyter-notebook" class="md-nav__link">
+    Running Jupyter notebook
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#imports" class="md-nav__link">
+    Imports
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-fast5_to_seq_summary" class="md-nav__link">
+    Running Fast5_to_seq_summary
+  </a>
+  
+    <nav class="md-nav" aria-label="Running Fast5_to_seq_summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-usage" class="md-nav__link">
+    Basic usage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multi-threading-support" class="md-nav__link">
+    Multi-threading support
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customize-fields-of-the-summary-file" class="md-nav__link">
+    Customize fields of the summary file
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-file-path" class="md-nav__link">
+    Add file path
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/a-slide/pycoQC/edit/master/docs/Fast5_to_seq_summary/API_usage.ipynb" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script>
+(function() {
+  function addWidgetsRenderer() {
+    var mimeElement = document.querySelector('script[type="application/vnd.jupyter.widget-view+json"]');
+    var scriptElement = document.createElement('script');
+    var widgetRendererSrc = 'https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js';
+    var widgetState;
+
+    // Fallback for older version:
+    try {
+      widgetState = mimeElement && JSON.parse(mimeElement.innerHTML);
+
+      if (widgetState && (widgetState.version_major < 2 || !widgetState.version_major)) {
+        widgetRendererSrc = 'jupyter-js-widgets@*/dist/embed.js';
+      }
+    } catch(e) {}
+
+    scriptElement.src = widgetRendererSrc;
+    document.body.appendChild(scriptElement);
+  }
+
+  document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
+}());
+</script>
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="fast5_to_seq_summary-api-usage">Fast5_to_seq_summary API Usage</h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="running-jupyter-notebook">Running Jupyter notebook</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>If you want to run pycoQC interactively in Jupyter you need to install Jupyter manually. If you installed pycoQC in a virtual environment then install Jupyter in the same virtual environment.</p>
+<div class="highlight"><pre><span></span><code>pip3 install notebook
+</code></pre></div>
+<p>Launch the notebook in a shell terminal</p>
+<div class="highlight"><pre><span></span><code>jupyter notebook
+</code></pre></div>
+<p>If it does not auto-start, open the following URL in you favorite web browser <a href="http://localhost:8888/tree">http://localhost:8888/tree</a></p>
+<p>From Jupyter homepage you can navigate to the directory you want to work in and create a new Python3 Notebook.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="imports">Imports</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Run cell with Ctrl + Enter</span>
+
+<span class="c1"># Import main pycoQC module</span>
+<span class="kn">from</span> <span class="nn">pycoQC.Fast5_to_seq_summary</span> <span class="kn">import</span> <span class="n">Fast5_to_seq_summary</span>
+
+<span class="c1"># Import helper functions from pycoQC</span>
+<span class="kn">from</span> <span class="nn">pycoQC.common</span> <span class="kn">import</span> <span class="n">jhelp</span><span class="p">,</span> <span class="n">head</span>
+</code></pre></div>
+
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="running-fast5_to_seq_summary">Running Fast5_to_seq_summary</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">jhelp</span><span class="p">(</span><span class="n">Fast5_to_seq_summary</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<p><strong>Fast5_to_seq_summary</strong> (fast5_dir, seq_summary_fn, max_fast5, threads, basecall_id, verbose_level, include_path, fields)</p>
+<p>Create a summary file akin the one generated by Albacore or Guppy from a directory containing multiple fast5 files. The script will attempt to extract all the required fields but will not raise an error if not found.</p>
+<hr>
+<ul>
+<li><strong>fast5_dir</strong> (required) [str]</li>
+</ul>
+<p>Directory containing fast5 files. Can contain multiple subdirectories</p>
+<ul>
+<li><strong>seq_summary_fn</strong> (required) [str]</li>
+</ul>
+<p>path of the summary sequencing file where to write the data extracted from the fast5 files</p>
+<ul>
+<li><strong>max_fast5</strong> (default: 0) [int]</li>
+</ul>
+<p>Maximum number of file to try to parse. 0 to deactivate</p>
+<ul>
+<li><strong>threads</strong> (default: 4) [int]</li>
+</ul>
+<p>Total number of threads to use. 1 thread is used for the reader and 1 for the writer. Minimum 3 (default = 4)</p>
+<ul>
+<li><strong>basecall_id</strong> (default: 0) [int]</li>
+</ul>
+<p>id of the basecalling group. By default leave to 0, but if you perfome multiple basecalling on the same fast5 files, this can be used to indicate the corresponding group (1, 2 ...)</p>
+<ul>
+<li><strong>verbose_level</strong> (default: 0) [int]</li>
+</ul>
+<p>Level of verbosity, from 2 (Chatty) to 0 (Nothing)</p>
+<ul>
+<li><strong>include_path</strong> (default: False) [bool]</li>
+</ul>
+<p>If True the absolute path to the corresponding file is added in an extra column</p>
+<ul>
+<li><strong>fields</strong> (default: ['read_id', 'run_id', 'channel', 'start_time', 'sequence_length_template', 'mean_qscore_template', 'calibration_strand_genome_template', 'barcode_arrangement']) [list]</li>
+</ul>
+<p>list of field names corresponding to attributes to try to fetch from the fast5 files. List a valid field names: mean_qscore_template, sequence_length_template, called_events, skip_prob, stay_prob, step_prob, strand_score, read_id, start_time, duration, start_mux, read_number, channel, channel_digitisation, channel_offset, channel_range, channel_sampling, run_id, sample_id, device_id, protocol_run, flow_cell, calibration_strand, calibration_strand, calibration_strand, calibration_strand, barcode_arrangement, barcode_full, barcode_score</p>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="basic-usage">Basic usage</h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This minimal usage creates a minimal file compatible with pycoQC </p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">Fast5_to_seq_summary</span> <span class="p">(</span>
+    <span class="n">fast5_dir</span><span class="o">=</span><span class="s2">&quot;./data/&quot;</span><span class="p">,</span>
+    <span class="n">seq_summary_fn</span><span class="o">=</span><span class="s2">&quot;./results/summary_sequencing.tsv&quot;</span><span class="p">,</span>
+    <span class="n">verbose_level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">head</span> <span class="p">(</span><span class="s2">&quot;./results/summary_sequencing.tsv&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>
+<code>Check input data and options
+Start processing fast5 files
+22 reads [00:00, 391.50 reads/s]
+Overall counts  valid files: 22
+
+fields found    read_id: 22
+    run_id: 22
+    channel: 22
+    start_time: 22
+    sequence_length_template: 22
+    mean_qscore_template: 22
+    calibration_strand_genome_template: 22
+
+fields not found    barcode_arrangement: 22
+
+Total reads: 22 / Average speed: 161.12 reads/s
+
+</code>
+</pre>
+</div>
+</div>
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>read_id                              run_id                                   channel start_time sequence_length_template mean_qscore_template calibration_strand_genome_template 
+5b7fadd0-c646-4c7b-9800-66ee658a5ca8 40ebe55356ada6c830fa793745ef4c498d896c73 150     37         468                      7.608                filtered_out                       
+e6a8e4d0-7b3c-471a-be26-fa7857d12663 40ebe55356ada6c830fa793745ef4c498d896c73 318     15         392                      8.304                filtered_out                       
+f8325de9-a77e-4616-a4a8-69ecf32e1688 40ebe55356ada6c830fa793745ef4c498d896c73 354     16         568                      8.206                filtered_out                       
+2c32553e-62c6-4c7a-bf05-249771364f04 40ebe55356ada6c830fa793745ef4c498d896c73 237     11         1151                     8.544                filtered_out                       
+3e81c32a-f2ee-4719-a88d-e0affe93d26f 40ebe55356ada6c830fa793745ef4c498d896c73 348     24         1137                     8.124                filtered_out                       
+6af04302-04c8-4d8d-8e87-aa69178b3f24 40ebe55356ada6c830fa793745ef4c498d896c73 36      26         832                      8.234                filtered_out                       
+3784283c-47cc-48ac-8d7b-7efd32123b56 40ebe55356ada6c830fa793745ef4c498d896c73 243     20         893                      8.54                 filtered_out                       
+68804104-71dc-465c-b82d-3a99a4689701 40ebe55356ada6c830fa793745ef4c498d896c73 38      20         1010                     8.325                filtered_out                       
+37dfa1d5-5d84-486c-bf47-9eb6438f5645 40ebe55356ada6c830fa793745ef4c498d896c73 410     30         555                      8.219                filtered_out                       
+
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="multi-threading-support">Multi-threading support</h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">Fast5_to_seq_summary</span> <span class="p">(</span>
+    <span class="n">fast5_dir</span><span class="o">=</span><span class="s2">&quot;./data/&quot;</span><span class="p">,</span>
+    <span class="n">seq_summary_fn</span><span class="o">=</span><span class="s2">&quot;./results/summary_sequencing.tsv&quot;</span><span class="p">,</span>
+    <span class="n">verbose_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">threads</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">head</span> <span class="p">(</span><span class="s2">&quot;./results/summary_sequencing.tsv&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>
+<code>Check input data and options
+Start processing fast5 files
+22 reads [00:00, 13120.25 reads/s]
+Overall counts  valid files: 22
+
+fields found    read_id: 22
+    run_id: 22
+    channel: 22
+    start_time: 22
+    sequence_length_template: 22
+    mean_qscore_template: 22
+    calibration_strand_genome_template: 22
+
+fields not found    barcode_arrangement: 22
+
+Total reads: 22 / Average speed: 385.38 reads/s
+
+</code>
+</pre>
+</div>
+</div>
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>read_id                              run_id                                   channel start_time sequence_length_template mean_qscore_template calibration_strand_genome_template 
+2c32553e-62c6-4c7a-bf05-249771364f04 40ebe55356ada6c830fa793745ef4c498d896c73 237     11         1151                     8.544                filtered_out                       
+5b7fadd0-c646-4c7b-9800-66ee658a5ca8 40ebe55356ada6c830fa793745ef4c498d896c73 150     37         468                      7.608                filtered_out                       
+f8325de9-a77e-4616-a4a8-69ecf32e1688 40ebe55356ada6c830fa793745ef4c498d896c73 354     16         568                      8.206                filtered_out                       
+151757ea-53de-44b1-b86e-f823511af02a 40ebe55356ada6c830fa793745ef4c498d896c73 191     13         568                      8.23                 filtered_out                       
+97205d42-93ac-4c99-af78-e553f7d1ff83 40ebe55356ada6c830fa793745ef4c498d896c73 343     26         1584                     8.987                filtered_out                       
+37dfa1d5-5d84-486c-bf47-9eb6438f5645 40ebe55356ada6c830fa793745ef4c498d896c73 410     30         555                      8.219                filtered_out                       
+bcb20156-a5fe-4daa-aad9-b62c286e468d 40ebe55356ada6c830fa793745ef4c498d896c73 192     21         306                      7.337                filtered_out                       
+e6a8e4d0-7b3c-471a-be26-fa7857d12663 40ebe55356ada6c830fa793745ef4c498d896c73 318     15         392                      8.304                filtered_out                       
+6af04302-04c8-4d8d-8e87-aa69178b3f24 40ebe55356ada6c830fa793745ef4c498d896c73 36      26         832                      8.234                filtered_out                       
+
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="customize-fields-of-the-summary-file">Customize fields of the summary file</h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">Fast5_to_seq_summary</span> <span class="p">(</span>
+    <span class="n">fast5_dir</span><span class="o">=</span><span class="s2">&quot;./data/&quot;</span><span class="p">,</span>
+    <span class="n">seq_summary_fn</span><span class="o">=</span><span class="s2">&quot;./results/custom_summary_sequencing.tsv&quot;</span><span class="p">,</span>
+    <span class="n">threads</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+    <span class="n">verbose_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mean_qscore_template&quot;</span><span class="p">,</span> <span class="s2">&quot;called_events&quot;</span><span class="p">,</span> <span class="s2">&quot;duration&quot;</span><span class="p">,</span> <span class="s2">&quot;strand_score&quot;</span><span class="p">])</span>
+
+<span class="n">head</span> <span class="p">(</span><span class="s2">&quot;./results/custom_summary_sequencing.tsv&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>
+<code>Check input data and options
+Start processing fast5 files
+22 reads [00:00, 20876.63 reads/s]
+Overall counts  valid files: 22
+
+fields found    mean_qscore_template: 22
+    called_events: 22
+    duration: 22
+    strand_score: 22
+
+fields not found 
+Total reads: 22 / Average speed: 386.96 reads/s
+
+</code>
+</pre>
+</div>
+</div>
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>mean_qscore_template called_events duration strand_score 
+8.544                3740          56107    -0.0003      
+7.608                1615          24233    -0.0007      
+8.234                1827          27409    -0.0011      
+8.206                1649          24747    -0.0009      
+8.124                2978          44675    -0.0005      
+8.304                1547          23218    -0.0008      
+8.325                3846          57697    -0.0004      
+8.219                2080          31208    -0.0011      
+8.23                 2778          51387    -0.0007      
+
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="add-file-path">Add file path</h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="highlight"><pre><span></span><code><span class="n">Fast5_to_seq_summary</span> <span class="p">(</span>
+    <span class="n">fast5_dir</span><span class="o">=</span><span class="s2">&quot;./data/&quot;</span><span class="p">,</span>
+    <span class="n">seq_summary_fn</span><span class="o">=</span><span class="s2">&quot;./results/fn_summary_sequencing.tsv&quot;</span><span class="p">,</span>
+    <span class="n">threads</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+    <span class="n">verbose_level</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">include_path</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">head</span> <span class="p">(</span><span class="s2">&quot;./results/fn_summary_sequencing.tsv&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>
+<code>Check input data and options
+Start processing fast5 files
+22 reads [00:00, 15978.30 reads/s]
+Overall counts  valid files: 22
+
+fields found    read_id: 22
+    run_id: 22
+    channel: 22
+    start_time: 22
+    sequence_length_template: 22
+    mean_qscore_template: 22
+    calibration_strand_genome_template: 22
+
+fields not found    barcode_arrangement: 22
+
+Total reads: 22 / Average speed: 366.98 reads/s
+
+</code>
+</pre>
+</div>
+</div>
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>read_id                              run_id                                   channel start_time sequence_length_template mean_qscore_template calibration_strand_genome_template path                                                                                                                                                
+5b7fadd0-c646-4c7b-9800-66ee658a5ca8 40ebe55356ada6c830fa793745ef4c498d896c73 150     37         468                      7.608                filtered_out                       /home/aleg/Programming/Packages/pycoQC/docs/Fast5_to_seq_summary/data/20180625_FAH77625_MN23126_sequencing_run_S1_57529_read_10_ch_150_strand.fast5 
+2c32553e-62c6-4c7a-bf05-249771364f04 40ebe55356ada6c830fa793745ef4c498d896c73 237     11         1151                     8.544                filtered_out                       /home/aleg/Programming/Packages/pycoQC/docs/Fast5_to_seq_summary/data/20180625_FAH77625_MN23126_sequencing_run_S1_57529_read_10_ch_237_strand.fast5 
+e6a8e4d0-7b3c-471a-be26-fa7857d12663 40ebe55356ada6c830fa793745ef4c498d896c73 318     15         392                      8.304                filtered_out                       /home/aleg/Programming/Packages/pycoQC/docs/Fast5_to_seq_summary/data/20180625_FAH77625_MN23126_sequencing_run_S1_57529_read_10_ch_318_strand.fast5 
+6af04302-04c8-4d8d-8e87-aa69178b3f24 40ebe55356ada6c830fa793745ef4c498d896c73 36      26         832                      8.234                filtered_out                       /home/aleg/Programming/Packages/pycoQC/docs/Fast5_to_seq_summary/data/20180625_FAH77625_MN23126_sequencing_run_S1_57529_read_10_ch_36_strand.fast5  
+3e81c32a-f2ee-4719-a88d-e0affe93d26f 40ebe55356ada6c830fa793745ef4c498d896c73 348     24         1137                     8.124                filtered_out                       /home/aleg/Programming/Packages/pycoQC/docs/Fast5_to_seq_summary/data/20180625_FAH77625_MN23126_sequencing_run_S1_57529_read_10_ch_348_strand.fast5 
+37dfa1d5-5d84-486c-bf47-9eb6438f5645 40ebe55356ada6c830fa793745ef4c498d896c73 410     30         555                      8.219                filtered_out                       /home/aleg/Programming/Packages/pycoQC/docs/Fast5_to_seq_summary/data/20180625_FAH77625_MN23126_sequencing_run_S1_57529_read_10_ch_410_strand.fast5 
+08642be5-5cf7-4c4c-8c45-e4d569b9a482 40ebe55356ada6c830fa793745ef4c498d896c73 121     28         450                      7.805                filtered_out                       /home/aleg/Programming/Packages/pycoQC/docs/Fast5_to_seq_summary/data/20180625_FAH77625_MN23126_sequencing_run_S1_57529_read_10_ch_121_strand.fast5 
+151757ea-53de-44b1-b86e-f823511af02a 40ebe55356ada6c830fa793745ef4c498d896c73 191     13         568                      8.23                 filtered_out                       /home/aleg/Programming/Packages/pycoQC/docs/Fast5_to_seq_summary/data/20180625_FAH77625_MN23126_sequencing_run_S1_57529_read_10_ch_191_strand.fast5 
+4e21bf07-e2df-42d8-b347-59ef2c0618ea 40ebe55356ada6c830fa793745ef4c498d896c73 290     31         1160                     8.741                filtered_out                       /home/aleg/Programming/Packages/pycoQC/docs/Fast5_to_seq_summary/data/20180625_FAH77625_MN23126_sequencing_run_S1_57529_read_10_ch_290_strand.fast5 
+
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
+        
+          <a href="../usage/" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+            </div>
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Using Fast5_to_seq_summary
+              </div>
+            </div>
+          </a>
+        
+        
+          <a href="../CLI_usage/" class="md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Command line usage
+              </div>
+            </div>
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2019 Adrien Leger & Tommaso Leonardi 
+          </div>
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../../assets/javascripts/vendor.0ac82a11.min.js"></script>
+      <script src="../../assets/javascripts/bundle.f81dfb4d.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}</script>
+      
+      <script>
+        app = initialize({
+          base: "../..",
+          features: [],
+          search: Object.assign({
+            worker: "../../assets/javascripts/worker/search.4ac00218.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+      
+    
+  </body>
+</html>
