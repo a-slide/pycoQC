@@ -169,13 +169,15 @@ class Fast5_to_seq_summary ():
         logger.debug ("[READER] Start listing fast5 files")
         try:
             # Load an input queue with fast5 file path
+            found_fast5_file = False
             for i, fast5_fn in enumerate(recursive_file_gen (dir=self.fast5_dir, ext="fast5")):
                 if self.max_fast5 and i == self.max_fast5:
                     break
                 in_q.put(fast5_fn)
+                found_fast5_file = True
 
             # Raise error is no file found
-            if i == 0:
+            if not found_fast5_file:
                 raise pycoQCError ("No valid fast5 files found in indicated folder")
 
             logger.debug ("[READER] Add a total of {} files to input queue".format(i+1))
