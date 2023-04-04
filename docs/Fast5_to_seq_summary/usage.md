@@ -8,11 +8,11 @@ In case you do not have access to a summary sequencing file, pycoQC comes with `
 
 ### Jupyter API
 
-* [pycoQC API usage notebook](Fast5_to_seq_summary/API_usage)
+* [pycoQC API usage notebook](API_usage.ipynb)
 
 ### Shell CLI
 
-* [pycoQC CLI usage notebook](Fast5_to_seq_summary/CLI_usage)
+* [pycoQC CLI usage notebook](CLI_usage.ipynb)
 
 
 ## Input files and options
