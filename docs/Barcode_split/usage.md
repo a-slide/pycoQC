@@ -8,11 +8,11 @@
 
 ### Jupyter API
 
-* [Barcode_split API usage notebook](Barcode_split/API_usage)
+* [Barcode_split API usage notebook](API_usage.ipynb)
 
 ### Shell CLI
 
-* [Barcode_split CLI usage notebook](Barcode_split/CLI_usage)
+* [Barcode_split CLI usage notebook](CLI_usage.ipynb)
 
 
 ## IO and options
