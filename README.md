@@ -1,4 +1,6 @@
-# pycoQC v2.5.2
+# pycoQC v2.5.2 
+
+## PycoQC in not maintained anymore, If you are interested in continuing the delelopment of this repository please contact me to discuss an eventual ownership transfer (adrien.leger at protonmail dot com)
 
 ![pycoQC](https://raw.githubusercontent.com/a-slide/pycoQC/master/docs/pictures/pycoQC_long.png)
 
@@ -108,4 +110,4 @@ Copyright © 2020 Adrien Leger & Tommaso Leonardi
 
 ## Authors
 
-* Adrien Leger & Tommaso Leonardi / aleg@ebi.ac.uk / https://adrienleger.com
+* Adrien Leger & Tommaso Leonardi
